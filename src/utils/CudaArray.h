@@ -1,0 +1,398 @@
+/**
+ * @file CudaArray3D.h
+ * @brief RAII wrapper for CUDA 3D device memory with automatic layout optimization
+ * 
+ * This class provides a safe and efficient interface for managing 3D arrays on GPU memory.
+ * It automatically chooses between pitched memory (for optimal performance) and linear memory
+ * (for compatibility), with seamless fallback mechanisms.
+ * 
+ * Key Features:
+ * - Automatic memory layout optimization (pitched vs linear)
+ * - RAII memory management with move semantics
+ * - Synchronous and asynchronous data transfer operations
+ * - Support for 1D, 2D, and 3D arrays
+ * - Exception-safe error handling
+ * 
+ * @author CUDA-BEC Project
+ * @date 2024
+ */
+
+#ifndef CUDA_ARRAY_3D_H
+#define CUDA_ARRAY_3D_H
+
+#include <cstddef>
+#include <cuda_runtime.h>
+
+/**
+ * @class CudaArray3D
+ * @brief RAII wrapper for 3D CUDA device memory with automatic optimization
+ * 
+ * This class manages GPU memory for 3D arrays with automatic selection between
+ * pitched memory (optimized for 2D/3D access patterns) and linear memory (fallback).
+ * Memory layout follows row-major ordering: index = iz*(ny*nx) + iy*nx + ix
+ * where nx is fastest-changing, nz is slowest-changing dimension.
+ * 
+ * @tparam T Data type to store (double, cuDoubleComplex, cufftDoubleComplex, etc.)
+ */
+template<typename T>
+class CudaArray3D {
+private:
+    // Memory management members
+    cudaPitchedPtr pitched_ptr;  ///< CUDA pitched pointer for optimized 3D memory layout
+    size_t nx, ny, nz;          ///< Array dimensions (nx=fastest, nz=slowest changing)
+    size_t total_elements;      ///< Total number of elements (nx * ny * nz)
+    size_t pitch;              ///< Memory pitch in bytes for alignment optimization
+    bool use_pitched;          ///< True if using pitched memory, false for linear fallback
+    
+    // Fallback linear allocation
+    T* d_data_linear;          ///< Linear device memory pointer (used when pitched fails)
+    
+public:
+    // ========== CONSTRUCTORS AND DESTRUCTOR ==========
+    
+    /**
+     * @brief Construct a 3D CUDA array with automatic memory optimization
+     * @param nx Number of elements in X dimension (fastest-changing)
+     * @param ny Number of elements in Y dimension 
+     * @param nz Number of elements in Z dimension (slowest-changing)
+     * @param use_pitched_memory If true, attempt pitched memory allocation for better performance
+     * 
+     * The constructor will try to allocate pitched memory for optimal performance.
+     * If pitched allocation fails, it automatically falls back to linear memory.
+     * For 1D arrays (ny=nz=1), linear memory is used regardless of the flag.
+     */
+    CudaArray3D(size_t nx, size_t ny, size_t nz, bool use_pitched_memory = true);
+    
+    /**
+     * @brief Construct a 1D CUDA array (special case)
+     * @param n Number of elements in the 1D array
+     * 
+     * This constructor creates a 1D array using linear memory allocation.
+     * Equivalent to CudaArray3D(n, 1, 1, false).
+     */
+    explicit CudaArray3D(size_t n);
+    
+    /**
+     * @brief Destructor - automatically frees all allocated GPU memory
+     * 
+     * Ensures proper cleanup of both pitched and linear memory allocations.
+     * No explicit cleanup is required by the user (RAII principle).
+     */
+    ~CudaArray3D();
+    
+    // ========== COPY/MOVE SEMANTICS ==========
+    
+    /**
+     * @brief Copy constructor - DISABLED
+     * 
+     * Copying is explicitly disabled to prevent accidental expensive GPU memory copying.
+     * Use move semantics or explicit copy operations instead.
+     */
+    CudaArray3D(const CudaArray3D&) = delete;
+    
+    /**
+     * @brief Copy assignment operator - DISABLED
+     * 
+     * Copy assignment is disabled for the same reasons as copy constructor.
+     */
+    CudaArray3D& operator=(const CudaArray3D&) = delete;
+    
+    /**
+     * @brief Move constructor - transfers ownership of GPU memory
+     * @param other Source object to move from (will be left in valid but empty state)
+     * 
+     * Efficiently transfers ownership of GPU memory without copying data.
+     * The source object is left in a valid but empty state.
+     */
+    CudaArray3D(CudaArray3D&& other) noexcept;
+    
+    /**
+     * @brief Move assignment operator - transfers ownership of GPU memory
+     * @param other Source object to move from
+     * @return Reference to this object
+     * 
+     * Frees current GPU memory and transfers ownership from the source object.
+     */
+    CudaArray3D& operator=(CudaArray3D&& other) noexcept;
+    
+    // ========== DATA TRANSFER OPERATIONS ==========
+    
+    /**
+     * @brief Synchronously copy data from host to device
+     * @param h_data Host data pointer (must be in row-major order)
+     * 
+     * Copies data from host memory to GPU memory. The host data must be organized
+     * in row-major order: index = iz*(ny*nx) + iy*nx + ix
+     * Automatically handles the complexity of pitched vs linear memory layouts.
+     * This is a blocking operation - execution continues only after copy completes.
+     */
+    void copyFromHost(const T* h_data);
+    
+    /**
+     * @brief Synchronously copy data from device to host  
+     * @param h_data Host data pointer to receive data (will be in row-major order)
+     * 
+     * Copies data from GPU memory to host memory. The host data will be organized
+     * in row-major order: index = iz*(ny*nx) + iy*nx + ix
+     * This is a blocking operation - execution continues only after copy completes.
+     */
+    void copyToHost(T* h_data) const;
+    
+    /**
+     * @brief Asynchronously copy data from host to device
+     * @param h_data Host data pointer (must be in row-major order)
+     * @param stream CUDA stream for asynchronous execution (default: 0)
+     * 
+     * Non-blocking version of copyFromHost(). The copy operation is queued
+     * in the specified CUDA stream, allowing overlap with other operations.
+     * Use cudaStreamSynchronize() or cudaDeviceSynchronize() to wait for completion.
+     */
+    void copyFromHostAsync(const T* h_data, cudaStream_t stream = 0);
+    
+    /**
+     * @brief Asynchronously copy data from device to host
+     * @param h_data Host data pointer to receive data
+     * @param stream CUDA stream for asynchronous execution (default: 0)
+     * 
+     * Non-blocking version of copyToHost(). The copy operation is queued
+     * in the specified CUDA stream, allowing overlap with other operations.
+     */
+    void copyToHostAsync(T* h_data, cudaStream_t stream = 0) const;
+    
+    // ========== DEVICE POINTER ACCESS ==========
+    
+    /**
+     * @brief Get raw device pointer for kernel launches
+     * @return Device pointer to the allocated memory
+     * 
+     * Returns the base device pointer that can be used in CUDA kernels.
+     * For pitched memory, use getPitchElements() for proper indexing.
+     * For linear memory, standard array indexing applies.
+     */
+    T* raw() { 
+        return use_pitched ? (T*)pitched_ptr.ptr : d_data_linear; 
+    }
+    
+    /**
+     * @brief Get raw device pointer for kernel launches (const version)
+     * @return Const device pointer to the allocated memory
+     */
+    const T* raw() const { 
+        return use_pitched ? (const T*)pitched_ptr.ptr : d_data_linear; 
+    }
+    
+    /**
+     * @brief Alternative name for raw() - provided for compatibility
+     * @return Device pointer to the allocated memory
+     */
+    T* data() { return raw(); }
+    
+    /**
+     * @brief Alternative name for raw() - provided for compatibility (const version)
+     * @return Const device pointer to the allocated memory
+     */
+    const T* data() const { return raw(); }
+    
+    // ========== MEMORY LAYOUT INFORMATION ==========
+    
+    /**
+     * @brief Get memory pitch in number of elements (not bytes)
+     * @return Number of elements per row including padding
+     * 
+     * For pitched memory, returns the pitch divided by sizeof(T).
+     * For linear memory, returns nx (no padding).
+     * Use this for proper indexing in CUDA kernels with pitched memory.
+     */
+    size_t getPitchElements() const { 
+        return use_pitched ? (pitch / sizeof(T)) : nx; 
+    }
+    
+    /**
+     * @brief Get memory pitch in bytes
+     * @return Number of bytes per row including padding
+     * 
+     * Returns the actual memory pitch used for allocation.
+     * Useful for low-level memory operations and debugging.
+     */
+    size_t getPitchBytes() const { 
+        return use_pitched ? pitch : (nx * sizeof(T)); 
+    }
+    
+    /**
+     * @brief Get slice pitch (distance between z-slices in bytes)
+     * @return Number of bytes between consecutive z-slices
+     * 
+     * For 3D arrays, this gives the byte offset to move from one z-slice to the next.
+     * Essential for proper 3D indexing in CUDA kernels.
+     */
+    size_t getSlicePitch() const {
+        return use_pitched ? pitched_ptr.pitch * ny : (nx * ny * sizeof(T));
+    }
+    
+    // ========== DIMENSION QUERIES ==========
+    
+    /**
+     * @brief Get size of X dimension (fastest-changing)
+     * @return Number of elements in X direction
+     */
+    size_t getSizeX() const { return nx; }
+    
+    /**
+     * @brief Get size of Y dimension
+     * @return Number of elements in Y direction
+     */
+    size_t getSizeY() const { return ny; }
+    
+    /**
+     * @brief Get size of Z dimension (slowest-changing)
+     * @return Number of elements in Z direction
+     */
+    size_t getSizeZ() const { return nz; }
+    
+    /**
+     * @brief Get total number of elements in the array
+     * @return Total elements (nx * ny * nz)
+     */
+    size_t getTotalElements() const { return total_elements; }
+    
+    // ========== INDEXING AND ELEMENT ACCESS ==========
+    
+    /**
+     * @brief Calculate linear index from 3D coordinates
+     * @param ix X coordinate (0 <= ix < nx)
+     * @param iy Y coordinate (0 <= iy < ny) 
+     * @param iz Z coordinate (0 <= iz < nz)
+     * @return Linear index for accessing the element
+     * 
+     * Converts 3D coordinates to linear index, properly accounting for memory layout.
+     * For pitched memory, includes padding; for linear memory, uses standard row-major.
+     * Use this for host-side calculations or when working with raw pointers.
+     */
+    size_t getLinearIndex(size_t ix, size_t iy, size_t iz) const {
+        if (use_pitched) {
+            // With pitched memory, we need to account for padding
+            size_t pitch_elements = pitch / sizeof(T);
+            return iz * (pitch_elements * ny) + iy * pitch_elements + ix;
+        } else {
+            // Standard row-major ordering
+            return iz * (ny * nx) + iy * nx + ix;
+        }
+    }
+    
+    /**
+     * @brief Get device pointer to a specific (x,y,z) element
+     * @param ix X coordinate (0 <= ix < nx)
+     * @param iy Y coordinate (0 <= iy < ny)
+     * @param iz Z coordinate (0 <= iz < nz)
+     * @return Device pointer to the specified element
+     * 
+     * Returns a device pointer to the specified element, properly accounting
+     * for memory layout (pitched vs linear). Useful for kernel launches that
+     * need to operate on specific sub-regions of the array.
+     */
+    T* getElementPtr(size_t ix, size_t iy, size_t iz) {
+        if (use_pitched) {
+            char* base = (char*)pitched_ptr.ptr;
+            char* slice = base + iz * pitched_ptr.pitch * ny;
+            char* row = slice + iy * pitched_ptr.pitch;
+            return (T*)(row) + ix;
+        } else {
+            return d_data_linear + getLinearIndex(ix, iy, iz);
+        }
+    }
+    
+    // ========== UTILITY OPERATIONS ==========
+    
+    /**
+     * @brief Set all bytes in the array to a specific value
+     * @param value Byte value to set (default: 0 for zero-initialization)
+     * 
+     * Efficiently initializes all memory to the specified byte value.
+     * Uses cudaMemset3D for pitched memory and cudaMemset for linear memory.
+     * Note: This sets bytes, not double values!
+     */
+    void memset(int value = 0);
+    
+    // ========== STATUS AND INFORMATION ==========
+    
+    /**
+     * @brief Check if memory allocation was successful
+     * @return True if memory is allocated and valid, false otherwise
+     * 
+     * Use this to verify that the array was properly constructed and
+     * memory allocation succeeded before using the array.
+     */
+    bool isValid() const { 
+        return use_pitched ? (pitched_ptr.ptr != nullptr) : (d_data_linear != nullptr); 
+    }
+    
+    /**
+     * @brief Check if the array is using pitched memory layout
+     * @return True if using pitched memory, false if using linear memory
+     * 
+     * Useful for optimizing kernel launches and understanding memory layout.
+     */
+    bool isPitched() const { return use_pitched; }
+    
+    /**
+     * @brief Get the CUDA pitched pointer structure
+     * @return cudaPitchedPtr structure (valid only if isPitched() returns true)
+     * 
+     * Provides access to the underlying CUDA pitched pointer for advanced
+     * operations and direct integration with CUDA runtime functions.
+     */
+    cudaPitchedPtr getPitchedPtr() const { return pitched_ptr; }
+    
+private:
+    // ========== INTERNAL HELPER FUNCTIONS ==========
+    
+    /**
+     * @brief Check CUDA error codes and throw exceptions on failure
+     * @param error CUDA error code to check
+     * @param msg Descriptive message for the operation that might have failed
+     * @throws std::runtime_error if error != cudaSuccess
+     * 
+     * Centralized error checking that provides meaningful error messages
+     * by combining the user message with CUDA's error description.
+     */
+    void checkCudaError(cudaError_t error, const char* msg) const;
+    
+    /**
+     * @brief Reset all member variables to default/empty state
+     * 
+     * Used internally by move operations and destructor to ensure
+     * objects are left in a valid but empty state.
+     */
+    void reset();
+};
+
+// ========== EXPLICIT TEMPLATE INSTANTIATIONS ==========
+// These ensure the template is compiled for specific types used in the project
+
+// Real number types
+extern template class CudaArray3D<double>;
+extern template class CudaArray3D<float>;
+
+// Complex number types for CUDA/cuFFT
+#include <cuComplex.h>
+#include <cufft.h>
+extern template class CudaArray3D<cuDoubleComplex>;
+extern template class CudaArray3D<cuFloatComplex>;
+// Note: Avoiding duplicate instantiations as cufftDoubleComplex and cuDoubleComplex might be the same
+
+// For backward compatibility, maintain the original non-templated interface
+using CudaArray3D_double = CudaArray3D<double>;
+
+// You can also use this as the default if most of your code uses double
+#ifndef CUDA_ARRAY_DEFAULT_TYPE
+#define CUDA_ARRAY_DEFAULT_TYPE double
+#endif
+
+// Backward compatibility typedef - existing code using CudaArray3D without template will use double
+// Note: This creates an alias, so CudaArray3D without template parameters defaults to double
+#if !defined(CUDA_ARRAY_TEMPLATED_ONLY)
+// For backward compatibility, you can still use CudaArray3D as before, it will default to double
+// If you want to be explicit, use CudaArray3D<double> or CudaArray3D<your_type>
+#endif
+
+#endif // CUDA_ARRAY_3D_H
