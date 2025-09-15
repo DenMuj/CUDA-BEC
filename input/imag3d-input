@@ -14,7 +14,6 @@
    NATOMS = 10000
 
    QF = 0
-   QDEPL = 0
 
    SX = 8.41691017614e-01
    SY = 8.41691017614e-01
@@ -24,8 +23,8 @@
    # SY = 8.41691017614e-01
    # SZ = 1.46676003497e+01
 
-   MUREL = 1.000000e-30
-   MUEND = 10000.0
+   MUREL = 1.000000e-10
+   MUEND = 100.0
 
 #  Dipolar potential cut off.
 #  Required: yes
@@ -59,17 +58,17 @@
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 256
+   NX = 128
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 256
+   NY = 128
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 256
+   NZ = 128
 
   MX = 10
   MY = 10
@@ -124,7 +123,7 @@
 #  Input file with the wave function, obtained from previous executions.
 #  Required: no
 #  Type: string
-#   INPUT = /home/denis/DBEC/Zslice/output/outputA/finalPSI_AS_${i}_ADD_110/imag3d-finalpsi\.bin
+#   INPUT = ./imag3d-finalpsi.bin
 #   INPUT_TYPE = PSI
 
 #  Output file with the summary of final values of all physical quantities. If

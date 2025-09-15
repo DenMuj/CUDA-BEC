@@ -164,39 +164,33 @@ int main(int argc, char **argv) {
   nsteps = Niter / Nsnap;
   auto start = std::chrono::high_resolution_clock::now();
   for (long snap = 1; snap <= Nsnap; snap++) {
-    //for(long j = 0; j<nsteps; j++){
+    for(long j = 0; j<nsteps; j++){
       calc_psid2_potdd(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(), d_psi2_fft, d_potdd.raw());
       calcnu(d_psi.raw(), d_work_array.raw(), d_pot.raw(), g, gd);
       calclux(d_psi.raw(), d_work_array.raw(), d_calphax.raw(), d_cgammax.raw(), Ax0r, Ax);
       calcluy(d_psi.raw(), d_work_array.raw(), d_calphay.raw(), d_cgammay.raw(), Ay0r, Ay);
       calcluz(d_psi.raw(), d_work_array.raw(), d_calphaz.raw(), d_cgammaz.raw(), Az0r, Az);
       calcnorm(d_psi.raw(), d_work_array.raw(), norm, integ);
-    //}
+    }
 
-    //compute_rms_values(d_psi.raw(), d_work_array.raw(), d_x2.data(), d_y2.data(), d_z2.data(), integ, h_rms_pinned);
+    compute_rms_values(d_psi.raw(), d_work_array.raw(), d_x2.data(), d_y2.data(), d_z2.data(), integ, h_rms_pinned);
     
-    // if(rmsout != NULL) {
-    //   double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
-    //   fprintf(filerms, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
-    //   fflush(filerms);
-    // }
-    // calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_psi2dd.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd);
-    // if(muoutput != NULL) {
-    //   fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2]);
-    //   fflush(filemu);
-    // }
-    // mutotnew = muen[0]+muen[1]+muen[2]+muen[3];
-    // if (fabs((mutotold - mutotnew) / mutotnew) < murel) break;
-    // mutotold = mutotnew;
-    // if (mutotnew > muend) break;
-
-  }
-  compute_rms_values(d_psi.raw(), d_work_array.raw(), d_x2.data(), d_y2.data(), d_z2.data(), integ, h_rms_pinned);
-  if(rmsout != NULL) {
+    if(rmsout != NULL) {
       double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
-      fprintf(filerms, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le\n", Nsnap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
+      fprintf(filerms, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
       fflush(filerms);
     }
+    calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_psi2dd.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd);
+    if(muoutput != NULL) {
+      fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2]);
+      fflush(filemu);
+    }
+    mutotnew = muen[0]+muen[1]+muen[2]+muen[3];
+    if (fabs((mutotold - mutotnew) / mutotnew) < murel) break;
+    mutotold = mutotnew;
+    if (mutotnew > muend) break;
+
+  }
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> duration = end - start;
   if (rmsout != NULL) {

@@ -68,20 +68,6 @@ public:
      * @param new_tile_size New number of z-slices per tile
      */
     void setTileSize(long new_tile_size);
-    
-    /**
-     * @brief Get current GPU memory usage
-     * @param Nx Grid size in X direction
-     * @param Ny Grid size in Y direction
-     * @return Memory usage in bytes
-     */
-    size_t getMemoryUsage(long Nx, long Ny) const;
-    
-    /**
-     * @brief Get current tile size
-     * @return Number of z-slices per tile
-     */
-    long getTileSize() const;
 };
 
 #endif // SIMPSON3D_INTEGRATOR_HPP

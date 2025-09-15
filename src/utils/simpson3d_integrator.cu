@@ -193,11 +193,3 @@ double Simpson3DTiledIntegrator::integrateDevice(double hx, double hy, double hz
 void Simpson3DTiledIntegrator::setTileSize(long new_tile_size) {
     pImpl->setTileSize(new_tile_size);
 }
-
-size_t Simpson3DTiledIntegrator::getMemoryUsage(long Nx, long Ny) const {
-    return (Nx * Ny * pImpl->tile_size_z + 1) * sizeof(double);
-}
-
-long Simpson3DTiledIntegrator::getTileSize() const {
-    return pImpl->tile_size_z;
-}

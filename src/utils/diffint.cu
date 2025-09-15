@@ -242,38 +242,6 @@ __global__ void diff_kernel_complex(
     double con = 1.0 / (2.0 * (3 - par));
     f_res[idx] = grad_mag_squared * con;
  }
-
-// __global__ void diff_kernel(double h, double *f, double *df, long N) {
-//     long index = threadIdx.x + blockDim.x * blockIdx.x;
-
-
-//     if (index >= N) {
-//         return;
-//     }
-//     // Precompute reciprocal to avoid division
-//     const double inv_12h = 1.0 / (12.0 * h);
-//     const double inv_2h = 1.0 / (2.0 * h);
-
-//     if (index == 0) {
-//        df[index] = 0.;
-//     }
-
-//     if (index == 1) {
-//        df[index] = (f[2] - f[0]) * inv_2h;
-//     }
-
-//     if (index > 1 && index < N - 2) {
-//        df[index] = (f[index - 2] - 8. * f[index - 1] + 8. * f[index + 1] - f[index + 2]) * inv_12h;
-//     }
-
-//     if (index == N - 2) {
-//        df[index] = (f[N - 1] - f[N - 3]) * inv_2h;
-//     }
-
-//     if (index == N - 1) {
-//        df[index] = 0.;
-//     }
-// }
  
  /**
  *    Gauss-Legendre N-point quadrature formula.
