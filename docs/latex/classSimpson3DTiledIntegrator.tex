@@ -1,0 +1,218 @@
+\doxysection{Simpson3\+DTiled\+Integrator Class Reference}
+\hypertarget{classSimpson3DTiledIntegrator}{}\label{classSimpson3DTiledIntegrator}\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+
+
+Simpson 3D Integration using tiled approach for memory efficiency.  
+
+
+
+
+{\ttfamily \#include $<$simpson3d\+\_\+integrator.\+hpp$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classSimpson3DTiledIntegrator_af16d3244c624a3e8748406a2e08b16a8}{Simpson3\+DTiled\+Integrator}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}{Nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}{Ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tile\+\_\+z}}=32)
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classSimpson3DTiledIntegrator_ae28d77d01821e9d4f1a967480e2c345b}{\texorpdfstring{$\sim$}{\string~}\+Simpson3\+DTiled\+Integrator}} ()
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classSimpson3DTiledIntegrator_ac51dd027d2e337f2dd30055cad06dcf7}{Simpson3\+DTiled\+Integrator}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&)=\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{delete}}
+\item 
+\mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \& \mbox{\hyperlink{classSimpson3DTiledIntegrator_ad20edc6129824a4c976b98c4e00c5c8f}{operator=}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&)=\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{delete}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{classSimpson3DTiledIntegrator_a6e0356fd863370f7200087e8cd1cf877}{integrate}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hy}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{h\+\_\+f}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}{Nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}{Ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff}{Nz}})
+\begin{DoxyCompactList}\small\item\em Perform 3D integration using Simpson\textquotesingle{}s rule (host memory input) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{classSimpson3DTiledIntegrator_a702daf30bdc16678b3fd9e76aea7b505}{integrate\+Device}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hy}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}d\+\_\+f, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}{Nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}{Ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff}{Nz}})
+\begin{DoxyCompactList}\small\item\em Perform 3D integration using Simpson\textquotesingle{}s rule (device memory input) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classSimpson3DTiledIntegrator_a9aa2ea6a17044b18542262e5e3353081}{set\+Tile\+Size}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{new\+\_\+tile\+\_\+size}})
+\begin{DoxyCompactList}\small\item\em Set the tile size for Z-\/direction processing. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classSimpson3DTiledIntegratorImpl}{Simpson3\+DTiled\+Integrator\+Impl}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classSimpson3DTiledIntegrator_add217e4e4f8124467adefd6c4694b046}{p\+Impl}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Simpson 3D Integration using tiled approach for memory efficiency. 
+
+This class implements 3D numerical integration using Simpson\textquotesingle{}s rule with a tiled processing approach to decrease GPU memory usage. 
+
+Definition at line \mbox{\hyperlink{simpson3d__integrator_8hpp_source_l00016}{16}} of file \mbox{\hyperlink{simpson3d__integrator_8hpp_source}{simpson3d\+\_\+integrator.\+hpp}}.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classSimpson3DTiledIntegrator_af16d3244c624a3e8748406a2e08b16a8}\label{classSimpson3DTiledIntegrator_af16d3244c624a3e8748406a2e08b16a8} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{Simpson3DTiledIntegrator()}{Simpson3DTiledIntegrator()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily Simpson3\+DTiled\+Integrator\+::\+Simpson3\+DTiled\+Integrator (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{tile\+\_\+z = {\ttfamily 32} }\end{DoxyParamCaption})}
+
+
+
+Constructor. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Nx} & Grid size in X direction \\
+\hline
+{\em Ny} & Grid size in Y direction ~\newline
+ \\
+\hline
+{\em tile\+\_\+z} & Number of z-\/slices to process per tile (default\+: 32)\\
+\hline
+{\em Nx} & Grid size in X direction \\
+\hline
+{\em Ny} & Grid size in Y direction \\
+\hline
+{\em tile\+\_\+z} & Number of z-\/slices to process per tile (default\+: 32) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{simpson3d__integrator_8cu_source_l00211}{211}} of file \mbox{\hyperlink{simpson3d__integrator_8cu_source}{simpson3d\+\_\+integrator.\+cu}}.
+
+\Hypertarget{classSimpson3DTiledIntegrator_ae28d77d01821e9d4f1a967480e2c345b}\label{classSimpson3DTiledIntegrator_ae28d77d01821e9d4f1a967480e2c345b} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!````~Simpson3DTiledIntegrator@{\texorpdfstring{$\sim$}{\string~}Simpson3DTiledIntegrator}}
+\index{````~Simpson3DTiledIntegrator@{\texorpdfstring{$\sim$}{\string~}Simpson3DTiledIntegrator}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}Simpson3DTiledIntegrator()}{\string~Simpson3DTiledIntegrator()}}
+{\footnotesize\ttfamily Simpson3\+DTiled\+Integrator\+::\texorpdfstring{$\sim$}{\string~}\+Simpson3\+DTiled\+Integrator (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Destructor. 
+
+
+
+Definition at line \mbox{\hyperlink{simpson3d__integrator_8cu_source_l00218}{218}} of file \mbox{\hyperlink{simpson3d__integrator_8cu_source}{simpson3d\+\_\+integrator.\+cu}}.
+
+\Hypertarget{classSimpson3DTiledIntegrator_ac51dd027d2e337f2dd30055cad06dcf7}\label{classSimpson3DTiledIntegrator_ac51dd027d2e337f2dd30055cad06dcf7} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{Simpson3DTiledIntegrator()}{Simpson3DTiledIntegrator()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily Simpson3\+DTiled\+Integrator\+::\+Simpson3\+DTiled\+Integrator (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classSimpson3DTiledIntegrator_a6e0356fd863370f7200087e8cd1cf877}\label{classSimpson3DTiledIntegrator_a6e0356fd863370f7200087e8cd1cf877} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!integrate@{integrate}}
+\index{integrate@{integrate}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{integrate()}{integrate()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} Simpson3\+DTiled\+Integrator\+::integrate (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hy,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{h\+\_\+f,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nz }\end{DoxyParamCaption})}
+
+
+
+Perform 3D integration using Simpson\textquotesingle{}s rule (host memory input) 
+
+Integrate the function using host memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em hx} & Step size in X direction \\
+\hline
+{\em hy} & Step size in Y direction \\
+\hline
+{\em hz} & Step size in Z direction \\
+\hline
+{\em h\+\_\+f} & Pointer to function values (HOST memory) \\
+\hline
+{\em Nx} & Number of points in X direction \\
+\hline
+{\em Ny} & Number of points in Y direction \\
+\hline
+{\em Nz} & Number of points in Z direction \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Integrated value 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{simpson3d__integrator_8cu_source_l00233}{233}} of file \mbox{\hyperlink{simpson3d__integrator_8cu_source}{simpson3d\+\_\+integrator.\+cu}}.
+
+\Hypertarget{classSimpson3DTiledIntegrator_a702daf30bdc16678b3fd9e76aea7b505}\label{classSimpson3DTiledIntegrator_a702daf30bdc16678b3fd9e76aea7b505} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!integrateDevice@{integrateDevice}}
+\index{integrateDevice@{integrateDevice}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{integrateDevice()}{integrateDevice()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} Simpson3\+DTiled\+Integrator\+::integrate\+Device (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hy,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+f,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nz }\end{DoxyParamCaption})}
+
+
+
+Perform 3D integration using Simpson\textquotesingle{}s rule (device memory input) 
+
+Integrate the function using device memory.
+
+
+\begin{DoxyParams}{Parameters}
+{\em hx} & Step size in X direction \\
+\hline
+{\em hy} & Step size in Y direction \\
+\hline
+{\em hz} & Step size in Z direction \\
+\hline
+{\em d\+\_\+f} & Pointer to function values (DEVICE memory) \\
+\hline
+{\em Nx} & Number of points in X direction \\
+\hline
+{\em Ny} & Number of points in Y direction \\
+\hline
+{\em Nz} & Number of points in Z direction \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Integrated value 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{simpson3d__integrator_8cu_source_l00249}{249}} of file \mbox{\hyperlink{simpson3d__integrator_8cu_source}{simpson3d\+\_\+integrator.\+cu}}.
+
+\Hypertarget{classSimpson3DTiledIntegrator_ad20edc6129824a4c976b98c4e00c5c8f}\label{classSimpson3DTiledIntegrator_ad20edc6129824a4c976b98c4e00c5c8f} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!operator=@{operator=}}
+\index{operator=@{operator=}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \& Simpson3\+DTiled\+Integrator\+::operator= (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+\Hypertarget{classSimpson3DTiledIntegrator_a9aa2ea6a17044b18542262e5e3353081}\label{classSimpson3DTiledIntegrator_a9aa2ea6a17044b18542262e5e3353081} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!setTileSize@{setTileSize}}
+\index{setTileSize@{setTileSize}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{setTileSize()}{setTileSize()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} Simpson3\+DTiled\+Integrator\+::set\+Tile\+Size (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{new\+\_\+tile\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+Set the tile size for Z-\/direction processing. 
+
+Set the tile size.
+
+
+\begin{DoxyParams}{Parameters}
+{\em new\+\_\+tile\+\_\+size} & New number of z-\/slices per tile\\
+\hline
+{\em new\+\_\+tile\+\_\+size} & New tile size \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{simpson3d__integrator_8cu_source_l00258}{258}} of file \mbox{\hyperlink{simpson3d__integrator_8cu_source}{simpson3d\+\_\+integrator.\+cu}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classSimpson3DTiledIntegrator_add217e4e4f8124467adefd6c4694b046}\label{classSimpson3DTiledIntegrator_add217e4e4f8124467adefd6c4694b046} 
+\index{Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}!pImpl@{pImpl}}
+\index{pImpl@{pImpl}!Simpson3DTiledIntegrator@{Simpson3DTiledIntegrator}}
+\doxysubsubsection{\texorpdfstring{pImpl}{pImpl}}
+{\footnotesize\ttfamily \mbox{\hyperlink{classSimpson3DTiledIntegratorImpl}{Simpson3\+DTiled\+Integrator\+Impl}}\texorpdfstring{$\ast$}{*} Simpson3\+DTiled\+Integrator\+::p\+Impl\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line \mbox{\hyperlink{simpson3d__integrator_8hpp_source_l00018}{18}} of file \mbox{\hyperlink{simpson3d__integrator_8hpp_source}{simpson3d\+\_\+integrator.\+hpp}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/utils/\mbox{\hyperlink{simpson3d__integrator_8hpp}{simpson3d\+\_\+integrator.\+hpp}}\item 
+src/utils/\mbox{\hyperlink{simpson3d__integrator_8cu}{simpson3d\+\_\+integrator.\+cu}}\end{DoxyCompactItemize}

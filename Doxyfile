@@ -1,0 +1,51 @@
+# Project information
+PROJECT_NAME = "CUDA-BEC"
+PROJECT_BRIEF = "CUDA-accelerated Dipolar Bose-Einstein Condensate Solver"
+
+# Directories containing your code
+INPUT = src
+
+# Search subdirectories recursively
+RECURSIVE = YES
+
+# Output directory
+OUTPUT_DIRECTORY = docs
+
+# File patterns to include (IMPORTANT: add CUDA file extensions)
+FILE_PATTERNS = *.c \
+                *.cpp \
+                *.h \
+                *.hpp \
+                *.cu \
+                *.cuh
+
+# Map CUDA extensions to C++ parsing
+EXTENSION_MAPPING = cu=C++ cuh=C++
+
+# Generate HTML documentation
+GENERATE_HTML = YES
+
+# Extract all entities
+EXTRACT_ALL = YES
+EXTRACT_PRIVATE = YES
+EXTRACT_STATIC = YES
+
+# Show include files
+SHOW_INCLUDE_FILES = YES
+
+# Enable preprocessing
+ENABLE_PREPROCESSING = YES
+MACRO_EXPANSION = YES
+EXPAND_ONLY_PREDEF = NO
+
+# Optimize for C output
+OPTIMIZE_OUTPUT_FOR_C = NO
+
+# Source browser
+SOURCE_BROWSER = YES
+INLINE_SOURCES = NO
+
+# Generate diagrams
+HAVE_DOT = NO
+
+

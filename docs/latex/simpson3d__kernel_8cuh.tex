@@ -1,0 +1,171 @@
+\doxysection{src/utils/simpson3d\+\_\+kernel.cuh File Reference}
+\hypertarget{simpson3d__kernel_8cuh}{}\label{simpson3d__kernel_8cuh}\index{src/utils/simpson3d\_kernel.cuh@{src/utils/simpson3d\_kernel.cuh}}
+{\ttfamily \#include $<$cuda\+\_\+runtime.\+h$>$}\newline
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{define}} \mbox{\hyperlink{simpson3d__kernel_8cuh_a6c117077fb2793c0219e4d685263446a}{SIMPSON3\+D\+\_\+\+KERNEL\+\_\+\+CUH}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{simpson3d__kernel_8cuh_abb2d4be601f829710933376c26dbfc92}{simpson3d\+\_\+tiled\+\_\+reduce}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{partial\+\_\+sums}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}{Nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}{Ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff}{Nz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} tile\+\_\+size\+\_\+z, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z\+\_\+start}})
+\begin{DoxyCompactList}\small\item\em CUDA kernel for tiled Simpson 3D integration with reduction. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{simpson3d__kernel_8cuh_a99f63c72c09355d8a595f34f0a9fc34e}{launch\+Simpson3\+DKernel}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}d\+\_\+f, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}d\+\_\+partial\+\_\+sum, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}{Nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}{Ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff}{Nz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} tile\+\_\+size\+\_\+z, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z\+\_\+start}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{current\+\_\+tile\+\_\+z}})
+\begin{DoxyCompactList}\small\item\em Wrapper function to launch the Simpson 3D kernel. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{simpson3d__kernel_8cuh_a021e09a5e642ceda94915c02626f0c92}{get\+Cuda\+Error\+String}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cuda\+Error\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{error}})
+\begin{DoxyCompactList}\small\item\em Get CUDA error string. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{simpson3d__kernel_8cuh_a6c117077fb2793c0219e4d685263446a}\label{simpson3d__kernel_8cuh_a6c117077fb2793c0219e4d685263446a} 
+\index{simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}!SIMPSON3D\_KERNEL\_CUH@{SIMPSON3D\_KERNEL\_CUH}}
+\index{SIMPSON3D\_KERNEL\_CUH@{SIMPSON3D\_KERNEL\_CUH}!simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}}
+\doxysubsubsection{\texorpdfstring{SIMPSON3D\_KERNEL\_CUH}{SIMPSON3D\_KERNEL\_CUH}}
+{\footnotesize\ttfamily \#\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{define}} SIMPSON3\+D\+\_\+\+KERNEL\+\_\+\+CUH}
+
+
+
+Definition at line \mbox{\hyperlink{simpson3d__kernel_8cuh_source_l00003}{3}} of file \mbox{\hyperlink{simpson3d__kernel_8cuh_source}{simpson3d\+\_\+kernel.\+cuh}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{simpson3d__kernel_8cuh_a021e09a5e642ceda94915c02626f0c92}\label{simpson3d__kernel_8cuh_a021e09a5e642ceda94915c02626f0c92} 
+\index{simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}!getCudaErrorString@{getCudaErrorString}}
+\index{getCudaErrorString@{getCudaErrorString}!simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}}
+\doxysubsubsection{\texorpdfstring{getCudaErrorString()}{getCudaErrorString()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*} get\+Cuda\+Error\+String (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cuda\+Error\+\_\+t}}}]{error }\end{DoxyParamCaption})}
+
+
+
+Get CUDA error string. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em error} & CUDA error code \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error description string
+\end{DoxyReturn}
+Get CUDA error string.
+
+
+\begin{DoxyParams}{Parameters}
+{\em error} & CUDA error \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Error string 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{simpson3d__kernel_8cu_source_l00105}{105}} of file \mbox{\hyperlink{simpson3d__kernel_8cu_source}{simpson3d\+\_\+kernel.\+cu}}.
+
+\Hypertarget{simpson3d__kernel_8cuh_a99f63c72c09355d8a595f34f0a9fc34e}\label{simpson3d__kernel_8cuh_a99f63c72c09355d8a595f34f0a9fc34e} 
+\index{simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}!launchSimpson3DKernel@{launchSimpson3DKernel}}
+\index{launchSimpson3DKernel@{launchSimpson3DKernel}!simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}}
+\doxysubsubsection{\texorpdfstring{launchSimpson3DKernel()}{launchSimpson3DKernel()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} launch\+Simpson3\+DKernel (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+f,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+partial\+\_\+sum,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{tile\+\_\+size\+\_\+z,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{z\+\_\+start,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{current\+\_\+tile\+\_\+z }\end{DoxyParamCaption})}
+
+
+
+Wrapper function to launch the Simpson 3D kernel. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+f} & Device pointer to input data \\
+\hline
+{\em d\+\_\+partial\+\_\+sum} & Device pointer to partial sum storage \\
+\hline
+{\em Nx} & Grid size in X direction \\
+\hline
+{\em Ny} & Grid size in Y direction \\
+\hline
+{\em Nz} & Total grid size in Z direction \\
+\hline
+{\em tile\+\_\+size\+\_\+z} & Maximum tile size in Z direction \\
+\hline
+{\em z\+\_\+start} & Starting Z index of current tile \\
+\hline
+{\em current\+\_\+tile\+\_\+z} & Actual size of current tile (may be less than tile\+\_\+size\+\_\+z for last tile)\\
+\hline
+\end{DoxyParams}
+Wrapper function to launch the Simpson 3D kernel.
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+f} & Pointer to function values (DEVICE memory) \\
+\hline
+{\em d\+\_\+partial\+\_\+sum} & Pointer to partial sums (DEVICE memory) \\
+\hline
+{\em Nx} & Number of points in X direction \\
+\hline
+{\em Ny} & Number of points in Y direction \\
+\hline
+{\em Nz} & Number of points in Z direction \\
+\hline
+{\em tile\+\_\+size\+\_\+z} & Number of z-\/slices per tile \\
+\hline
+{\em z\+\_\+start} & Starting z-\/index for the current tile \\
+\hline
+{\em current\+\_\+tile\+\_\+z} & Number of z-\/slices in the current tile \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{simpson3d__kernel_8cu_source_l00082}{82}} of file \mbox{\hyperlink{simpson3d__kernel_8cu_source}{simpson3d\+\_\+kernel.\+cu}}.
+
+\Hypertarget{simpson3d__kernel_8cuh_abb2d4be601f829710933376c26dbfc92}\label{simpson3d__kernel_8cuh_abb2d4be601f829710933376c26dbfc92} 
+\index{simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}!simpson3d\_tiled\_reduce@{simpson3d\_tiled\_reduce}}
+\index{simpson3d\_tiled\_reduce@{simpson3d\_tiled\_reduce}!simpson3d\_kernel.cuh@{simpson3d\_kernel.cuh}}
+\doxysubsubsection{\texorpdfstring{simpson3d\_tiled\_reduce()}{simpson3d\_tiled\_reduce()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} simpson3d\+\_\+tiled\+\_\+reduce (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{f,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{partial\+\_\+sums,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{tile\+\_\+size\+\_\+z,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{z\+\_\+start }\end{DoxyParamCaption})}
+
+
+
+CUDA kernel for tiled Simpson 3D integration with reduction. 
+
+This kernel processes a tile of the 3D data, applies Simpson weights, and performs a parallel reduction to sum the weighted values.
+
+
+\begin{DoxyParams}{Parameters}
+{\em f} & Input function values for current tile \\
+\hline
+{\em partial\+\_\+sums} & Output array for accumulating partial sums \\
+\hline
+{\em Nx} & Grid size in X direction \\
+\hline
+{\em Ny} & Grid size in Y direction \\
+\hline
+{\em Nz} & Total grid size in Z direction (full volume) \\
+\hline
+{\em tile\+\_\+size\+\_\+z} & Size of current tile in Z direction \\
+\hline
+{\em z\+\_\+start} & Starting Z index of current tile in full volume\\
+\hline
+\end{DoxyParams}
+CUDA kernel for tiled Simpson 3D integration with reduction.
+
+
+\begin{DoxyParams}{Parameters}
+{\em f} & Pointer to function values (DEVICE memory) \\
+\hline
+{\em partial\+\_\+sums} & Pointer to partial sums (DEVICE memory) \\
+\hline
+{\em Nx} & Number of points in X direction \\
+\hline
+{\em Ny} & Number of points in Y direction \\
+\hline
+{\em Nz} & Number of points in Z direction \\
+\hline
+{\em tile\+\_\+size\+\_\+z} & Number of z-\/slices per tile \\
+\hline
+{\em z\+\_\+start} & Starting z-\/index for the current tile \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{simpson3d__kernel_8cu_source_l00023}{23}} of file \mbox{\hyperlink{simpson3d__kernel_8cu_source}{simpson3d\+\_\+kernel.\+cu}}.
+

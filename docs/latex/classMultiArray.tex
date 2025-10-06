@@ -1,0 +1,600 @@
+\doxysection{Multi\+Array\texorpdfstring{$<$}{<} T \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{classMultiArray}{}\label{classMultiArray}\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+
+
+\doxylink{classMultiArray}{Multi\+Array} class for 1D, 2D, and 3D arrays.  
+
+
+
+
+{\ttfamily \#include $<$multiarray.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classMultiArray_a2e4722d702ddd898a2c543b57206d25f}{Multi\+Array}} ()
+\begin{DoxyCompactList}\small\item\em Default constructor for \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classMultiArray_a6616253c69078d5342095a86df74ca32}{Multi\+Array}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n1}})
+\begin{DoxyCompactList}\small\item\em Constructor for 1D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classMultiArray_a62f13b6aec63f79a438ef38ac0065cd6}{Multi\+Array}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n1}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n2}})
+\begin{DoxyCompactList}\small\item\em Constructor for 2D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classMultiArray_abe3cc2a2dbabc1ce7373cf4e84301a3a}{Multi\+Array}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n1}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n3}})
+\begin{DoxyCompactList}\small\item\em Constructor for 3D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classMultiArray_ab19ecc7f5e6f5f68d7aff82583f9d3b9}{resize}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n1}})
+\begin{DoxyCompactList}\small\item\em Resize the 1D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classMultiArray_af1fb700550497d2b17d375f5603961db}{resize}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n1}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n2}})
+\begin{DoxyCompactList}\small\item\em Resize the 2D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classMultiArray_a4da4dc09403c23eb0bd019f90fb08501}{resize}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n1}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n3}})
+\begin{DoxyCompactList}\small\item\em Resize the 3D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_ab9c031c6731ff2cd8a9d63b7a621261e}{at}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}})
+\begin{DoxyCompactList}\small\item\em Access the 1D \doxylink{classMultiArray}{Multi\+Array} with bounds checking. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_a1ab1d66ee305df52537a72b372510955}{operator\mbox{[}$\,$\mbox{]}}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}})
+\begin{DoxyCompactList}\small\item\em Access the 1DMulti\+Array. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_a29ff6fa0518b3fed289f81f9d25ebed8}{operator\mbox{[}$\,$\mbox{]}}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}}) \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_abfca37fc79c233768b373b66ebf66494}{at}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{j}})
+\begin{DoxyCompactList}\small\item\em Access the 2D \doxylink{classMultiArray}{Multi\+Array} with bounds checking. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_a3d97a6d181bbd3f75331ba5f8d06face}{operator()}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{j}})
+\begin{DoxyCompactList}\small\item\em Access the 2D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_aa0cf2ef7e8d223f1a6e8bf0aa485830f}{operator()}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{j}}) \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_a73daf3a6663078fdca03925d18a97258}{at}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{j}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{k}})
+\begin{DoxyCompactList}\small\item\em Access the 3D \doxylink{classMultiArray}{Multi\+Array} with bounds checking. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_a9f695f1abd2d270ffcb895fe6f16d05d}{operator()}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{j}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{k}})
+\begin{DoxyCompactList}\small\item\em Access the 3D \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray_abc1705322877ccd4cba5d316bcec5984}{operator()}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{i}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{j}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{k}}) \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classMultiArray_ac916df3859558a7f63ca952304ce91ff}{raw}} ()
+\begin{DoxyCompactList}\small\item\em Get raw pointer if needed. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classMultiArray_a2e9c45c724cd034c788b9fcd20ad8dfd}{raw}} () \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray_a3b6b446e17022f026ca7f2d6071b3cc0}{size}} () \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\begin{DoxyCompactList}\small\item\em Get the size of the \doxylink{classMultiArray}{Multi\+Array}. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray_ab5779e7e98d0304824d86351d5ea6a58}{get\+Dim1}} () \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray_a0df783e1b0583f7a33183abbc4a90451}{get\+Dim2}} () \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray_a7a07173f1c41f0098cc8d75a1d992ce4}{get\+Dim3}} () \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \mbox{\hyperlink{classMultiArray_a6c7bc1f96fe7f2273ef2c39747926522}{data}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray_aa0fe6ebcf26311709fe7aad9bd78eaf0}{dim1}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray_abe9fbf2c2426ca13e0b0edecd9a91777}{dim2}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray_acc14d37cf9a7fbf5da5b6b54bf0a3038}{dim3}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}}$>$\newline
+class Multi\+Array$<$ T $>$}
+\doxylink{classMultiArray}{Multi\+Array} class for 1D, 2D, and 3D arrays. 
+
+This class provides a flexible and efficient way to handle arrays of different dimensions. It supports resizing, bounds checking, and efficient access to elements. 
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00014}{14}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classMultiArray_a2e4722d702ddd898a2c543b57206d25f}\label{classMultiArray_a2e4722d702ddd898a2c543b57206d25f} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!MultiArray@{MultiArray}}
+\index{MultiArray@{MultiArray}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{MultiArray()}{MultiArray()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classMultiArray}{\+::\+Multi\+Array}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Default constructor for \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00018}{18}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a6616253c69078d5342095a86df74ca32}\label{classMultiArray_a6616253c69078d5342095a86df74ca32} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!MultiArray@{MultiArray}}
+\index{MultiArray@{MultiArray}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{MultiArray()}{MultiArray()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classMultiArray}{\+::\+Multi\+Array}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n1 }\end{DoxyParamCaption})}
+
+
+
+Constructor for 1D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n1} & Size of the 1D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00026}{26}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a62f13b6aec63f79a438ef38ac0065cd6}\label{classMultiArray_a62f13b6aec63f79a438ef38ac0065cd6} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!MultiArray@{MultiArray}}
+\index{MultiArray@{MultiArray}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{MultiArray()}{MultiArray()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classMultiArray}{\+::\+Multi\+Array}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n1,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n2 }\end{DoxyParamCaption})}
+
+
+
+Constructor for 2D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n1} & Size of the 1D array \\
+\hline
+{\em n2} & Size of the 2D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00036}{36}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_abe3cc2a2dbabc1ce7373cf4e84301a3a}\label{classMultiArray_abe3cc2a2dbabc1ce7373cf4e84301a3a} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!MultiArray@{MultiArray}}
+\index{MultiArray@{MultiArray}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{MultiArray()}{MultiArray()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classMultiArray}{\+::\+Multi\+Array}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n1,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n3 }\end{DoxyParamCaption})}
+
+
+
+Constructor for 3D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n1} & Size of the 1D array \\
+\hline
+{\em n2} & Size of the 2D array \\
+\hline
+{\em n3} & Size of the 3D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00047}{47}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classMultiArray_ab9c031c6731ff2cd8a9d63b7a621261e}\label{classMultiArray_ab9c031c6731ff2cd8a9d63b7a621261e} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!at@{at}}
+\index{at@{at}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{at()}{at()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::at (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i }\end{DoxyParamCaption})}
+
+
+
+Access the 1D \doxylink{classMultiArray}{Multi\+Array} with bounds checking. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em i} & Index of the 1D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00092}{92}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_abfca37fc79c233768b373b66ebf66494}\label{classMultiArray_abfca37fc79c233768b373b66ebf66494} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!at@{at}}
+\index{at@{at}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{at()}{at()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::at (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{j }\end{DoxyParamCaption})}
+
+
+
+Access the 2D \doxylink{classMultiArray}{Multi\+Array} with bounds checking. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em i} & Index of the 1D array \\
+\hline
+{\em j} & Index of the 2D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00118}{118}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a73daf3a6663078fdca03925d18a97258}\label{classMultiArray_a73daf3a6663078fdca03925d18a97258} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!at@{at}}
+\index{at@{at}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{at()}{at()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::at (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{j,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{k }\end{DoxyParamCaption})}
+
+
+
+Access the 3D \doxylink{classMultiArray}{Multi\+Array} with bounds checking. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em i} & Index of the 1D array \\
+\hline
+{\em j} & Index of the 2D array \\
+\hline
+{\em k} & Index of the 3D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00147}{147}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_ab5779e7e98d0304824d86351d5ea6a58}\label{classMultiArray_ab5779e7e98d0304824d86351d5ea6a58} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!getDim1@{getDim1}}
+\index{getDim1@{getDim1}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{getDim1()}{getDim1()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::get\+Dim1 (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00052}{52}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+\Hypertarget{classMultiArray_a0df783e1b0583f7a33183abbc4a90451}\label{classMultiArray_a0df783e1b0583f7a33183abbc4a90451} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!getDim2@{getDim2}}
+\index{getDim2@{getDim2}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{getDim2()}{getDim2()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::get\+Dim2 (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00053}{53}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+\Hypertarget{classMultiArray_a7a07173f1c41f0098cc8d75a1d992ce4}\label{classMultiArray_a7a07173f1c41f0098cc8d75a1d992ce4} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!getDim3@{getDim3}}
+\index{getDim3@{getDim3}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{getDim3()}{getDim3()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::get\+Dim3 (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00054}{54}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+\Hypertarget{classMultiArray_a3d97a6d181bbd3f75331ba5f8d06face}\label{classMultiArray_a3d97a6d181bbd3f75331ba5f8d06face} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}() (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{j }\end{DoxyParamCaption})}
+
+
+
+Access the 2D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em i} & Index of the 1D array \\
+\hline
+{\em j} & Index of the 2D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00131}{131}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_aa0cf2ef7e8d223f1a6e8bf0aa485830f}\label{classMultiArray_aa0cf2ef7e8d223f1a6e8bf0aa485830f} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}() (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{j }\end{DoxyParamCaption}) const}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00135}{135}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a9f695f1abd2d270ffcb895fe6f16d05d}\label{classMultiArray_a9f695f1abd2d270ffcb895fe6f16d05d} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}() (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{j,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{k }\end{DoxyParamCaption})}
+
+
+
+Access the 3D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em i} & Index of the 1D array \\
+\hline
+{\em j} & Index of the 2D array \\
+\hline
+{\em k} & Index of the 3D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00161}{161}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_abc1705322877ccd4cba5d316bcec5984}\label{classMultiArray_abc1705322877ccd4cba5d316bcec5984} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!operator()@{operator()}}
+\index{operator()@{operator()}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator()()}{operator()()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}() (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{j,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{k }\end{DoxyParamCaption}) const}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00165}{165}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a1ab1d66ee305df52537a72b372510955}\label{classMultiArray_a1ab1d66ee305df52537a72b372510955} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator[]()}{operator[]()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}\mbox{[}$\,$\mbox{]} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i }\end{DoxyParamCaption})}
+
+
+
+Access the 1DMulti\+Array. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em i} & Index of the 1D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00103}{103}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a29ff6fa0518b3fed289f81f9d25ebed8}\label{classMultiArray_a29ff6fa0518b3fed289f81f9d25ebed8} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!operator\mbox{[}\mbox{]}@{operator[]}}
+\index{operator\mbox{[}\mbox{]}@{operator[]}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator[]()}{operator[]()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \& \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}\mbox{[}$\,$\mbox{]} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{i }\end{DoxyParamCaption}) const}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00107}{107}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_ac916df3859558a7f63ca952304ce91ff}\label{classMultiArray_ac916df3859558a7f63ca952304ce91ff} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!raw@{raw}}
+\index{raw@{raw}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{raw()}{raw()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::raw (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Get raw pointer if needed. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00174}{174}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a2e9c45c724cd034c788b9fcd20ad8dfd}\label{classMultiArray_a2e9c45c724cd034c788b9fcd20ad8dfd} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!raw@{raw}}
+\index{raw@{raw}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{raw()}{raw()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::raw (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00178}{178}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_ab19ecc7f5e6f5f68d7aff82583f9d3b9}\label{classMultiArray_ab19ecc7f5e6f5f68d7aff82583f9d3b9} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!resize@{resize}}
+\index{resize@{resize}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{resize()}{resize()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::resize (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n1 }\end{DoxyParamCaption})}
+
+
+
+Resize the 1D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n1} & Size of the 1D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00056}{56}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_af1fb700550497d2b17d375f5603961db}\label{classMultiArray_af1fb700550497d2b17d375f5603961db} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!resize@{resize}}
+\index{resize@{resize}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{resize()}{resize()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::resize (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n1,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n2 }\end{DoxyParamCaption})}
+
+
+
+Resize the 2D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n1} & Size of the 1D array \\
+\hline
+{\em n2} & Size of the 2D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00068}{68}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a4da4dc09403c23eb0bd019f90fb08501}\label{classMultiArray_a4da4dc09403c23eb0bd019f90fb08501} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!resize@{resize}}
+\index{resize@{resize}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{resize()}{resize()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::resize (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n1,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n3 }\end{DoxyParamCaption})}
+
+
+
+Resize the 3D \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em n1} & Size of the 1D array \\
+\hline
+{\em n2} & Size of the 2D array \\
+\hline
+{\em n3} & Size of the 3D array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00081}{81}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+\Hypertarget{classMultiArray_a3b6b446e17022f026ca7f2d6071b3cc0}\label{classMultiArray_a3b6b446e17022f026ca7f2d6071b3cc0} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!size@{size}}
+\index{size@{size}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{size()}{size()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::size (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Get the size of the \doxylink{classMultiArray}{Multi\+Array}. 
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type \\
+\hline
+\end{DoxyTemplParams}
+
+
+Definition at line \mbox{\hyperlink{multiarray_8cpp_source_l00187}{187}} of file \mbox{\hyperlink{multiarray_8cpp_source}{multiarray.\+cpp}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classMultiArray_a6c7bc1f96fe7f2273ef2c39747926522}\label{classMultiArray_a6c7bc1f96fe7f2273ef2c39747926522} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!data@{data}}
+\index{data@{data}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{data}{data}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+std\+::vector$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}}$>$ \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::data\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00016}{16}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+\Hypertarget{classMultiArray_aa0fe6ebcf26311709fe7aad9bd78eaf0}\label{classMultiArray_aa0fe6ebcf26311709fe7aad9bd78eaf0} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!dim1@{dim1}}
+\index{dim1@{dim1}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{dim1}{dim1}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::dim1\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00017}{17}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+\Hypertarget{classMultiArray_abe9fbf2c2426ca13e0b0edecd9a91777}\label{classMultiArray_abe9fbf2c2426ca13e0b0edecd9a91777} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!dim2@{dim2}}
+\index{dim2@{dim2}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{dim2}{dim2}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::dim2\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00017}{17}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+\Hypertarget{classMultiArray_acc14d37cf9a7fbf5da5b6b54bf0a3038}\label{classMultiArray_acc14d37cf9a7fbf5da5b6b54bf0a3038} 
+\index{MultiArray$<$ T $>$@{MultiArray$<$ T $>$}!dim3@{dim3}}
+\index{dim3@{dim3}!MultiArray$<$ T $>$@{MultiArray$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{dim3}{dim3}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::dim3\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line \mbox{\hyperlink{multiarray_8h_source_l00017}{17}} of file \mbox{\hyperlink{multiarray_8h_source}{multiarray.\+h}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/utils/\mbox{\hyperlink{multiarray_8h}{multiarray.\+h}}\item 
+src/utils/\mbox{\hyperlink{multiarray_8cpp}{multiarray.\+cpp}}\end{DoxyCompactItemize}

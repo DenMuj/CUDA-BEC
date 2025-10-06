@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['d_5fdata_5flinear_0',['d_data_linear',['../classCudaArray3D.html#aa33f6b4a749a4006bb44a9fb22766c38',1,'CudaArray3D']]],
+  ['d_5fdt_1',['d_dt',['../imag3d-cuda_8cuh.html#a73197eed5bcda31eef79ed204c0928fe',1,'d_dt:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a73197eed5bcda31eef79ed204c0928fe',1,'d_dt:&#160;real3d-cuda.cuh']]],
+  ['d_5ff_2',['d_f',['../classSimpson3DTiledIntegratorImpl.html#ac199d19fc9b7fc7b91693d774dbde0a1',1,'Simpson3DTiledIntegratorImpl']]],
+  ['d_5fminusax_3',['d_minusAx',['../real3d-cuda_8cuh.html#a6c98fd1b416cbf929eaa17c1acc34c97',1,'real3d-cuda.cuh']]],
+  ['d_5fminusay_4',['d_minusAy',['../real3d-cuda_8cuh.html#ae63c98166e5c015399e50ceabf8c408f',1,'real3d-cuda.cuh']]],
+  ['d_5fminusaz_5',['d_minusAz',['../real3d-cuda_8cuh.html#ae818013ad708099c29ea4f1812950073',1,'real3d-cuda.cuh']]],
+  ['d_5fnx_6',['d_nx',['../real3d-cuda_8cuh.html#a55e2bbb5da4eb6ae62cb4a8248d3bbc2',1,'d_Nx:&#160;real3d-cuda.cuh'],['../imag3d-cuda_8cuh.html#a55e2bbb5da4eb6ae62cb4a8248d3bbc2',1,'d_Nx:&#160;imag3d-cuda.cuh']]],
+  ['d_5fny_7',['d_ny',['../real3d-cuda_8cuh.html#a0250350631c97836ba79dedb38c8671e',1,'d_Ny:&#160;real3d-cuda.cuh'],['../imag3d-cuda_8cuh.html#a0250350631c97836ba79dedb38c8671e',1,'d_Ny:&#160;imag3d-cuda.cuh']]],
+  ['d_5fnz_8',['d_nz',['../imag3d-cuda_8cuh.html#ada6585ae599e53a66ee67754bbb69d19',1,'d_Nz:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#ada6585ae599e53a66ee67754bbb69d19',1,'d_Nz:&#160;real3d-cuda.cuh']]],
+  ['d_5fpartial_5fsum_9',['d_partial_sum',['../classSimpson3DTiledIntegratorImpl.html#a79c246c5c014a421d3bee767094ee0a7',1,'Simpson3DTiledIntegratorImpl']]],
+  ['data_10',['data',['../classMultiArray.html#a6c7bc1f96fe7f2273ef2c39747926522',1,'MultiArray']]],
+  ['dim1_11',['dim1',['../classMultiArray.html#aa0fe6ebcf26311709fe7aad9bd78eaf0',1,'MultiArray']]],
+  ['dim2_12',['dim2',['../classMultiArray.html#abe9fbf2c2426ca13e0b0edecd9a91777',1,'MultiArray']]],
+  ['dim3_13',['dim3',['../classMultiArray.html#acc14d37cf9a7fbf5da5b6b54bf0a3038',1,'MultiArray']]],
+  ['dt_14',['dt',['../imag3d-cuda_8cuh.html#a03e28be41881b703c836edbfe9b51b17',1,'dt:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a03e28be41881b703c836edbfe9b51b17',1,'dt:&#160;real3d-cuda.cuh']]],
+  ['dx_15',['dx',['../imag3d-cuda_8cuh.html#a229d11aff11a7482259d1296b9b70b8a',1,'dx:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a229d11aff11a7482259d1296b9b70b8a',1,'dx:&#160;real3d-cuda.cuh']]],
+  ['dx2_16',['dx2',['../imag3d-cuda_8cuh.html#a50bc8c5443698b3fb4b4cd594056062c',1,'dx2:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a50bc8c5443698b3fb4b4cd594056062c',1,'dx2:&#160;real3d-cuda.cuh']]],
+  ['dy_17',['dy',['../imag3d-cuda_8cuh.html#a9deb6f886b19d50e714d890c3c268efc',1,'dy:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a9deb6f886b19d50e714d890c3c268efc',1,'dy:&#160;real3d-cuda.cuh']]],
+  ['dy2_18',['dy2',['../imag3d-cuda_8cuh.html#a01be97c7151e8f44183f10d93af2973e',1,'dy2:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a01be97c7151e8f44183f10d93af2973e',1,'dy2:&#160;real3d-cuda.cuh']]],
+  ['dz_19',['dz',['../imag3d-cuda_8cuh.html#a5a198de8c3f38514f4e55231aa69cd10',1,'dz:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a5a198de8c3f38514f4e55231aa69cd10',1,'dz:&#160;real3d-cuda.cuh']]],
+  ['dz2_20',['dz2',['../imag3d-cuda_8cuh.html#a33fabf8c32ba663fd6b0d0c5775aac9c',1,'dz2:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a33fabf8c32ba663fd6b0d0c5775aac9c',1,'dz2:&#160;real3d-cuda.cuh']]]
+];

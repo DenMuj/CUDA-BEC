@@ -1,7 +1,7 @@
 #include "cfg.h"
 
 /**
- *    Configuration file parsing.
+ * @brief Configuration file parsing.
  *    cfg_file - stands for a configuration file, which is supplied on a command
  *    line
  */
@@ -9,7 +9,12 @@
  int cfg_size;
  char cfg_key[256][256];
  char cfg_val[256][256];
- 
+
+/**
+ * @brief Configuration file parsing.
+ * @param cfg_file Configuration file
+ * @return Configuration size
+ */
 int cfg_init(const char *cfg_file) {
    FILE *file;
    char buf[256];
@@ -28,9 +33,11 @@ int cfg_init(const char *cfg_file) {
    return cfg_size;
 }
 
+
 /**
- *    Configuration property value.
- *    key - property
+ * @brief Configuration property value.
+ * @param key Property
+ * @return Property value
  */
 const char *cfg_read(const char *key) {
    int i;

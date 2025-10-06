@@ -1,0 +1,519 @@
+\doxysection{Cuda\+Array3D\texorpdfstring{$<$}{<} T \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{classCudaArray3D}{}\label{classCudaArray3D}\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+
+
+3D CUDA device memory  
+
+
+
+
+{\ttfamily \#include $<$Cuda\+Array.\+h$>$}
+
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classCudaArray3D_a18cedf92dc03e3490ad45dbf09b18c30}{Cuda\+Array3D}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_af7396181987682f1e1acb7a078e795ef}{nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_ace580a5eba659ae2eb6a5f9728addffd}{ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_a6a3e83389a476d5ae5abff149d57cd29}{nz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{bool}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{use\+\_\+pitched\+\_\+memory}}=\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{true}})
+\begin{DoxyCompactList}\small\item\em Construct a 3D CUDA array. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classCudaArray3D_aacc6263600f8a8df7e1006c208936aa9}{Cuda\+Array3D}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{n}})
+\begin{DoxyCompactList}\small\item\em Construct a 1D CUDA array (special case) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classCudaArray3D_a02b245779a2a8a5c25549a486fc2b03d}{\texorpdfstring{$\sim$}{\string~}\+Cuda\+Array3D}} ()
+\begin{DoxyCompactList}\small\item\em Destructor -\/ automatically frees all allocated GPU memory. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classCudaArray3D_a7482cd274fd4fa779a76ec87808fcd3b}{Cuda\+Array3D}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} \&)=\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{delete}}
+\begin{DoxyCompactList}\small\item\em Copy constructor -\/ DISABLED. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} \& \mbox{\hyperlink{classCudaArray3D_a69058486c3d1592e01a8461cfa1a6506}{operator=}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} \&)=\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{delete}}
+\begin{DoxyCompactList}\small\item\em Copy assignment operator -\/ DISABLED. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classCudaArray3D_a15d3a7ac95491af6db43cf92e1f90454}{Cuda\+Array3D}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} \&\&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{other}}) \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{noexcept}}
+\begin{DoxyCompactList}\small\item\em Move constructor -\/ transfers ownership of GPU memory. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} \& \mbox{\hyperlink{classCudaArray3D_a3a12f7836a8e958d95c3338de7587a82}{operator=}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} \&\&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{other}}) \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{noexcept}}
+\begin{DoxyCompactList}\small\item\em Move assignment operator -\/ transfers ownership of GPU memory. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D_a0de2de973029734741dddb20b136b248}{copy\+From\+Host}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{h\+\_\+data}})
+\begin{DoxyCompactList}\small\item\em Synchronously copy data from host to device. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D_ac63bdebb19176daacdb9d719af2adc1b}{copy\+To\+Host}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{h\+\_\+data}}) \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\begin{DoxyCompactList}\small\item\em Synchronously copy data from device to host ~\newline
+ \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D_a5b7756dc46c35b1ea1eb9c36f6f0543c}{raw}} ()
+\begin{DoxyCompactList}\small\item\em Get raw device pointer for kernel launches. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D_a1428a726116206c08ee7d032abebf08c}{raw}} () \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\begin{DoxyCompactList}\small\item\em Get raw device pointer for kernel launches (const version) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D_ad4ba959232fb800c1f74fd6fe735d85b}{data}} ()
+\begin{DoxyCompactList}\small\item\em Alternative name for \doxylink{classCudaArray3D_a5b7756dc46c35b1ea1eb9c36f6f0543c}{raw()} -\/ provided for compatibility. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D_a3b5984fde841b837a548b19f5fc3cb97}{data}} () \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\begin{DoxyCompactList}\small\item\em Alternative name for \doxylink{classCudaArray3D_a5b7756dc46c35b1ea1eb9c36f6f0543c}{raw()} -\/ provided for compatibility (const version) \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D_afdeb0db2f7018394c01684b2a1f0bbe5}{check\+Cuda\+Error}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cuda\+Error\+\_\+t}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{error}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{msg}}) \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}}
+\begin{DoxyCompactList}\small\item\em Check CUDA error codes and throw exceptions on failure. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D_a0dd7d8c7b18c4e472eae70e768fe486f}{reset}} ()
+\begin{DoxyCompactList}\small\item\em Reset all member variables to default/empty state. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cuda\+Pitched\+Ptr}} \mbox{\hyperlink{classCudaArray3D_adf17aa66059ebcb181ba842aaffc6b53}{pitched\+\_\+ptr}}
+\begin{DoxyCompactList}\small\item\em CUDA pitched pointer for optimized 3D memory layout. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_af7396181987682f1e1acb7a078e795ef}{nx}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_ace580a5eba659ae2eb6a5f9728addffd}{ny}}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_a6a3e83389a476d5ae5abff149d57cd29}{nz}}
+\begin{DoxyCompactList}\small\item\em Array dimensions (nx=fastest, nz=slowest changing) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_a6532b367fc032a52949d3033911052e5}{total\+\_\+elements}}
+\begin{DoxyCompactList}\small\item\em Total number of elements (nx \texorpdfstring{$\ast$}{*} ny \texorpdfstring{$\ast$}{*} nz) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D_aead05679620bc9a72a8b1b666850b52a}{pitch}}
+\begin{DoxyCompactList}\small\item\em Memory pitch in bytes for alignment optimization. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{bool}} \mbox{\hyperlink{classCudaArray3D_ac5af9427e877ef54dee96e7c0757275d}{use\+\_\+pitched}}
+\begin{DoxyCompactList}\small\item\em True if using pitched memory, false for linear fallback. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D_aa33f6b4a749a4006bb44a9fb22766c38}{d\+\_\+data\+\_\+linear}}
+\begin{DoxyCompactList}\small\item\em Linear device memory pointer (used when pitched fails) \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}}$>$\newline
+class Cuda\+Array3\+D$<$ T $>$}
+3D CUDA device memory 
+
+This class manages GPU memory for 3D arrays with automatic selection between pitched memory (optimized for 2D/3D access patterns) and linear memory (fallback). Memory layout follows row-\/major ordering\+: index = iz\texorpdfstring{$\ast$}{*}(ny\texorpdfstring{$\ast$}{*}nx) + iy\texorpdfstring{$\ast$}{*}nx + ix where nx is fastest-\/changing, nz is slowest-\/changing dimension.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Data type to store (double, cu\+Double\+Complex, cufft\+Double\+Complex, etc.) \\
+\hline
+\end{DoxyTemplParams}
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00019}{19}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\Hypertarget{classCudaArray3D_a18cedf92dc03e3490ad45dbf09b18c30}\label{classCudaArray3D_a18cedf92dc03e3490ad45dbf09b18c30} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!CudaArray3D@{CudaArray3D}}
+\index{CudaArray3D@{CudaArray3D}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{CudaArray3D()}{CudaArray3D()}\hspace{0.1cm}{\footnotesize\ttfamily [1/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classCudaArray3D}{\+::\+Cuda\+Array3D}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{nx\+\_\+,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{ny\+\_\+,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{nz\+\_\+,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{bool}}}]{use\+\_\+pitched\+\_\+memory = {\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{true}}} }\end{DoxyParamCaption})}
+
+
+
+Construct a 3D CUDA array. 
+
+Construct a 3D CUDA array with automatic memory optimization.
+
+
+\begin{DoxyParams}{Parameters}
+{\em nx} & Number of elements in X dimension (fastest-\/changing) \\
+\hline
+{\em ny} & Number of elements in Y dimension \\
+\hline
+{\em nz} & Number of elements in Z dimension (slowest-\/changing) \\
+\hline
+{\em use\+\_\+pitched\+\_\+memory} & If true, attempt pitched memory allocation\\
+\hline
+\end{DoxyParams}
+The constructor will try to allocate pitched memory. If pitched allocation fails, it automatically falls back to linear memory. For 1D arrays (ny=nz=1), linear memory is used regardless of the flag.
+
+This constructor attempts to allocate the most efficient memory layout\+:
+\begin{DoxyItemize}
+\item For true 3D arrays (nz \texorpdfstring{$>$}{>} 1, ny \texorpdfstring{$>$}{>} 1)\+: Uses cuda\+Malloc3D for pitched memory
+\item For 2D arrays (nz = 1, ny \texorpdfstring{$>$}{>} 1)\+: Uses cuda\+Malloc\+Pitch for pitched memory ~\newline
+
+\item For 1D arrays or when pitched fails\+: Falls back to linear cuda\+Malloc 
+\end{DoxyItemize}
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00042}{42}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+\Hypertarget{classCudaArray3D_aacc6263600f8a8df7e1006c208936aa9}\label{classCudaArray3D_aacc6263600f8a8df7e1006c208936aa9} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!CudaArray3D@{CudaArray3D}}
+\index{CudaArray3D@{CudaArray3D}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{CudaArray3D()}{CudaArray3D()}\hspace{0.1cm}{\footnotesize\ttfamily [2/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classCudaArray3D}{\+::\+Cuda\+Array3D}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}}}]{n }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [explicit]}}
+
+
+
+Construct a 1D CUDA array (special case) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em n} & Number of elements in the 1D array\\
+\hline
+\end{DoxyParams}
+This constructor creates a 1D array using linear memory allocation. Equivalent to \doxylink{classCudaArray3D}{Cuda\+Array3\+D(n, 1, 1, false)}.
+
+This constructor creates a 1D array by delegating to the 3D constructor with ny=1, nz=1, and pitched memory disabled. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00105}{105}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+\Hypertarget{classCudaArray3D_a02b245779a2a8a5c25549a486fc2b03d}\label{classCudaArray3D_a02b245779a2a8a5c25549a486fc2b03d} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!````~CudaArray3D@{\texorpdfstring{$\sim$}{\string~}CudaArray3D}}
+\index{````~CudaArray3D@{\texorpdfstring{$\sim$}{\string~}CudaArray3D}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{\texorpdfstring{$\sim$}{\string~}CudaArray3D()}{\string~CudaArray3D()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::\texorpdfstring{$\sim$}{\string~}\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Destructor -\/ automatically frees all allocated GPU memory. 
+
+The destructor ensures proper cleanup of both pitched and linear memory allocations. It uses the appropriate cuda\+Free call based on the memory type and resets all member variables. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00117}{117}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+\Hypertarget{classCudaArray3D_a7482cd274fd4fa779a76ec87808fcd3b}\label{classCudaArray3D_a7482cd274fd4fa779a76ec87808fcd3b} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!CudaArray3D@{CudaArray3D}}
+\index{CudaArray3D@{CudaArray3D}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{CudaArray3D()}{CudaArray3D()}\hspace{0.1cm}{\footnotesize\ttfamily [3/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classCudaArray3D}{\+::\+Cuda\+Array3D}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \&}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+Copy constructor -\/ DISABLED. 
+
+Copying is explicitly disabled to prevent accidental expensive GPU memory copying. Use move semantics or explicit copy operations instead. \Hypertarget{classCudaArray3D_a15d3a7ac95491af6db43cf92e1f90454}\label{classCudaArray3D_a15d3a7ac95491af6db43cf92e1f90454} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!CudaArray3D@{CudaArray3D}}
+\index{CudaArray3D@{CudaArray3D}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{CudaArray3D()}{CudaArray3D()}\hspace{0.1cm}{\footnotesize\ttfamily [4/4]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{classCudaArray3D}{\+::\+Cuda\+Array3D}} (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \&\&}]{other }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [noexcept]}}
+
+
+
+Move constructor -\/ transfers ownership of GPU memory. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em other} & Source object to move from (will be left in valid but empty state)\\
+\hline
+\end{DoxyParams}
+Transfers ownership of GPU memory without copying data. The source object is left in a valid but empty state.
+
+Transfers ownership of GPU memory from another object without copying data. The source object is left in a valid but empty state (all pointers set to nullptr, sizes to zero). 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00136}{136}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{classCudaArray3D_afdeb0db2f7018394c01684b2a1f0bbe5}\label{classCudaArray3D_afdeb0db2f7018394c01684b2a1f0bbe5} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!checkCudaError@{checkCudaError}}
+\index{checkCudaError@{checkCudaError}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{checkCudaError()}{checkCudaError()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::check\+Cuda\+Error (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cuda\+Error\+\_\+t}}}]{error,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}}]{msg }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Check CUDA error codes and throw exceptions on failure. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em error} & CUDA error code to check \\
+\hline
+{\em msg} & Message for the operation that might have failed \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if error != cuda\+Success\\
+\hline
+\end{DoxyExceptions}
+Centralized error checking that provides meaningful error messages by combining the user message with CUDA\textquotesingle{}s error description.
+
+Centralized error checking. Throws std\+::runtime\+\_\+error for any CUDA error. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00272}{272}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+\Hypertarget{classCudaArray3D_a0de2de973029734741dddb20b136b248}\label{classCudaArray3D_a0de2de973029734741dddb20b136b248} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!copyFromHost@{copyFromHost}}
+\index{copyFromHost@{copyFromHost}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{copyFromHost()}{copyFromHost()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::copy\+From\+Host (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*}}]{h\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Synchronously copy data from host to device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em h\+\_\+data} & Host data pointer (must be in row-\/major order)\\
+\hline
+\end{DoxyParams}
+Copies data from host memory to GPU memory. The host data must be organized in row-\/major order\+: index = iz\texorpdfstring{$\ast$}{*}(ny\texorpdfstring{$\ast$}{*}nx) + iy\texorpdfstring{$\ast$}{*}nx + ix
+
+Copies data from host memory to GPU memory. For pitched memory, uses cuda\+Memcpy3D to properly handle padding. For linear memory, uses simple cuda\+Memcpy. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00188}{188}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+\Hypertarget{classCudaArray3D_ac63bdebb19176daacdb9d719af2adc1b}\label{classCudaArray3D_ac63bdebb19176daacdb9d719af2adc1b} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!copyToHost@{copyToHost}}
+\index{copyToHost@{copyToHost}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{copyToHost()}{copyToHost()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::copy\+To\+Host (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*}}]{h\+\_\+data }\end{DoxyParamCaption}) const}
+
+
+
+Synchronously copy data from device to host ~\newline
+ 
+
+Synchronously copy data from device to host.
+
+
+\begin{DoxyParams}{Parameters}
+{\em h\+\_\+data} & Host data pointer to receive data (will be in row-\/major order)\\
+\hline
+\end{DoxyParams}
+Copies data from GPU memory to host memory. The host data will be organized in row-\/major order\+: index = iz\texorpdfstring{$\ast$}{*}(ny\texorpdfstring{$\ast$}{*}nx) + iy\texorpdfstring{$\ast$}{*}nx + ix
+
+Copies data from GPU memory to host memory. The host data will be in row-\/major order regardless of the device memory layout. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00230}{230}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+\Hypertarget{classCudaArray3D_ad4ba959232fb800c1f74fd6fe735d85b}\label{classCudaArray3D_ad4ba959232fb800c1f74fd6fe735d85b} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!data@{data}}
+\index{data@{data}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{data()}{data()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Alternative name for \doxylink{classCudaArray3D_a5b7756dc46c35b1ea1eb9c36f6f0543c}{raw()} -\/ provided for compatibility. 
+
+\begin{DoxyReturn}{Returns}
+Device pointer to the allocated memory 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00143}{143}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_a3b5984fde841b837a548b19f5fc3cb97}\label{classCudaArray3D_a3b5984fde841b837a548b19f5fc3cb97} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!data@{data}}
+\index{data@{data}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{data()}{data()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Alternative name for \doxylink{classCudaArray3D_a5b7756dc46c35b1ea1eb9c36f6f0543c}{raw()} -\/ provided for compatibility (const version) 
+
+\begin{DoxyReturn}{Returns}
+Const device pointer to the allocated memory 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00149}{149}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_a69058486c3d1592e01a8461cfa1a6506}\label{classCudaArray3D_a69058486c3d1592e01a8461cfa1a6506} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!operator=@{operator=}}
+\index{operator=@{operator=}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}} \& \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}= (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \&}]{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [delete]}}
+
+
+
+Copy assignment operator -\/ DISABLED. 
+
+Copy assignment is disabled for the same reasons as copy constructor. \Hypertarget{classCudaArray3D_a3a12f7836a8e958d95c3338de7587a82}\label{classCudaArray3D_a3a12f7836a8e958d95c3338de7587a82} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!operator=@{operator=}}
+\index{operator=@{operator=}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{operator=()}{operator=()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \& \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+::operator}}= (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \&\&}]{other }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [noexcept]}}
+
+
+
+Move assignment operator -\/ transfers ownership of GPU memory. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em other} & Source object to move from \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Reference to this object
+\end{DoxyReturn}
+Frees current GPU memory and transfers ownership from the source object.
+
+Frees any existing GPU memory held by this object, then transfers ownership from the source object. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00153}{153}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+\Hypertarget{classCudaArray3D_a5b7756dc46c35b1ea1eb9c36f6f0543c}\label{classCudaArray3D_a5b7756dc46c35b1ea1eb9c36f6f0543c} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!raw@{raw}}
+\index{raw@{raw}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{raw()}{raw()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::raw (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get raw device pointer for kernel launches. 
+
+\begin{DoxyReturn}{Returns}
+Device pointer to the allocated memory
+\end{DoxyReturn}
+Returns the base device pointer that can be used in CUDA kernels. For pitched memory, use \doxylink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{get\+Pitch\+Elements()} for proper indexing. For linear memory, standard array indexing applies. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00127}{127}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_a1428a726116206c08ee7d032abebf08c}\label{classCudaArray3D_a1428a726116206c08ee7d032abebf08c} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!raw@{raw}}
+\index{raw@{raw}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{raw()}{raw()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::raw (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Get raw device pointer for kernel launches (const version) 
+
+\begin{DoxyReturn}{Returns}
+Const device pointer to the allocated memory 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00135}{135}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_a0dd7d8c7b18c4e472eae70e768fe486f}\label{classCudaArray3D_a0dd7d8c7b18c4e472eae70e768fe486f} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!reset@{reset}}
+\index{reset@{reset}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{reset()}{reset()}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::reset (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Reset all member variables to default/empty state. 
+
+Used internally by move operations and destructor to ensure objects are left in a valid but empty state.
+
+This function is used internally by move operations and destructor to ensure objects are left in a valid but empty state. It resets all pointers to nullptr and counters to zero. 
+
+Definition at line \mbox{\hyperlink{CudaArray_8cpp_source_l00022}{22}} of file \mbox{\hyperlink{CudaArray_8cpp_source}{Cuda\+Array.\+cpp}}.
+
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classCudaArray3D_aa33f6b4a749a4006bb44a9fb22766c38}\label{classCudaArray3D_aa33f6b4a749a4006bb44a9fb22766c38} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!d\_data\_linear@{d\_data\_linear}}
+\index{d\_data\_linear@{d\_data\_linear}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{d\_data\_linear}{d\_data\_linear}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}}\texorpdfstring{$\ast$}{*} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::d\+\_\+data\+\_\+linear\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Linear device memory pointer (used when pitched fails) 
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00029}{29}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_af7396181987682f1e1acb7a078e795ef}\label{classCudaArray3D_af7396181987682f1e1acb7a078e795ef} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!nx@{nx}}
+\index{nx@{nx}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{nx}{nx}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::nx\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00023}{23}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_ace580a5eba659ae2eb6a5f9728addffd}\label{classCudaArray3D_ace580a5eba659ae2eb6a5f9728addffd} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!ny@{ny}}
+\index{ny@{ny}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{ny}{ny}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::ny\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00023}{23}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_a6a3e83389a476d5ae5abff149d57cd29}\label{classCudaArray3D_a6a3e83389a476d5ae5abff149d57cd29} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!nz@{nz}}
+\index{nz@{nz}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{nz}{nz}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::nz\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Array dimensions (nx=fastest, nz=slowest changing) 
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00023}{23}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_aead05679620bc9a72a8b1b666850b52a}\label{classCudaArray3D_aead05679620bc9a72a8b1b666850b52a} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!pitch@{pitch}}
+\index{pitch@{pitch}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{pitch}{pitch}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::pitch\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Memory pitch in bytes for alignment optimization. 
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00025}{25}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_adf17aa66059ebcb181ba842aaffc6b53}\label{classCudaArray3D_adf17aa66059ebcb181ba842aaffc6b53} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!pitched\_ptr@{pitched\_ptr}}
+\index{pitched\_ptr@{pitched\_ptr}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{pitched\_ptr}{pitched\_ptr}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cuda\+Pitched\+Ptr}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::pitched\+\_\+ptr\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+CUDA pitched pointer for optimized 3D memory layout. 
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00022}{22}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_a6532b367fc032a52949d3033911052e5}\label{classCudaArray3D_a6532b367fc032a52949d3033911052e5} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!total\_elements@{total\_elements}}
+\index{total\_elements@{total\_elements}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{total\_elements}{total\_elements}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{size\+\_\+t}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::total\+\_\+elements\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Total number of elements (nx \texorpdfstring{$\ast$}{*} ny \texorpdfstring{$\ast$}{*} nz) 
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00024}{24}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+\Hypertarget{classCudaArray3D_ac5af9427e877ef54dee96e7c0757275d}\label{classCudaArray3D_ac5af9427e877ef54dee96e7c0757275d} 
+\index{CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}!use\_pitched@{use\_pitched}}
+\index{use\_pitched@{use\_pitched}!CudaArray3D$<$ T $>$@{CudaArray3D$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{use\_pitched}{use\_pitched}}
+{\footnotesize\ttfamily template$<$\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{typename}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$ \\
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{bool}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{T}} $>$\+::use\+\_\+pitched\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+True if using pitched memory, false for linear fallback. 
+
+
+
+Definition at line \mbox{\hyperlink{CudaArray_8h_source_l00026}{26}} of file \mbox{\hyperlink{CudaArray_8h_source}{Cuda\+Array.\+h}}.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/utils/\mbox{\hyperlink{CudaArray_8h}{Cuda\+Array.\+h}}\item 
+src/utils/\mbox{\hyperlink{CudaArray_8cpp}{Cuda\+Array.\+cpp}}\end{DoxyCompactItemize}

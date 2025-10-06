@@ -1,8 +1,25 @@
-// simpson3d_kernel.cu
+/**
+ * @file simpson3d_kernel.cu
+ * @brief Implementation of Simpson 3D tiled reduction kernel
+ * 
+ * This file contains the implementation of the Simpson 3D tiled reduction kernel,
+ * including the kernel function and the launch function.
+ */
+
 #include "simpson3d_kernel.cuh"
 #include <cuda_runtime.h>
 #include <cstdio>
 
+/**
+ * @brief Kernel function for Simpson 3D tiled reduction
+ * @param f Pointer to function values (DEVICE memory)
+ * @param partial_sums Pointer to partial sums (DEVICE memory)
+ * @param Nx Number of points in X direction
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param tile_size_z Number of z-slices per tile
+ * @param z_start Starting z-index for the current tile
+ */
 __global__ void simpson3d_tiled_reduce(double *f, double *partial_sums, 
                                        long Nx, long Ny, long Nz,
                                        long tile_size_z, long z_start) {
@@ -51,6 +68,17 @@ __global__ void simpson3d_tiled_reduce(double *f, double *partial_sums,
   }
 }
 
+/**
+ * @brief Launch the Simpson 3D kernel
+ * @param d_f Pointer to function values (DEVICE memory)
+ * @param d_partial_sum Pointer to partial sums (DEVICE memory)
+ * @param Nx Number of points in X direction
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param tile_size_z Number of z-slices per tile
+ * @param z_start Starting z-index for the current tile
+ * @param current_tile_z Number of z-slices in the current tile
+ */
 void launchSimpson3DKernel(double* d_f, double* d_partial_sum,
                            long Nx, long Ny, long Nz,
                            long tile_size_z, long z_start,
@@ -69,6 +97,11 @@ void launchSimpson3DKernel(double* d_f, double* d_partial_sum,
         d_f, d_partial_sum, Nx, Ny, Nz, current_tile_z, z_start);
 }
 
+/**
+ * @brief Get the CUDA error string
+ * @param error CUDA error
+ * @return Error string
+ */
 const char* getCudaErrorString(cudaError_t error) {
     return cudaGetErrorString(error);
 }

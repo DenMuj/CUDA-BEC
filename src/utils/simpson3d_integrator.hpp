@@ -11,7 +11,7 @@ class Simpson3DTiledIntegratorImpl;
  * @brief Simpson 3D Integration using tiled approach for memory efficiency
  * 
  * This class implements 3D numerical integration using Simpson's rule
- * with a tiled processing approach to minimize GPU memory usage.
+ * with a tiled processing approach to decrease GPU memory usage.
  */
 class Simpson3DTiledIntegrator {
 private:

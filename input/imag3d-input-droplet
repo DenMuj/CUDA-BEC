@@ -1,0 +1,203 @@
+#  Type of rescaling of Gross-Pitaevskii equation.
+#  Possible values: 1 or 2.
+#  Required: yes
+#  Type: int
+   OPTION = 2
+
+#  Regular DDI: 0
+#  Microwave shielding: 1
+   OPTION_MICROWAVE_SHIELDING = 0
+
+#  Number of atoms in condensate.
+#  Required: yes
+#  Type: long
+   NATOMS = 10000
+
+   QF = 1
+
+   
+   # SX = 3.6759769907807593e-01
+   # SY = 3.6759769907807593e-01
+   # SZ = 5.2311761899786928e+00
+
+   SX = 0.3
+   SY = 0.3
+   SZ = 5.0
+
+   # SX = 8.41691017614e-01
+   # SY = 8.41691017614e-01
+   # SZ = 1.46676003497e+01
+
+   MUREL = 1.000000e-6
+   MUEND = 10000.0
+
+#  Dipolar potential cut off.
+#  Required: yes
+#  Type: double
+   #CUTOFF = 13.
+
+#  Unit of length in m (defined by a chosen referent frequency omega_ref).
+#  Required: yes
+#  Type: double
+   AHO = 5.55238e-7
+   #AHO = 6.123800e-07
+
+#  Unit of time in s (defined by a chosen referent frequency omega_ref).
+#  Just rescaled and printed if given.
+#  Required: no
+#  Type: double
+#  TAU = 2.628e-4
+
+#  Contact interaction strength in units of Bohr radius. Required if G0 is not
+#  defined.
+#  Required: conditionally
+#  Type: double
+   #AS = 100
+   AS = 70.
+
+#  Dipole-dipole interaction strength in units of Bohr radius. Required if
+#  GDD0 is not defined.
+#  Required: conditionally
+#  Type: double
+   #ADD = 67
+   ADD = 110.
+
+#  Number of discretization points in the x-direction.
+#  Required: yes
+#  Type: long
+   NX = 128
+
+#  Number of discretization points in the y-direction.
+#  Required: yes
+#  Type: long
+   NY = 128
+
+#  Number of discretization points in the z-direction.
+#  Required: yes
+#  Type: long
+   NZ = 128
+
+  MX = 10
+  MY = 10
+  MZ = 10
+  MT = 2
+
+#  Spatial discretization step in the x-direction.
+#  Required: yes
+#  Type: double
+#   DX = 0.5
+
+#  Spatial discretization step in the y-direction.
+#  Required: yes
+#  Type: double
+#   DY = 0.5
+
+#  Spatial discretization step in the z-direction.
+#  Required: yes
+#  Type: double
+#   DZ = 0.5
+
+#  Time discretization step DT*DX*DX.
+#  Required: yes
+#  Type: double
+#   DT = 0.1
+
+#  Gamma coefficient of anisotropy of the trap.
+#  Required: yes
+#  Type: double
+   #GAMMA = 1.0
+   GAMMA = 0.
+
+#  Nu coefficient of anisotropy of the trap (omega_y / omega_x).
+#  Required: yes
+#  Type: double
+   #NU = 1.0
+   NU = 0.
+
+#  Lambda coefficient of anisotropy of the trap (omega_z / omega_x).
+#  Required: yes
+#  Type: double
+   #LAMBDA = 4.361370e-02
+   LAMBDA = 0.
+
+#  Number of iterations with fixed nonlinearities G and GD.
+#  Required: yes
+#  Type: long
+   NITER = 1000000
+
+#  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
+#  the program will calculate RMS, chemical potential, energy and (optionally)
+#  density profiles and write them to specified output files.
+   NSNAP = 10000
+
+#  Input file with the wave function, obtained from previous executions.
+#  Required: no
+#  Type: string
+#   INPUT = ./imag3d-finalpsi.bin
+#   INPUT_TYPE = PSI
+
+#  Output file with the summary of final values of all physical quantities. If
+#  not defined, standard output will be used.
+#  Required: no
+#  Type: string
+   MUOUTPUT = imag3d-mu
+
+#  Output file with RMS values. The values are written in each snapshot.
+#  If not defined, the RMS values will not be saved.
+#  Required: no
+#  Type: string
+   RMSOUT = imag3d-rms
+
+#  Output file with the wave function obtained after the subsequent NPAS
+#  iterations, with the fixed nonlinearity G0. Only 1D sections along
+#  coordinate axes of the wave function are saved, which is designated by a
+#  suffix x, y, or z. If not defined, the wave function will not be saved.
+#  Required: no
+#  Type: string
+   NITEROUT = imag3d-den-niter
+
+#  Output file with the final wave function obtained at program end that can
+#  subsequently be used as an input wave function. If not defined, the wave
+#  function will not be saved.
+#  Required: no
+#  Type: string
+   FINALPSI = imag3d-finalpsi
+
+#  Discretization step in the x-direction used to save wave functions.
+#  It's required if any of wave function outputs (INITOUT, NSTPOUT, NPASOUT,
+#  NRUNOUT) is defined.
+#  Required: conditionally
+#  Type: long
+   OUTSTPX = 1
+
+#  Discretization step in the y-direction used to save wave functions. Required
+#  if any of wave function output files (INITOUT, NSTPOUT, NPASOUT, NRUNOUT) is defined.
+#  Required: conditionally
+#  Type: long
+   OUTSTPY = 1
+
+#  Discretization step in the z-direction used to save wave functions. Required
+#  if any of wave function output files (INITOUT, NSTPOUT, NPASOUT, NRUNOUT) is defined.
+#  Required: conditionally
+#  Type: long
+   OUTSTPZ = 1
+
+#  Value that controls what density profiles will be written in output files.
+#  List of output functions:
+#  1D integrated density X (format "X,DEN") = 1
+#  1D integrated density Y (format "Y,DEN") = 2
+#  1D integrated density Z (format "Z,DEN") = 4
+#  2D integrated density XY (format "X,Y,DEN") = 8
+#  2D integrated density XZ (format "X,Z,DEN") = 16
+#  2D integrated density YZ (format "Y,Z,DEN") = 32
+#  2D cross-section density XY0 (format "X,Y,DEN") = 64
+#  2D cross-section density X0Z (format "X,Z,DEN") = 128
+#  2D cross-section density 0YZ (format "Y,Z,DEN") = 256
+#  OUTFLAGS is provided as a sum of desired density profiles, e.g.,
+#  OUTFLAGS = 56 implies that XY, XZ, YZ integrated densities will be
+#  written (8 + 16 + 32), while other density profiles will be ommited.
+#  Required if wave function output file (NITEROUT)
+#  is defined.
+#  Required: conditionally
+#  Type: int
+   OUTFLAGS = 56

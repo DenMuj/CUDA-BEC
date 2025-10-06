@@ -1,11 +1,19 @@
-// simpson3d_integrator.cu - Modified version with device memory support
+/**
+ * @file simpson3d_integrator.cu
+ * @brief Implementation of Simpson3DTiledIntegrator class for 3D integration using Simpson's rule with a tiled approach for memory efficiency
+ * 
+ * This file contains the implementation of all Simpson3DTiledIntegrator member functions,
+ * including constructors, memory management, and integration operations.
+ */
 #include "simpson3d_integrator.hpp"
 #include "simpson3d_kernel.cuh"
 #include <cuda_runtime.h>
 #include <iostream>
 #include <algorithm>
 
-// Implementation class (hidden from public interface)
+/**
+ * @brief Implementation class (hidden from public interface)
+ */
 class Simpson3DTiledIntegratorImpl {
 public:
     double *d_f;           // Device memory for current tile
@@ -17,6 +25,12 @@ public:
     long cached_Nx;        // Cached grid dimensions
     long cached_Ny;
     
+    /**
+     * @brief Constructor
+     * @param Nx Grid size in X direction
+     * @param Ny Grid size in Y direction
+     * @param tile_z Number of z-slices to process per tile (default: 32)
+     */
     Simpson3DTiledIntegratorImpl(long Nx, long Ny, long tile_z) 
         : tile_size_z(tile_z), cached_Nx(Nx), cached_Ny(Ny) {
         
@@ -39,6 +53,9 @@ public:
         }
     }
     
+    /**
+     * @brief Destructor
+     */
     ~Simpson3DTiledIntegratorImpl() {
         cudaFree(d_f);
         cudaFree(d_partial_sum);
@@ -46,7 +63,13 @@ public:
         cudaStreamDestroy(stream);
     }
     
-    // Original function - copies from host memory
+    /**
+     * @brief Integrate the function using host memory
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param h_f Pointer to function values (HOST memory)
+     */
     double integrate(double hx, double hy, double hz, double *h_f, 
                     long Nx, long Ny, long Nz) {
         double total_sum = 0.0;
@@ -97,7 +120,13 @@ public:
         return total_sum * hx * hy * hz / 27.0;
     }
     
-    // New function - works with device memory directly
+    /**
+     * @brief Integrate the function using device memory
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param d_f_full Pointer to function values (DEVICE memory)
+     */
     double integrateDevice(double hx, double hy, double hz, double *d_f_full, 
                           long Nx, long Ny, long Nz) {
         double total_sum = 0.0;
@@ -148,6 +177,10 @@ public:
         return total_sum * hx * hy * hz / 27.0;
     }
     
+    /**
+     * @brief Set the tile size
+     * @param new_tile_size New tile size
+     */
     void setTileSize(long new_tile_size) {
         if (new_tile_size <= 0) {
             throw std::invalid_argument("Tile size must be positive");
@@ -169,27 +202,59 @@ public:
     }
 };
 
-// Public interface implementation
+/**
+ * @brief Constructor
+ * @param Nx Grid size in X direction
+ * @param Ny Grid size in Y direction
+ * @param tile_z Number of z-slices to process per tile (default: 32)
+ */
 Simpson3DTiledIntegrator::Simpson3DTiledIntegrator(long Nx, long Ny, long tile_z) {
     pImpl = new Simpson3DTiledIntegratorImpl(Nx, Ny, tile_z);
 }
 
+/**
+ * @brief Destructor
+ */
 Simpson3DTiledIntegrator::~Simpson3DTiledIntegrator() {
     delete pImpl;
 }
 
-// Host memory version
+/**
+ * @brief Integrate the function using host memory
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param h_f Pointer to function values (HOST memory)
+ * @param Nx Number of points in X direction
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @return Integrated value
+ */
 double Simpson3DTiledIntegrator::integrate(double hx, double hy, double hz, 
                                           double* h_f, long Nx, long Ny, long Nz) {
     return pImpl->integrate(hx, hy, hz, h_f, Nx, Ny, Nz);
 }
 
-// Device memory version
+/**
+ * @brief Integrate the function using device memory
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param d_f Pointer to function values (DEVICE memory)
+ * @param Nx Number of points in X direction
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @return Integrated value
+ */
 double Simpson3DTiledIntegrator::integrateDevice(double hx, double hy, double hz,
                                                 double* d_f, long Nx, long Ny, long Nz) {
     return pImpl->integrateDevice(hx, hy, hz, d_f, Nx, Ny, Nz);
 }
 
+/**
+ * @brief Set the tile size
+ * @param new_tile_size New tile size
+ */
 void Simpson3DTiledIntegrator::setTileSize(long new_tile_size) {
     pImpl->setTileSize(new_tile_size);
 }

@@ -1,0 +1,238 @@
+\chapter{Cuda\+Array3D Template Guide}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE}{}\label{md_CUDAARRAY__TEMPLATE__GUIDE}\index{CudaArray3D Template Guide@{CudaArray3D Template Guide}}
+\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md0}%
+\Hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md0}%
+ \hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md1}{}\doxysection{\texorpdfstring{Overview}{Overview}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md1}
+Your {\ttfamily Cuda\+Array3D} class has been successfully converted to a template-\/based implementation, similar to your {\ttfamily Multi\+Array} class. This allows you to specify different data types when creating CUDA arrays.\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md2}{}\doxysection{\texorpdfstring{What Changed}{What Changed}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md2}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md3}{}\doxysubsection{\texorpdfstring{Before (\+Original)}{Before (Original)}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md3}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{CudaArray3D\ array(nx,\ ny,\ nz);\ \ \textcolor{comment}{//\ Always\ used\ double}}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md4}{}\doxysubsection{\texorpdfstring{After (\+Templated)}{After (Templated)}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md4}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{CudaArray3D<double>\ array(nx,\ ny,\ nz);\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Explicit\ double}}
+\DoxyCodeLine{CudaArray3D<cuDoubleComplex>\ array(nx,\ ny,\ nz);\ \ \textcolor{comment}{//\ Complex\ double}}
+\DoxyCodeLine{CudaArray3D<float>\ array(nx,\ ny,\ nz);\ \ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Single\ precision}}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md5}{}\doxysection{\texorpdfstring{Supported Data Types}{Supported Data Types}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md5}
+The template supports the following data types with explicit instantiations\+:\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md6}{}\doxysubsection{\texorpdfstring{Real Number Types}{Real Number Types}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md6}
+
+\begin{DoxyItemize}
+\item {\ttfamily double} -\/ Double precision real numbers
+\item {\ttfamily float} -\/ Single precision real numbers
+\end{DoxyItemize}\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md7}{}\doxysubsection{\texorpdfstring{Complex Number Types}{Complex Number Types}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md7}
+
+\begin{DoxyItemize}
+\item {\ttfamily cu\+Double\+Complex} -\/ CUDA double precision complex numbers
+\item {\ttfamily cu\+Float\+Complex} -\/ CUDA single precision complex numbers
+\end{DoxyItemize}\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md8}{}\doxysection{\texorpdfstring{Usage Examples}{Usage Examples}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md8}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md9}{}\doxysubsection{\texorpdfstring{1. Basic Usage with Different Types}{1. Basic Usage with Different Types}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md9}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ "{}src/utils/CudaArray.h"{}}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Double\ precision\ array\ (most\ common)}}
+\DoxyCodeLine{CudaArray3D<double>\ psi\_real(256,\ 256,\ 256);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Complex\ array\ for\ wave\ functions}}
+\DoxyCodeLine{CudaArray3D<cuDoubleComplex>\ psi\_complex(256,\ 256,\ 256);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Single\ precision\ for\ memory\ savings}}
+\DoxyCodeLine{CudaArray3D<float>\ temp\_array(128,\ 128,\ 128);}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md10}{}\doxysubsection{\texorpdfstring{2. Working with Complex Numbers}{2. Working with Complex Numbers}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md10}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{preprocessor}{\#include\ <cuComplex.h>}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Create\ complex\ array}}
+\DoxyCodeLine{CudaArray3D<cuDoubleComplex>\ complex\_array(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ All\ existing\ methods\ work\ the\ same\ way}}
+\DoxyCodeLine{complex\_array.memset(0);\ \ \textcolor{comment}{//\ Zero\ initialize}}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Copy\ data}}
+\DoxyCodeLine{cuDoubleComplex*\ host\_data\ =\ \textcolor{keyword}{new}\ cuDoubleComplex[nx\ *\ ny\ *\ nz];}
+\DoxyCodeLine{\textcolor{comment}{//\ ...\ fill\ host\_data\ ...}}
+\DoxyCodeLine{complex\_array.copyFromHost(host\_data);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Get\ device\ pointer\ for\ kernels}}
+\DoxyCodeLine{cuDoubleComplex*\ d\_ptr\ =\ complex\_array.raw();}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md11}{}\doxysubsection{\texorpdfstring{3. Backward Compatibility}{3. Backward Compatibility}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md11}
+For existing code, you can use the convenience alias\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ This\ still\ works\ and\ defaults\ to\ double}}
+\DoxyCodeLine{CudaArray3D\_double\ array(nx,\ ny,\ nz);\ \ \textcolor{comment}{//\ Same\ as\ CudaArray3D<double>}}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md12}{}\doxysection{\texorpdfstring{Method Signatures}{Method Signatures}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md12}
+All methods now work with the template type {\ttfamily T}\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{\textcolor{keyword}{class\ }CudaArray3D\ \{}
+\DoxyCodeLine{\textcolor{keyword}{public}:}
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Constructors}}
+\DoxyCodeLine{\ \ \ \ CudaArray3D(\textcolor{keywordtype}{size\_t}\ nx,\ \textcolor{keywordtype}{size\_t}\ ny,\ \textcolor{keywordtype}{size\_t}\ nz,\ \textcolor{keywordtype}{bool}\ use\_pitched\ =\ \textcolor{keyword}{true});}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{explicit}\ CudaArray3D(\textcolor{keywordtype}{size\_t}\ n);\ \ \textcolor{comment}{//\ 1D\ array}}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Data\ transfer}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ copyFromHost(\textcolor{keyword}{const}\ T*\ h\_data);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ copyToHost(T*\ h\_data)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ copyFromHostAsync(\textcolor{keyword}{const}\ T*\ h\_data,\ cudaStream\_t\ stream\ =\ 0);}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{void}\ copyToHostAsync(T*\ h\_data,\ cudaStream\_t\ stream\ =\ 0)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Device\ pointers}}
+\DoxyCodeLine{\ \ \ \ T*\ raw();}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ T*\ raw()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ T*\ data();\ \ \textcolor{comment}{//\ Alias\ for\ raw()}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keyword}{const}\ T*\ data()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Element\ access}}
+\DoxyCodeLine{\ \ \ \ T*\ getElementPtr(\textcolor{keywordtype}{size\_t}\ ix,\ \textcolor{keywordtype}{size\_t}\ iy,\ \textcolor{keywordtype}{size\_t}\ iz);}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ Memory\ layout\ (now\ uses\ sizeof(T))}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{size\_t}\ getPitchElements()\ \textcolor{keyword}{const};\ \ \textcolor{comment}{//\ Uses\ sizeof(T)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{size\_t}\ getPitchBytes()\ \textcolor{keyword}{const};\ \ \ \ \ \textcolor{comment}{//\ Uses\ sizeof(T)}}
+\DoxyCodeLine{\ \ \ \ \textcolor{keywordtype}{size\_t}\ getSlicePitch()\ \textcolor{keyword}{const};\ \ \ \ \ \textcolor{comment}{//\ Uses\ sizeof(T)}}
+\DoxyCodeLine{\ \ \ \ }
+\DoxyCodeLine{\ \ \ \ \textcolor{comment}{//\ ...\ other\ methods\ unchanged}}
+\DoxyCodeLine{\};}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md13}{}\doxysection{\texorpdfstring{Migration Guide}{Migration Guide}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md13}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md14}{}\doxysubsection{\texorpdfstring{For New Code}{For New Code}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md14}
+Always use explicit template parameters\+: 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{CudaArray3D<double>\ array(nx,\ ny,\ nz);\ \ \ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ Recommended}}
+\DoxyCodeLine{CudaArray3D<cuDoubleComplex>\ complex\_array(nx,\ ny,\ nz);\ \ \textcolor{comment}{//\ For\ complex\ data}}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md15}{}\doxysubsection{\texorpdfstring{For Existing Code}{For Existing Code}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md15}
+Your existing code should continue to work if you\+:
+
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Option 1\+: Use the alias (minimal changes)}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Change\ this:}}
+\DoxyCodeLine{CudaArray3D\ array(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ To\ this:}}
+\DoxyCodeLine{CudaArray3D\_double\ array(nx,\ ny,\ nz);}
+
+\end{DoxyCode}
+
+\item {\bfseries{Option 2\+: Use explicit templates (recommended)}} 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Change\ this:}}
+\DoxyCodeLine{CudaArray3D\ array(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ To\ this:}}
+\DoxyCodeLine{CudaArray3D<double>\ array(nx,\ ny,\ nz);}
+
+\end{DoxyCode}
+
+\end{DoxyEnumerate}\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md16}{}\doxysection{\texorpdfstring{Integration with Your Project}{Integration with Your Project}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md16}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md17}{}\doxysubsection{\texorpdfstring{Real3\+D and Imag3\+D CUDA Code}{Real3D and Imag3D CUDA Code}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md17}
+Your existing kernels will work unchanged\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ In\ your\ kernel\ launches}}
+\DoxyCodeLine{CudaArray3D<double>\ d\_psi(nx,\ ny,\ nz);}
+\DoxyCodeLine{CudaArray3D<cuDoubleComplex>\ d\_psi\_complex(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Kernel\ calls\ remain\ the\ same}}
+\DoxyCodeLine{my\_kernel<<<blocks,\ threads>>>(d\_psi.raw(),\ d\_psi\_complex.raw(),\ nx,\ ny,\ nz);}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md18}{}\doxysubsection{\texorpdfstring{cu\+FFT Integration}{cuFFT Integration}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md18}
+Complex arrays work seamlessly with cu\+FFT\+:
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{CudaArray3D<cuDoubleComplex>\ fft\_array(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Use\ with\ cuFFT}}
+\DoxyCodeLine{cufftExecZ2Z(plan,\ }
+\DoxyCodeLine{\ \ \ \ fft\_array.raw(),\ \ \ \ \ \textcolor{comment}{//\ input}}
+\DoxyCodeLine{\ \ \ \ fft\_array.raw(),\ \ \ \ \ \textcolor{comment}{//\ output}}
+\DoxyCodeLine{\ \ \ \ CUFFT\_FORWARD);}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md19}{}\doxysection{\texorpdfstring{Performance Considerations}{Performance Considerations}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md19}
+
+\begin{DoxyItemize}
+\item {\bfseries{No Performance Impact}}\+: Template instantiation happens at compile time
+\item {\bfseries{Memory Layout}}\+: All optimizations (pitched memory, alignment) are preserved
+\item {\bfseries{Type Safety}}\+: Compile-\/time type checking prevents mixing incompatible types
+\end{DoxyItemize}\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md20}{}\doxysection{\texorpdfstring{Compilation Notes}{Compilation Notes}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md20}
+
+\begin{DoxyItemize}
+\item The template is explicitly instantiated for common types in {\ttfamily Cuda\+Array.\+cpp}
+\item If you need additional types, add them to the explicit instantiation list
+\item CUDA headers ({\ttfamily cu\+Complex.\+h}, {\ttfamily cufft.\+h}) are automatically included
+\end{DoxyItemize}\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md21}{}\doxysection{\texorpdfstring{Common Patterns}{Common Patterns}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md21}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md22}{}\doxysubsection{\texorpdfstring{Pattern 1\+: Real and Complex Arrays}{Pattern 1: Real and Complex Arrays}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md22}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ Real\ part}}
+\DoxyCodeLine{CudaArray3D<double>\ psi\_real(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Complex\ representation}}
+\DoxyCodeLine{CudaArray3D<cuDoubleComplex>\ psi\_complex(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Convert\ real\ to\ complex\ (in\ kernel)}}
+\DoxyCodeLine{convert\_real\_to\_complex<<<blocks,\ threads>>>(}
+\DoxyCodeLine{\ \ \ \ psi\_real.raw(),\ psi\_complex.raw(),\ nx,\ ny,\ nz);}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md23}{}\doxysubsection{\texorpdfstring{Pattern 2\+: Mixed Precision}{Pattern 2: Mixed Precision}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md23}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{comment}{//\ High\ precision\ computation}}
+\DoxyCodeLine{CudaArray3D<double>\ precise\_array(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Memory-\/efficient\ storage}}
+\DoxyCodeLine{CudaArray3D<float>\ storage\_array(nx,\ ny,\ nz);}
+\DoxyCodeLine{}
+\DoxyCodeLine{\textcolor{comment}{//\ Convert\ precision\ as\ needed}}
+\DoxyCodeLine{convert\_precision<<<blocks,\ threads>>>(}
+\DoxyCodeLine{\ \ \ \ precise\_array.raw(),\ storage\_array.raw(),\ nx,\ ny,\ nz);}
+
+\end{DoxyCode}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md24}{}\doxysection{\texorpdfstring{Troubleshooting}{Troubleshooting}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md24}
+\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md25}{}\doxysubsection{\texorpdfstring{Compilation Errors}{Compilation Errors}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md25}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Template instantiation errors}}\+: Make sure you\textquotesingle{}re using one of the explicitly instantiated types
+\item {\bfseries{CUDA type errors}}\+: Include {\ttfamily \texorpdfstring{$<$}{<}cu\+Complex.\+h\texorpdfstring{$>$}{>}} and {\ttfamily \texorpdfstring{$<$}{<}cufft.\+h\texorpdfstring{$>$}{>}} as needed
+\item {\bfseries{Linking errors}}\+: Ensure the explicit instantiations in {\ttfamily Cuda\+Array.\+cpp} match your usage
+\end{DoxyEnumerate}\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md26}{}\doxysubsection{\texorpdfstring{Runtime Issues}{Runtime Issues}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md26}
+
+\begin{DoxyEnumerate}
+\item {\bfseries{Size mismatches}}\+: Remember that {\ttfamily sizeof(\+T)} varies by type
+\item {\bfseries{Alignment}}\+: Complex types have different alignment requirements
+\item {\bfseries{Memory}}\+: Complex types use twice the memory of real types
+\end{DoxyEnumerate}\hypertarget{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md27}{}\doxysection{\texorpdfstring{Summary}{Summary}}\label{md_CUDAARRAY__TEMPLATE__GUIDE_autotoc_md27}
+The templated {\ttfamily Cuda\+Array3D} provides\+:
+\begin{DoxyItemize}
+\item ✅ Type safety at compile time
+\item ✅ Support for multiple data types (double, float, cu\+Double\+Complex, etc.)
+\item ✅ Backward compatibility with existing code
+\item ✅ Same performance and memory optimizations
+\item ✅ Seamless integration with CUDA and cu\+FFT
+\end{DoxyItemize}
+
+Your code can now handle different numerical types efficiently while maintaining the same easy-\/to-\/use interface! 

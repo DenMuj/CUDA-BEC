@@ -14,8 +14,11 @@ int main(int argc, char **argv) {
   pi = M_PI;
   FILE *filerms;
   FILE *filemu;
+  FILE *file;
+
   char filename[MAX_FILENAME_SIZE];
   readpar();
+
   if (opt == 2)
     par = 2.;
   else
@@ -23,31 +26,73 @@ int main(int argc, char **argv) {
 
   g = par * g;
   gd = par * gd;
-
   gd *= MS;
   edd = (4. * pi / 3.) * gd / g;
   Nad = Na;
 
+  if (fabs(edd) < 1e-10) {
+    q5 = 1.;
+  } else {
+    if(fabs(edd - 1.) < 1e-10) {
+      q5 = 3. * sqrt(3.) / 2.;
+    } else {
+
+      std::complex<double> sqrt_edd = std::sqrt(std::complex<double>(edd, 0.0));
+      std::complex<double> sqrt_1_plus_2edd = std::sqrt(std::complex<double>(1.0 + 2.0*edd, 0.0));
+      std::complex<double> sqrt_3 = std::sqrt(std::complex<double>(3.0, 0.0));
+
+      std::complex<double> term1 = 6.0 * sqrt_1_plus_2edd * (11.0 + edd*(4.0 + 9.0*edd));
+
+      std::complex<double> log_term1 = std::log(std::complex<double>(1.0 - edd, 0.0));
+      std::complex<double> log_term2 = std::log(-sqrt_3*sqrt_edd + sqrt_1_plus_2edd);
+
+      std::complex<double> term2 = (5.0 * sqrt_3 * std::pow(std::complex<double>(-1.0 + edd, 0.0), 3.0) * 
+                               (log_term1 - 2.0*log_term2)) / sqrt_edd;
+
+      q5 = (term1 - term2).real() / 96.0;
+    }
+  }
+  q5 *= QF;
+  h2 = 32. * sqrt(pi) * pow(as  * BOHR_RADIUS / aho, 2.5) * pow(Nad, 1.5) * (4. * q5) / 3.;
+  h2 = par * h2;
+
   Nx2 = Nx / 2;
   Ny2 = Ny / 2;
   Nz2 = Nz / 2;
-
-  cudaMemcpyToSymbol(d_Nx, &Nx, sizeof(long));
-  cudaMemcpyToSymbol(d_Ny, &Ny, sizeof(long));
-  cudaMemcpyToSymbol(d_Nz, &Nz, sizeof(long));
-  cudaMemcpyToSymbol(d_dt, &dt, sizeof(double));
 
   // Initialize squared grid spacings
   dx2 = dx * dx;
   dy2 = dy * dy;
   dz2 = dz * dz;
 
-  MultiArray<double> muen(4);
+  // Copy constants Nx, Ny, Nz (number of grid points), dt (time step) to device
+  cudaMemcpyToSymbol(d_Nx, &Nx, sizeof(long));
+  cudaMemcpyToSymbol(d_Ny, &Ny, sizeof(long));
+  cudaMemcpyToSymbol(d_Nz, &Nz, sizeof(long));
+  cudaMemcpyToSymbol(d_dt, &dt, sizeof(double));
+
+  // Allocate memory for psi (pinned memory) and squared wave function (psi2)
+  double *psi;
+  cudaMallocHost(&psi, Nz * Ny * Nx * sizeof(double));
+  MultiArray<double> psi2(Nz, Ny, Nx);
+
+  // Allocation of the wave function norm
+  double norm;
+
+  // Allocate memory for trap potential (pot) and dipole potential (potdd)
+  MultiArray<double> pot(Nz, Ny, Nx);
+  MultiArray<double> potdd(Nz, Ny, Nx);
+
+  // Allocate memory for x2, y2, z2, kx, ky, kz, kx2, ky2, kz2
   MultiArray<double> x(Nx), y(Ny), z(Nz);
   MultiArray<double> x2(Nx), y2(Ny), z2(Nz);
   MultiArray<double> kx(Nx), ky(Ny), kz(Nz);
   MultiArray<double> kx2(Nx), ky2(Ny), kz2(Nz);
 
+ 
+  MultiArray<double> muen(5);
+
+  // Initialize total chemical potential of the current and next time step
   double mutotold, mutotnew;
 
   // Allocation of crank-nicolson coefficients
@@ -55,6 +100,14 @@ int main(int argc, char **argv) {
   MultiArray<double> calphay(Ny - 1), cgammay(Ny - 1);
   MultiArray<double> calphaz(Nz - 1), cgammaz(Nz - 1);
   double Ax0, Ay0, Az0, Ax0r, Ay0r, Az0r, Ax, Ay, Az;
+
+
+  // Initialize temporary arrays for density
+  MultiArray<double> tmpx(Nx), tmpy(Ny), tmpz(Nz);
+
+  // Setup Simpson3DTiledIntegrator for integration
+  long TILE_SIZE = Nz;
+  Simpson3DTiledIntegrator integ(Nx, Ny, TILE_SIZE);
 
   // Allocation of crank-nicolson coefficients on device
   CudaArray3D<double> d_calphax(Nx - 1);
@@ -64,26 +117,19 @@ int main(int argc, char **argv) {
   CudaArray3D<double> d_calphaz(Nz - 1);
   CudaArray3D<double> d_cgammaz(Nz - 1);
 
-  //CudaArray d_cbeta(Nx * Ny * Nz);
-
-  // Allocation of the wave function norm
-  double norm;
-
-  long TILE_SIZE = Nz;
-  Simpson3DTiledIntegrator integ(Nx, Ny, TILE_SIZE);
-  MultiArray<double> pot(Nz, Ny, Nx);
-  //MultiArray<double> psi(Nz, Ny, Nx);
-  double *psi;
-  cudaMallocHost(&psi, Nz * Ny * Nx * sizeof(double));
-  MultiArray<double> psi2(Nz, Ny, Nx);
-  MultiArray<double> potdd(Nz, Ny, Nx);
-  
+  // Allocate memory for psi on device
   CudaArray3D<double> d_psi(Nx, Ny, Nz, true);
-  CudaArray3D<double> d_pot(Nx, Ny, Nz, true);
+
+  // Allocate memory for x2, y2, z2 on device
   CudaArray3D<double> d_x2(Nx);
   CudaArray3D<double> d_y2(Ny);
   CudaArray3D<double> d_z2(Nz);
+
+  // Allocate memory for work array on device
   CudaArray3D<double> d_work_array(Nx, Ny, Nz, true);
+
+  // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd) and memory for squared wave function multiplied by dipole potential (d_psi2dd)
+  CudaArray3D<double> d_pot(Nx, Ny, Nz, true);
   CudaArray3D<double> d_potdd(Nx, Ny, Nz, true);
   CudaArray3D<double> d_psi2dd(Nx, Ny, Nz, true);
   
@@ -106,26 +152,34 @@ int main(int argc, char **argv) {
     return -1;
   }
 
-  // Allocate pinned memory for RMS results for better performance
+  // Allocate pinned memory for RMS results
   double *h_rms_pinned;
   cudaHostAlloc(&h_rms_pinned, 3 * sizeof(double), cudaHostAllocDefault);
   
+  // Initialize RMS output file that will store root mean square values <r>, <x>, <y>, <z>
   if (rmsout != NULL) {
     sprintf(filename, "%s.txt", rmsout);
     filerms = fopen(filename, "w");
   } else filerms = NULL;
+
+  // Initialize chemical potential output file that will store chemical potential values, total chemical pot., kinetic, trap, contact, dipole and quantum fluctuation terms
   if (muoutput != NULL) {
     sprintf(filename, "%s.txt", muoutput);
     filemu = fopen(filename, "w");
   } else filemu = NULL;
 
-  initpsi(psi, x2, y2, z2);
+  // Initialize psi function
+  initpsi(psi, x2, y2, z2, x, y, z);
+
+  // Initialize trap potential (pot) and dipole potential (potdd)
   initpot(pot, x2, y2, z2);
   initpotdd(potdd,kx,ky,kz,kx2,ky2,kz2);
+
+  // Generate coefficients
   gencoef(calphax, cgammax, calphay, cgammay, calphaz, cgammaz, Ax0, Ay0, Az0,
           Ax0r, Ay0r, Az0r, Ax, Ay, Az);
 
-  // Copy coefficients to device (do this once during initialization)
+  // Copy coefficients to device
   d_calphax.copyFromHost(calphax.raw());
   d_cgammax.copyFromHost(cgammax.raw());
   d_calphay.copyFromHost(calphay.raw());
@@ -135,9 +189,13 @@ int main(int argc, char **argv) {
 
   // Copy psi data to device
   d_psi.copyFromHost(psi);
+
+  // Copy x2, y2, z2 to device
   d_x2.copyFromHost(x2.raw());
   d_y2.copyFromHost(y2.raw());
   d_z2.copyFromHost(z2.raw());
+
+  // Copy trap potential and dipole potential to device
   d_pot.copyFromHost(pot.raw());
   d_potdd.copyFromHost(potdd.raw());
 
@@ -147,26 +205,131 @@ int main(int argc, char **argv) {
   if(muoutput != NULL) {
     mu_output(filemu);
   }
+
+  // Compute RMS values
   compute_rms_values(d_psi.raw(), d_work_array.raw(), d_x2.data(), d_y2.data(), d_z2.data(), integ, h_rms_pinned);
-  if(muoutput != NULL) {
-    calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_psi2dd.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd);
-    fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2]);
-    fflush(filemu);
-    mutotold = muen[0]+muen[1]+muen[2]+muen[3];
-  }
   if(rmsout != NULL) {
     double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
     fprintf(filerms, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
     fflush(filerms);
   }
 
+  // Compute chemical potential terms
+  if(muoutput != NULL) {
+    calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_psi2dd.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+    fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, muen[0]+muen[1]+muen[2]+muen[3]+muen[4], muen[3], muen[1], muen[0], muen[2], muen[4]);
+    fflush(filemu);
+    mutotold = muen[0]+muen[1]+muen[2]+muen[3];
+  }
+
+  if(Niterout != NULL) {
+    char itername[10];
+    sprintf(itername, "-%06d-", 0);
+    if(outflags & DEN_X) {
+      //Open binary file for writing
+      sprintf(filename, "%s%s1d_x.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outdenx(psi, x, tmpy, tmpz, file);
+      fclose(file);
+    }
+    if(outflags & DEN_Y) {
+      sprintf(filename, "%s%s1d_y.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outdeny(psi, y, tmpx, tmpz, file);
+      fclose(file);
+    }
+    if(outflags & DEN_Z) {
+      sprintf(filename, "%s%s1d_z.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outdenz(psi, z, tmpx, tmpy, file);
+      fclose(file);
+    }
+    if(outflags & DEN_XY) {
+      //Open binary file for writing
+      sprintf(filename, "%s%s2d_xy.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outdenxy(psi, x, y, tmpz, file);
+      fclose(file);
+    }
+    if(outflags & DEN_XZ) {
+      //Open binary file for writing
+      sprintf(filename, "%s%s2d_xz.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outdenxz(psi, x, z, tmpy, file);
+      fclose(file);
+    }
+    if(outflags & DEN_YZ) {
+      //Open binary file for writing
+      sprintf(filename, "%s%s2d_yz.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outdenyz(psi, y, z, tmpx, file);
+      fclose(file);
+    }
+    if(outflags & DEN_XY0) {
+      sprintf(filename, "%s%s3d_xy0.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outpsi2xy(psi, x, y, file);
+      fclose(file);
+    }
+    if(outflags & DEN_X0Z) {
+      sprintf(filename, "%s%s3d_x0z.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outpsi2xz(psi, x, z, file);
+      fclose(file);
+    }
+    if(outflags & DEN_0YZ) {
+      sprintf(filename, "%s%s3d_0yz.bin", Niterout, itername);
+      file = fopen(filename, "wb");
+      if(file == NULL) {
+        fprintf(stderr, "Failed to open file %s\n", filename);
+        exit(EXIT_FAILURE);
+      }
+      outpsi2yz(psi, y, z, file);
+      fclose(file);
+    }
+
+  }
+
+  // Main loop that does the evolution of the wave function
   double nsteps;
   nsteps = Niter / Nsnap;
   auto start = std::chrono::high_resolution_clock::now();
   for (long snap = 1; snap <= Nsnap; snap++) {
     for(long j = 0; j<nsteps; j++){
       calc_psid2_potdd(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(), d_psi2_fft, d_potdd.raw());
-      calcnu(d_psi.raw(), d_work_array.raw(), d_pot.raw(), g, gd);
+      calcnu(d_psi.raw(), d_work_array.raw(), d_pot.raw(), g, gd, h2);
       calclux(d_psi.raw(), d_work_array.raw(), d_calphax.raw(), d_cgammax.raw(), Ax0r, Ax);
       calcluy(d_psi.raw(), d_work_array.raw(), d_calphay.raw(), d_cgammay.raw(), Ay0r, Ay);
       calcluz(d_psi.raw(), d_work_array.raw(), d_calphaz.raw(), d_cgammaz.raw(), Az0r, Az);
@@ -180,12 +343,108 @@ int main(int argc, char **argv) {
       fprintf(filerms, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
       fflush(filerms);
     }
-    calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_psi2dd.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd);
+    calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_psi2dd.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
     if(muoutput != NULL) {
-      fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2]);
+      fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3]+muen[4], muen[3], muen[1], muen[0], muen[2], muen[4]);
       fflush(filemu);
     }
-    mutotnew = muen[0]+muen[1]+muen[2]+muen[3];
+    if(Niterout != NULL) {
+      //Move d_psi to host, host is pinned memory
+      cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(double), cudaMemcpyDeviceToHost);
+      char itername[32];  // Increased buffer size to prevent overflow
+      sprintf(itername, "-%06li-", snap);
+      if(outflags & DEN_X) {
+        sprintf(filename, "%s%s1d_x.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outdenx(psi, x, tmpy, tmpz, file);
+        fclose(file);
+      }
+      if(outflags & DEN_Y) {
+        sprintf(filename, "%s%s1d_y.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outdeny(psi, y, tmpx, tmpz, file);
+        fclose(file);
+      }
+      if(outflags & DEN_Z) {
+        sprintf(filename, "%s%s1d_z.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outdenz(psi, z, tmpx, tmpy, file);
+        fclose(file);
+      }
+      if(outflags & DEN_XY) {
+        sprintf(filename, "%s%s2d_xy.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outdenxy(psi, x, y, tmpz, file);
+        fclose(file);
+      }
+      if(outflags & DEN_XZ) {
+        sprintf(filename, "%s%s2d_xz.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outdenxz(psi, x, z, tmpy, file);
+        fclose(file);
+      }
+      if(outflags & DEN_YZ) {
+        sprintf(filename, "%s%s2d_yz.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outdenyz(psi, y, z, tmpx, file);
+        fclose(file);
+      }
+      if(outflags & DEN_XY0) {
+        sprintf(filename, "%s%s3d_xy0.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outpsi2xy(psi, x, y, file);
+        fclose(file);
+      }
+      if(outflags & DEN_X0Z) {
+        sprintf(filename, "%s%s3d_x0z.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outpsi2xz(psi, x, z, file);
+        fclose(file);
+      }
+      if(outflags & DEN_0YZ) {
+        sprintf(filename, "%s%s3d_0yz.bin", Niterout, itername);
+        file = fopen(filename, "wb");
+        if(file == NULL) {
+          fprintf(stderr, "Failed to open file %s\n", filename);
+          exit(EXIT_FAILURE);
+        }
+        outpsi2yz(psi, y, z, file);
+        fclose(file);
+      }
+    }
+    mutotnew = muen[0]+muen[1]+muen[2]+muen[3]+muen[4];
     if (fabs((mutotold - mutotnew) / mutotnew) < murel) break;
     mutotold = mutotnew;
     if (mutotnew > muend) break;
@@ -210,46 +469,12 @@ int main(int argc, char **argv) {
     sprintf(filename, "%s.bin", finalpsi);
     save_psi_from_gpu(psi, d_psi.raw(), filename, Nx, Ny, Nz);
   }
-//   std::cout << "Psi before reading: " << psi[0] << std::endl;
-//   // Find min, max, and count non-zero elements asfsafas
-// double min_val = psi[0], max_val = psi[0];
-// int non_zero_count = 0;
-// int total_elements = Nx * Ny * Nz;
-
-// for(int i = 0; i < total_elements; i++) {
-//     if(psi[i] != 0.0) non_zero_count++;
-//     if(psi[i] < min_val) min_val = psi[i];
-//     if(psi[i] > max_val) max_val = psi[i];
-// }
-
-// std::cout << "Total elements BEFORE ReAD: " << total_elements << std::endl;
-// std::cout << "Non-zero elements BEFORE READ: " << non_zero_count << std::endl;
-// std::cout << "Min value BEFORE READ: " << min_val << std::endl;
-// std::cout << "Max value BEFORE READ: " << max_val << std::endl;
-//   for(int i = 0; i < Nx * Ny * Nz; i++) {psi[i]=0;}
-//   read_psi_from_file(psi, filename, Nx, Ny, Nz);
-//   // Find min, max, and count non-zero elements
-// double min_val1 = psi[0], max_val1 = psi[0];
-// int non_zero_count1 = 0;
-// int total_elements1 = Nx * Ny * Nz;
-
-// for(int i = 0; i < total_elements; i++) {
-//     if(psi[i] != 0.0) non_zero_count1++;
-//     if(psi[i] < min_val1) min_val1 = psi[i];
-//     if(psi[i] > max_val1) max_val1 = psi[i];
-// }
-
-// std::cout << "Total elements: " << total_elements << std::endl;
-// std::cout << "Non-zero elements: " << non_zero_count1 << std::endl;
-// std::cout << "Min value: " << min_val1 << std::endl;
-// std::cout << "Max value: " << max_val1 << std::endl;
-//   d_psi.copyFromHost(psi);
-//   compute_rms_values(d_psi, d_work_array, d_x2, d_y2, d_z2, integ, h_rms_pinned);
-//  std::cout << "rms_x: " << std::setprecision(16) << h_rms_pinned[0] << " rms_y: " << std::setprecision(16) << h_rms_pinned[1] << " rms_z: " << std::setprecision(16) << h_rms_pinned[2] << std::endl;
 
   // Cleanup pinned memory
   cudaFreeHost(h_rms_pinned);
   cudaFreeHost(psi);
+
+  // Cleanup FFT plan
   cudaFree(d_psi2_fft);
   cufftDestroy(forward_plan);
   cufftDestroy(backward_plan);
@@ -257,7 +482,7 @@ int main(int argc, char **argv) {
 }
 
 /**
- *    Reading input parameters from the configuration file.
+ * @brief Reading input parameters from the configuration file.
  */
 void readpar(void) {
   const char *cfg_tmp;
@@ -458,29 +683,19 @@ void readpar(void) {
   } else
     outflags = 0;
 
-  if ((Niterout != NULL) || (finalpsi != NULL)) {
-    if ((cfg_tmp = cfg_read("OUTSTPX")) == NULL) {
-      fprintf(stderr, "OUTSTPX is not defined in the configuration file.\n");
-      exit(EXIT_FAILURE);
-    }
-    outstpx = atol(cfg_tmp);
-    if ((cfg_tmp = cfg_read("OUTSTPY")) == NULL) {
-      fprintf(stderr, "OUTSTPY is not defined in the configuration file.\n");
-      exit(EXIT_FAILURE);
-    }
-    outstpy = atol(cfg_tmp);
-
-    if ((cfg_tmp = cfg_read("OUTSTPZ")) == NULL) {
-      fprintf(stderr, "OUTSTPZ is not defined in the configuration file.\n");
-      exit(EXIT_FAILURE);
-    }
-    outstpz = atol(cfg_tmp);
-  }
-
   return;
 }
 
-// function to compute RMS values
+/**
+ * @brief Function to compute RMS values on device
+ * @param d_psi: Device: 3D psi array
+ * @param d_work_array:  Work array 
+ * @param d_x2: x2 array
+ * @param d_y2: y2 array
+ * @param d_z2: z2 array
+ * @param integ: Simpson3DTiledIntegrator
+ * @param h_rms_pinned: Output RMS values in pinned memory [rms_x, rms_y, rms_z]
+ */ 
 void compute_rms_values(const double *d_psi, // Device: 3D psi array
                         double *d_work_array, const double *d_x2,
                         const double *d_y2, const double *d_z2,
@@ -506,6 +721,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
        );
 
   cudaDeviceSynchronize();
+  // Integrate x^2 * psi^2
   double x2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
 
@@ -515,6 +731,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       1 // 1 for y direction
   );
   cudaDeviceSynchronize();
+  // Integrate y^2 * psi^2
   double y2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
 
@@ -524,6 +741,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       2 // 2 for z direction
   );
   cudaDeviceSynchronize();
+  // Integrate z^2 * psi^2
   double z2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
 
@@ -533,6 +751,13 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
   h_rms_pinned[2] = sqrt(z2_integral); // rms_z
 }
 
+/**
+ * @brief Kernel to compute single weighted psi squared
+ * @param psi: Device: 3D psi array
+ * @param coord_squared: x2, y2, or z2 array
+ * @param result: Result array
+ * @param direction: Direction (0=x, 1=y, 2=z)
+ */
 __global__ void compute_single_weighted_psi_squared(
     const double *__restrict__ psi,
     const double *__restrict__ coord_squared, // x2, y2, or z2
@@ -561,6 +786,11 @@ __global__ void compute_single_weighted_psi_squared(
   result[linear_idx] = weight * psi_squared;
 }
 
+/**
+ * @brief Function to compute squared wave function on device
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array
+ */
 void calc_d_psi2(const double *d_psi, double *d_psi2) {
   dim3 threadsPerBlock(8, 8, 8);
   dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
@@ -570,6 +800,11 @@ void calc_d_psi2(const double *d_psi, double *d_psi2) {
   return;
 }
 
+/**
+ * @brief Kernel to compute squared wave function
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array
+ */
 __global__ void compute_d_psi2(const double *__restrict__ d_psi,
                                double *__restrict__ d_psi2) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -585,30 +820,42 @@ __global__ void compute_d_psi2(const double *__restrict__ d_psi,
   d_psi2[linear_idx] = psi_val * psi_val;
 }
 
-void initpsi(double *psi, MultiArray<double> &x2, MultiArray<double> &y2, MultiArray<double> &z2) {
+/**
+ * @brief Function to initialize wave function
+ * @param psi: Device: 3D psi array
+ * @param x2: x2 array
+ * @param y2: y2 array
+ * @param z2: z2 array
+ * @param x: x array
+ * @param y: y array
+ * @param z: z array
+ */
+void initpsi(double *psi, MultiArray<double> &x2, MultiArray<double> &y2, MultiArray<double> &z2, MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &z) {
   long cnti, cntj, cntk;
   double cpsi;
   double tmp;
   cpsi = sqrt(2. * pi * sqrt(2. * pi) * sx * sy * sz);
-  double val;
+
+  #pragma omp parallel for private(cnti)
   for (cnti = 0; cnti < Nx; cnti++) {
-    val = (cnti - Nx2) * dx;
-    // x[cnti] = val;
-    x2[cnti] = val * val;
+    x[cnti] = (cnti - Nx2) * dx;
+    x2[cnti] = x[cnti] * x[cnti];
   }
 
+  #pragma omp parallel for private(cntj)
   for (cntj = 0; cntj < Ny; cntj++) {
-    val = (cntj - Ny2) * dy;
-    // y[cntj] = val;
-    y2[cntj] = val * val;
+    y[cntj] = (cntj - Ny2) * dy;
+    y2[cntj] = y[cntj] * y[cntj];
   }
 
+  #pragma omp parallel for private(cntk)
   for (cntk = 0; cntk < Nz; cntk++) {
-    val = (cntk - Nz2) * dz;
-    // z[cntk] = val;
-    z2[cntk] = val * val;
+
+    z[cntk] = (cntk - Nz2) * dz;
+    z2[cntk] = z[cntk] * z[cntk];
   }
 
+  #pragma omp parallel for private(cnti, cntj, cntk, tmp)
   for (cntk = 0; cntk < Nz; cntk++) {
     for (cntj = 0; cntj < Ny; cntj++) {
       for (cnti = 0; cnti < Nx; cnti++) {
@@ -621,18 +868,25 @@ void initpsi(double *psi, MultiArray<double> &x2, MultiArray<double> &y2, MultiA
   return;
 }
 
+/**
+ * @brief Function to initialize trap potential
+ * @param pot: Device: 3D trap potential array
+ * @param x2: x2 array
+ * @param y2: y2 array
+ * @param z2: z2 array
+ */
 void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double> &y2, MultiArray<double> &z2) {
   long cnti, cntj, cntk;
   double vgamma2 = vgamma * vgamma;
   double vnu2 = vnu * vnu;
   double vlambda2 = vlambda * vlambda;
-  double val;
+
+  #pragma omp parallel for private(cnti, cntj, cntk)
   for (cntk = 0; cntk < Nz; cntk++) {
     for (cntj = 0; cntj < Ny; cntj++) {
       for (cnti = 0; cnti < Nx; cnti++) {
-        val = 0.5 * par *
-              (vgamma2 * x2[cnti] + vnu2 * y2[cntj] + vlambda2 * z2[cntk]);
-        pot(cntk, cntj, cnti) = val;
+        pot(cntk, cntj, cnti) = 0.5 * par *
+        (vgamma2 * x2[cnti] + vnu2 * y2[cntj] + vlambda2 * z2[cntk]);;
       }
     }
   }
@@ -640,16 +894,14 @@ void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double>
 }
 
 /**
- *    Initialization of the dipolar potential.
- *    kx  - array with the space mesh values in the x-direction in the K-space
- *    ky  - array with the space mesh values in the y-direction in the K-space
- *    kz  - array with the space mesh values in the z-direction in the K-space
- *    kx2 - array with the squared space mesh values in the x-direction in the
- *          K-space
- *    ky2 - array with the squared space mesh values in the y-direction in the
- *          K-space
- *    kz2 - array with the squared space mesh values in the z-direction in the
- *          K-space
+ * @brief Function to initialize dipolar potential
+ * @param potdd: Device: 3D dipolar potential array
+ * @param kx: Device: 3D kx array
+ * @param ky: Device: 3D ky array
+ * @param kz: Device: 3D kz array
+ * @param kx2: Device: 3D kx2 array
+ * @param ky2: Device: 3D ky2 array
+ * @param kz2: Device: 3D kz2 array
  */
  void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<double> &ky, MultiArray<double> &kz, MultiArray<double> &kx2, MultiArray<double> &ky2, MultiArray<double> &kz2) {
   long cnti, cntj, cntk;
@@ -670,12 +922,10 @@ void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double>
   for (cntj = 0; cntj < Ny; cntj ++) ky2[cntj] = ky[cntj] * ky[cntj];
   for (cntk = 0; cntk < Nz; cntk ++) kz2[cntk] = kz[cntk] * kz[cntk];
 
-
-
+  #pragma omp parallel for private(cnti, cntj, cntk, tmp, xk)
   for (cntk = 0; cntk < Nz; cntk ++) {
      for (cntj = 0; cntj < Ny; cntj ++) {
         for (cnti = 0; cnti < Nx; cnti ++) {
-
            xk = sqrt(kz2[cntk] + kx2[cnti] + ky2[cntj]);
            tmp = 1. + 3. * cos(xk * cutoff) / (xk * xk * cutoff * cutoff) - 3. * sin(xk * cutoff) / (xk * xk * xk * cutoff * cutoff * cutoff);
            potdd(cntk, cntj, cnti) = (4. * pi * (3. * kz2[cntk] / (kx2[cnti] + ky2[cntj] + kz2[cntk]) - 1.) / 3.) * tmp;
@@ -689,7 +939,13 @@ void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double>
   return;
 }
 
-// Calculation of the wave function norm and normalization on device
+/**
+ * @brief Function to calculate the wave function norm and normalization on device
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array
+ * @param norm: Wave function norm
+ * @param integ: Simpson3DTiledIntegrator
+ */
 void calcnorm(double *d_psi, double *d_psi2, double &norm,
               Simpson3DTiledIntegrator &integ) {
   calc_d_psi2(d_psi, d_psi2);
@@ -707,7 +963,11 @@ void calcnorm(double *d_psi, double *d_psi2, double &norm,
   cudaDeviceSynchronize(); // Ensure completion
 }
 
-// Multiplication of the wave function by the norm on device
+/**
+ * @brief Kernel to multiply the wave function by the norm on device
+ * @param d_psi: Device: 3D psi array
+ * @param norm: Wave function norm
+ */
 __global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -720,6 +980,11 @@ __global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm) 
   d_psi[linear_idx] *= norm;
 }
 
+/**
+ * @brief Kernel to compute the squared wave function multiplied by the dipolar potential
+ * @param d_psi2_fft: Device: 3D psi2 array in FFT format
+ * @param potdd: Device: 3D dipolar potential array
+ */
 __global__ void compute_psid2_potdd(cufftDoubleComplex * d_psi2_fft, 
   const double* __restrict__ potdd) {
   int grid_stride_z = gridDim.z * blockDim.z;
@@ -746,6 +1011,10 @@ __global__ void compute_psid2_potdd(cufftDoubleComplex * d_psi2_fft,
   }
 }
 
+/**
+ * @brief Kernel to compute the boundaries of the FFT psi2 array
+ * @param psidd2: Device: 3D psi2 array multiplied by the dipolar potential
+ */
 __global__ void calcpsidd2_boundaries(double *psidd2) {
   long cnti, cntj, cntk;
 
@@ -754,11 +1023,7 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
 
   int tdy=blockIdx.y * blockDim.y + threadIdx.y;
   int tdx=blockIdx.x * blockDim.x + threadIdx.x;
-  // Memory layout: fastest changing = x, slowest = z
-  // Index calculation: idx = k * (d_Nx * d_Ny) + j * d_Nx + i
-  
-  // First loop: Copy from first x-slice to last x-slice
-  // (j=0 to j=d_Ny-1, k=0 to k=d_Nz-1)
+
   for (cntj = tdy; cntj < d_Ny; cntj += grid_stride_y) {
      for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) {
         long first_idx = cntk * (d_Nx * d_Ny) + cntj * d_Nx + 0;           // i=0 (first x-slice)
@@ -768,8 +1033,6 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
      }
   }
 
-  // Second loop: Copy from first y-slice to last y-slice  
-  // (i=0 to i=d_Nx-1, k=0 to k=d_Nz-1)
   for (cnti = tdy; cnti < d_Nx; cnti += grid_stride_y) {
      for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) {
         long first_idx = cntk * (d_Nx * d_Ny) + 0 * d_Nx + cnti;           // j=0 (first y-slice)
@@ -779,8 +1042,6 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
      }
   }
 
-  // Third loop: Copy from first z-slice to last z-slice
-  // (i=0 to i=d_Nx-1, j=0 to j=d_Ny-1)
   for (cnti = tdy; cnti < d_Nx; cnti += grid_stride_y) {
      for (cntj = tdx; cntj < d_Ny; cntj += grid_stride_x) {
         long first_idx = 0 * (d_Nx * d_Ny) + cntj * d_Nx + cnti;           // k=0 (first z-slice)
@@ -791,6 +1052,15 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
   }
 }
 
+/**
+ * @brief Function to compute the FFT of the squared wave function multiplied by the dipolar potential
+ * @param forward_plan: Forward FFT plan
+ * @param backward_plan: Backward FFT plan
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2_real: Device: 3D psi2 array
+ * @param d_psi2_fft: Device: 3D psi2 array in FFT format
+ * @param potdd: Device: 3D dipolar potential array
+ */
 void calc_psid2_potdd(cufftHandle forward_plan, cufftHandle backward_plan, const double* d_psi, double* d_psi2_real, cufftDoubleComplex * d_psi2_fft,const double* potdd) {
   calc_d_psi2(d_psi, d_psi2_real);
   cufftExecD2Z(forward_plan, (cufftDoubleReal*)d_psi2_real, d_psi2_fft);
@@ -807,7 +1077,22 @@ void calc_psid2_potdd(cufftHandle forward_plan, cufftHandle backward_plan, const
 }
 
 /**
- *    Crank-Nicolson scheme coefficients generation.
+ * @brief Function to generate the Crank-Nicolson scheme coefficients
+ * @param calphax: Host: 3D alpha x coefficient
+ * @param cgammax: Host: 3D gamma x coefficient
+ * @param calphay: Host: 3D alpha y coefficient
+ * @param cgammay: Host: 3D gamma y coefficient
+ * @param calphaz: Host: 3D alpha z coefficient
+ * @param cgammaz: Host: 3D gamma z coefficient
+ * @param Ax0: Device: Ax0 coefficient
+ * @param Ay0: Host: Ay0 coefficient
+ * @param Az0: Host: Az0 coefficient
+ * @param Ax0r: Host: Ax0r coefficient
+ * @param Ay0r: Host: Ay0r coefficient
+ * @param Az0r: Host: Az0r coefficient
+ * @param Ax: Host: Ax coefficient
+ * @param Ay: Host: Ay coefficient
+ * @param Az: Host: Az coefficient
  */
 void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArray<double> &calphay,
              MultiArray<double> &cgammay, MultiArray<double> &calphaz, MultiArray<double> &cgammaz,
@@ -852,14 +1137,17 @@ void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArra
 }
 
 /**
- *    Time propagation with respect to H1 (part of the Hamiltonian without
+ * @brief Function to compute the time propagation with respect to H1 (part of the Hamiltonian without
  *    spatial derivatives).
- *    psi    - array with the wave function values
- *
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array
+ * @param d_pot: Device: 3D trap potential array
+ * @param g: Host to Device: g coefficient for contact interaction term
+ * @param gd: Host to Device: gd coefficient for dipolar interaction term
+ * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
  */
-
 void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g,
-            double gd) {
+            double gd, double h2) {
   //calc_d_psi2(d_psi, d_psi2);
 
   dim3 threadsPerBlock(8, 8, 8);
@@ -867,14 +1155,24 @@ void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g,
                  (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
   calcnu_kernel<<<numBlocks, threadsPerBlock>>>(
-      d_psi, d_psi2, d_pot, g, gd);
+      d_psi, d_psi2, d_pot, g, gd, h2);
   cudaDeviceSynchronize();
   return;
 }
 
+/**
+ * @brief Kernel to compute the time propagation with respect to H1 (part of the Hamiltonian without
+ *    spatial derivatives).
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array
+ * @param d_pot: Device: 3D trap potential array
+ * @param g: Host: g coefficient for contact interaction term
+ * @param gd: Host: gd coefficient for dipolar interaction term
+ * @param h2: Host: h2 coefficient for quantum fluctuation term
+ */
 __global__ void calcnu_kernel(double *__restrict__ d_psi,
                               double *__restrict__ d_psi2,
-                              const double *__restrict__ d_pot, const double g, const double gd) {
+                              const double *__restrict__ d_pot, const double g, const double gd, const double h2) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
   int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -884,16 +1182,23 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi,
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double psi_val = d_psi[linear_idx];
-  double psi2dd = __ldg(&d_psi2[linear_idx])/((double)(d_Nx * d_Ny * d_Nz)) * gd; // Read-only cache for psi2dd
-  double tmp = d_dt * ( psi_val * psi_val * g+ psi2dd + __ldg(&d_pot[linear_idx])); // Read-only cache for potential
-  //double tmp = dt * (psi2dd);
+  double psi_val2 = psi_val * psi_val;
+  double psi_val3 = psi_val2 * fabs(psi_val);
+  double psi2dd = __ldg(&d_psi2[linear_idx])/((double)(d_Nx * d_Ny * d_Nz)) * gd; 
+  double pot_val = __ldg(&d_pot[linear_idx]);
+  double tmp = d_dt * ( psi_val2 * g + psi2dd + psi_val3 * h2 + pot_val);
+  //double tmp = d_dt * (psi_val3*h2);
   d_psi[linear_idx] *= exp(-tmp);
 }
 
 /**
- *    Time propagation with respect to H2 (x-part of the Laplacian).
- *    psi   - array with the wave function values
- *    cbeta - Crank-Nicolson scheme coefficients
+ * @brief Function to compute the time propagation with respect to H2 (x-part of the Laplacian).
+ * @param d_psi: Device: 3D psi array
+ * @param d_cbeta: Device: 3D cbeta array
+ * @param d_calphax: Device: 3D calphax array
+ * @param d_cgammax: Device: 3D cgammax array
+ * @param Ax0r: Host to Device: Ax0r coefficient
+ * @param Ax: Host to Device: Ax coefficient
  */
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax,
              double *d_cgammax, double Ax0r, double Ax) {
@@ -909,6 +1214,15 @@ void calclux(double *d_psi, double *d_cbeta, double *d_calphax,
   return;
 }
 
+/**
+ * @brief Kernel to compute the time propagation with respect to H2 (x-part of the Laplacian).
+ * @param d_psi: Device: 3D psi array
+ * @param d_cbeta: Device: 3D cbeta array
+ * @param d_calphax: Device: 3D calphax array
+ * @param d_cgammax: Device: 3D cgammax array
+ * @param Ax0r: Host to Device: Ax0r coefficient
+ * @param Ax: Host to Device: Ax coefficient
+ */
 __global__ void calclux_kernel(double *__restrict__ psi,
                                double *__restrict__ cbeta,
                                const double *__restrict__ calphax,
@@ -929,7 +1243,7 @@ __global__ void calclux_kernel(double *__restrict__ psi,
   // Boundary condition: cbeta[nx-2] = psi[nx-1]
   cbeta[base_offset + d_Nx - 2] = psi[base_offset + d_Nx - 1];
 
-  // Thomas algorithm forward sweep
+  // Algorithm forward sweep
   for (int cnti = d_Nx - 2; cnti > 0; cnti--) {
     double c = -Ax * psi[base_offset + cnti + 1] +
                Ax0r * psi[base_offset + cnti] -
@@ -952,13 +1266,13 @@ __global__ void calclux_kernel(double *__restrict__ psi,
 }
 
 /**
- *    Time propagation with respect to H3 (y-part of the Laplacian).
- *    d_psi   - device array with the wave function values
- *    d_cbeta - device array for Crank-Nicolson temporary values
- *    d_calphay - device array with alpha coefficients for y-direction
- *    d_cgammay - device array with gamma coefficients for y-direction
- *    Ay0r - diagonal coefficient for right-hand side
- *    Ay - off-diagonal coefficient
+ * @brief Function to compute the time propagation with respect to H3 (y-part of the Laplacian).
+ * @param d_psi: Device: 3D psi array
+ * @param d_cbeta: Device: 3D cbeta array
+ * @param d_calphay: Device: 3D calphay array
+ * @param d_cgammay: Device: 3D cgammay array
+ * @param Ay0r: Host to Device: Ay0r coefficient
+ * @param Ay: Host to Device: Ay coefficient
  */
 void calcluy(double *d_psi, double *d_cbeta, double *d_calphay,
              double *d_cgammay, double Ay0r, double Ay) {
@@ -975,6 +1289,15 @@ void calcluy(double *d_psi, double *d_cbeta, double *d_calphay,
   return;
 }
 
+/**
+ * @brief Kernel to compute the time propagation with respect to H3 (y-part of the Laplacian).
+ * @param d_psi: Device: 3D psi array
+ * @param d_cbeta: Device: 3D cbeta array
+ * @param d_calphay: Device: 3D calphay array
+ * @param d_cgammay: Device: 3D cgammay array
+ * @param Ay0r: Host to Device: Ay0r coefficient
+ * @param Ay: Host to Device: Ay coefficient
+ */
 __global__ void calcluy_kernel(double *__restrict__ psi,
                                double *__restrict__ cbeta,
                                const double *__restrict__ calphay,
@@ -994,7 +1317,7 @@ __global__ void calcluy_kernel(double *__restrict__ psi,
   long psi_idx = cntk * d_Ny * d_Nx + (d_Ny - 1) * d_Nx + cnti;
   cbeta[idx] = psi[psi_idx];
 
-  // Thomas algorithm forward sweep (working in y-direction)
+  // Algorithm forward sweep (working in y-direction)
   for (int cntj = d_Ny - 2; cntj > 0; cntj--) {
     long base_offset = cntk * d_Ny * d_Nx + cnti;
 
@@ -1023,13 +1346,13 @@ __global__ void calcluy_kernel(double *__restrict__ psi,
 }
 
 /**
- *    Time propagation with respect to H4 (z-part of the Laplacian).
- *    d_psi   - device array with the wave function values
- *    d_cbeta - device array for Crank-Nicolson temporary values
- *    d_calphaz - device array with alpha coefficients for z-direction
- *    d_cgammaz - device array with gamma coefficients for z-direction
- *    Az0r - diagonal coefficient for right-hand side
- *    Az - off-diagonal coefficient
+ * @brief Function to compute the time propagation with respect to H4 (z-part of the Laplacian).
+ * @param d_psi: Device: 3D psi array
+ * @param d_cbeta: Device: 3D cbeta array
+ * @param d_calphaz: Device: 3D calphaz array
+ * @param d_cgammaz: Device: 3D cgammaz array
+ * @param Az0r: Host to Device: Az0r coefficient
+ * @param Az: Host to Device: Az coefficient
  */
 void calcluz(double *d_psi, double *d_cbeta, double *d_calphaz,
              double *d_cgammaz, double Az0r, double Az) {
@@ -1045,6 +1368,15 @@ void calcluz(double *d_psi, double *d_cbeta, double *d_calphaz,
   return;
 }
 
+/**
+ * @brief Kernel to compute the time propagation with respect to H4 (z-part of the Laplacian).
+ * @param d_psi: Device: 3D psi array
+ * @param d_cbeta: Device: 3D cbeta array
+ * @param d_calphaz: Device: 3D calphaz array
+ * @param d_cgammaz: Device: 3D cgammaz array
+ * @param Az0r: Host to Device: Az0r coefficient
+ * @param Az: Host to Device: Az coefficient
+ */
 __global__ void calcluz_kernel(double *__restrict__ psi,
                                double *__restrict__ cbeta,
                                const double *__restrict__ calphaz,
@@ -1066,7 +1398,7 @@ __global__ void calcluz_kernel(double *__restrict__ psi,
   // Boundary condition: cbeta[nz-2] = psi[nz-1]
   cbeta[base_offset + (d_Nz - 2) * stride] = psi[base_offset + (d_Nz - 1) * stride];
 
-  // Thomas algorithm forward sweep (working in z-direction)
+  // Algorithm forward sweep (working in z-direction)
   for (int cntk = d_Nz - 2; cntk > 0; cntk--) {
     double c = -Az * psi[base_offset + (cntk + 1) * stride] +
                Az0r * psi[base_offset + cntk * stride] -
@@ -1090,19 +1422,34 @@ __global__ void calcluz_kernel(double *__restrict__ psi,
   psi[base_offset + (d_Nz - 1) * stride] = 0.0;
 }
 
-// HIGHLY OPTIMIZED VERSION: Uses fused kernels to eliminate redundant calculations
-void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd, double *d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan, Simpson3DTiledIntegrator &integ, const double g, const double gd){
+/**
+ * @brief Function to compute the chemical potential of the system
+ * @param muen: Host: 3D muen array that stores the chemical potential of the system and its contributions
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array
+ * @param d_pot: Device: 3D trap potential array
+ * @param d_psi2dd: Device: 3D psi2dd array
+ * @param d_potdd: Device: 3D dipolar potential array
+ * @param d_psi2_fft: Device: 3D psi2_fft array
+ * @param forward_plan: FFT forward plan
+ * @param backward_plan: FFT backward plan
+ * @param integ: Simpson3DTiledIntegrator
+ * @param g: Host to Device: g coefficient for contact interaction term
+ * @param gd: Host to Device: gd coefficient for dipolar interaction term
+ * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
+ */
+void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd, double *d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan, Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2){
   
   dim3 threadsPerBlock(8, 8, 8);
   dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
 
-  // Step 1: Contact energy - Calculate ψ² and immediately compute 0.5 * g * ψ⁴
+  // Step 1: Contact energy - Calculate 0.5 * g * ψ⁴
   calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, g);
   muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
-  // Step 2: Potential energy - Calculate ψ² and 0.5 * ψ² * V in one kernel
+  // Step 2: Potential energy - Calculate 0.5 * ψ² * V
   calcmuen_fused_potential<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_pot);
   muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
   
@@ -1115,9 +1462,18 @@ void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double 
   calcmuen_kin(d_psi, d_psi2, par);
   muen[3] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
+  // Step 5: H2 energy - calculate quantum fluctuation energy density
+  calcmuen_fused_h2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, h2);
+  muen[4] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
+
   return;
 }
-// FUSED KERNEL: Calculate ψ² and contact energy in one pass
+/**
+ * @brief Kernel to calculate contact energy term
+ * @param d_psi: Device: 3D psi array
+ * @param d_result: Device: 3D result array
+ * @param g: Host to Device: g coefficient for contact interaction term
+ */
 __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double *__restrict__ d_result, double g){
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1133,7 +1489,12 @@ __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double 
   d_result[linear_idx] = 0.5 * psi4_val * g;
 }
 
-// FUSED KERNEL: Calculate ψ² and potential energy in one pass
+/**
+ * @brief Kernel to calculate trap potential energy term
+ * @param d_psi: Device: 3D psi array
+ * @param d_result: Device: 3D result array
+ * @param d_pot: Device: 3D trap potential array
+ */
 __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_pot){
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1148,7 +1509,13 @@ __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi, doubl
   d_result[linear_idx] = 0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
 }
 
-// FUSED KERNEL: Calculate ψ² and dipolar energy in one pass
+/**
+ * @brief Kernel to calculate dipolar energy term
+ * @param d_psi: Device: 3D psi array
+ * @param d_result: Device: 3D result array
+ * @param d_psidd2: Device: 3D dipolar psi squared array
+ * @param gd: Host to Device: gd coefficient for dipolar interaction term
+ */
 __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double gd){
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1164,10 +1531,40 @@ __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double 
   d_result[linear_idx] = 0.5 * psi2_val * psidd2_val * gd;
 }
 
+/**
+ * @brief Kernel to calculate quantum fluctuation energy term
+ * @param d_psi: Device: 3D psi array
+ * @param d_result: Device: 3D result array
+ * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
+ */
+__global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result, const double h2){
+  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  int idy = blockIdx.y * blockDim.y + threadIdx.y;
+  int idz = blockIdx.z * blockDim.z + threadIdx.z;
+  
+  if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
+    return;
+
+  int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
+  double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+  double psi5_val = psi_val * psi_val * psi_val * psi_val * psi_val;
+  d_result[linear_idx] = 0.5 *psi5_val * h2;
+}
+
+/**
+ * @brief Function to calculate kinetic energy term
+ * @param d_psi: Device: 3D psi array
+ * @param d_work_array: Device: 3D work array
+ * @param par: Host to Device: par coefficient either 1 or 2, defined in Input file
+ */
 void calcmuen_kin(double *d_psi, double *d_work_array, int par){
   diff(dx, dy, dz, d_psi, d_work_array, Nx, Ny, Nz, par);
 }
 
+/**
+ * @brief Function to output the rms values
+ * @param filerms: File pointer to the rms output file
+ */
 void rms_output(FILE *filerms){
   fprintf(filerms, "\n**********************************************\n");
   if (cfg_read("G") != NULL) {
@@ -1187,7 +1584,7 @@ void rms_output(FILE *filerms){
   }
   fprintf(filerms, "     Dipolar cutoff Scut = %.6le,\n\n",cutoff);
   if (QF == 1) {
-    fprintf(filerms, "QF = 1: h2 = %.6le, h4 = %.6le\n        q3 = %.6le, q5 = %.6le\n\n", h2, h4, q3, q5);
+    fprintf(filerms, "QF = 1: h2 = %.16le       q5 = %.16le\n", h2,  q5);
   } else  fprintf(filerms, "QF = 0\n\n");
   fprintf(filerms, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma, vnu, vlambda);
   fprintf(filerms, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
@@ -1208,6 +1605,11 @@ void rms_output(FILE *filerms){
   
   
 }
+
+/**
+ * @brief Function to output the chemical potential values
+ * @param filemu: File pointer to the chemical potential output file
+ */
 void mu_output(FILE *filemu){
   fprintf(filemu, "\n**********************************************\n");
   if (cfg_read("G") != NULL) {
@@ -1227,7 +1629,7 @@ void mu_output(FILE *filemu){
   }
   fprintf(filemu, "     Dipolar cutoff Scut = %.6le,\n\n",cutoff);
   if (QF == 1) {
-    fprintf(filemu, "QF = 1: h2 = %.6le, h4 = %.6le\n        q3 = %.6le, q5 = %.6le\n\n", h2, h4, q3, q5);
+    fprintf(filemu, "QF = 1: h2 = %.6le,       q5 = %.6le, \n\n", h2, q5);
   } else  fprintf(filemu, "QF = 0\n\n");
   fprintf(filemu, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma, vnu, vlambda);
   fprintf(filemu, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
@@ -1242,12 +1644,21 @@ void mu_output(FILE *filemu){
   }
   fprintf(filemu, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
   fprintf(filemu, "---------------------------------------------------------------------------------\n");
-  fprintf(filemu, "Snap      mu           Kin             Pot            Contact            DDI\n");
+  fprintf(filemu, "Snap      mu           Kin             Pot            Contact            DDI            QF\n");
   fprintf(filemu, "---------------------------------------------------------------------------------\n");
   fflush(filemu);
 
 }
 
+/**
+ * @brief Function to save the psi array from the GPU to a binary file
+ * @param psi: Host: 3D psi array
+ * @param d_psi: Device: 3D psi array
+ * @param filename: Name of the file to save the psi array
+ * @param Nx: Host: Nx number of grid points in x direction
+ * @param Ny: Host: Ny number of grid points in y direction
+ * @param Nz: Host: Nz number of grid points in z direction
+ */
 void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx, long Ny, long Nz) {
   // Allocate host memory
   size_t total_size = Nx * Ny * Nz;
@@ -1279,6 +1690,14 @@ void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx
   fclose(file);
 }
 
+/**
+ * @brief Function to read the psi array from a binary file
+ * @param psi: Host: 3D psi array
+ * @param filename: Name of the file to read the psi array
+ * @param Nx: Host: Nx number of grid points in x direction
+ * @param Ny: Host: Ny number of grid points in y direction
+ * @param Nz: Host: Nz number of grid points in z direction
+ */
 void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, long Nz) {
   size_t total_size = Nx * Ny * Nz;
 
@@ -1298,4 +1717,210 @@ void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, lon
       fclose(file);
   }
   fclose(file);
+}
+
+/**
+* @brief Function to output the integrated density in x direction n(x)
+* @param psi: Host: 3D psi array
+* @param x: Host: x array
+* @param tmpy: Host: temporary array for y direction
+* @param tmpz: Host: temporary array for z direction
+* @param file: File pointer to the output file
+*/
+void outdenx(double *psi, MultiArray<double> &x, MultiArray<double> &tmpy, MultiArray<double> &tmpz, FILE *file){
+  for(long cnti =0; cnti < Nx; cnti++){
+    // For each x position
+    for(long cntj = 0; cntj < Ny; cntj++){
+      // Compute |psi|^2
+      for(long cntk = 0; cntk < Nz; cntk++){
+        tmpz[cntk] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+      }
+      // Integrate over z -> store in tmpy[cntj]
+      tmpy[cntj] = simpint(dz, tmpz.raw(), Nz);
+    }
+    // Integrate over y to get n(x)
+    double n_x = simpint(dy, tmpy.raw(), Ny);
+    
+    // Write x position and n(x) to file
+    fwrite(&x[cnti], sizeof(double), 1, file);
+    fwrite(&n_x, sizeof(double), 1, file);
+  }
+}
+
+/**
+* @brief Function to output the integrated density in y direction n(y)
+* @param psi: Host: 3D psi array
+* @param y: Host: y array
+* @param tmpx: Host: temporary array for x direction
+* @param tmpz: Host: temporary array for z direction
+* @param file: File pointer to the output file
+*/
+void outdeny(double *psi, MultiArray<double> &y, MultiArray<double> &tmpx, MultiArray<double> &tmpz, FILE *file){
+  for(long cntj =0; cntj < Ny; cntj++){
+    // For each y position
+    for(long cnti =0; cnti < Nx; cnti++){
+      // Compute |psi|^2
+      for(long cntk =0; cntk < Nz; cntk++){
+        tmpz[cntk] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+      }
+      // Integrate over z -> store in tmpx[cnti]
+      tmpx[cnti] = simpint(dz, tmpz.raw(), Nz);
+    }
+    // Integrate over x to get n(y)
+    double n_y = simpint(dx, tmpx.raw(), Nx);
+    // Write y position and n(y) to file
+    fwrite(&y[cntj], sizeof(double), 1, file);
+    fwrite(&n_y, sizeof(double), 1, file);
+  }
+}
+
+/**
+* @brief Function to output the integrated density in z direction n(z)
+* @param psi: Host: 3D psi array
+* @param z: Host: z array
+* @param tmpx: Host: temporary array for x direction
+* @param tmpy: Host: temporary array for y direction
+* @param file: File pointer to the output file
+*/
+void outdenz(double *psi, MultiArray<double> &z, MultiArray<double> &tmpx, MultiArray<double> &tmpy, FILE *file){
+  for(long cntk =0; cntk < Nz; cntk++){
+    // For each z position
+    for(long cntj =0; cntj < Ny; cntj++){
+      // Compute |psi|^2
+      for(long cnti =0; cnti < Nx; cnti++){
+        tmpy[cntj] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+      }
+      // Integrate over x -> store in tmpy[cntj]
+      tmpy[cntj] = simpint(dx, tmpy.raw(), Nx);
+    }
+    // Integrate over y to get n(z)
+    double n_z = simpint(dy, tmpy.raw(), Ny);
+
+    // Write z position and n(z) to file
+    fwrite(&z[cntk], sizeof(double), 1, file);
+    fwrite(&n_z, sizeof(double), 1, file);
+  }
+}
+
+/**
+* @brief Function to output the integrated density in x and y direction n(x,y)
+* @param psi: Host: 3D psi array
+* @param x: Host: x array
+* @param y: Host: y array
+* @param tmpz: Host: temporary array for z direction
+* @param file: File pointer to the output file
+*/
+void outdenxy(double *psi, MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &tmpz, FILE *file){
+  for(long cnti =0; cnti < Nx; cnti++){
+    for(long cntj =0; cntj < Ny; cntj++){
+      for(long cntk =0; cntk < Nz; cntk++){
+        tmpz[cntk] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+      }
+      double n_xy = simpint(dz, tmpz.raw(), Nz);
+      // Write x,y, n(x,y) to file
+      fwrite(&x[cnti], sizeof(double), 1, file);
+      fwrite(&y[cntj], sizeof(double), 1, file);
+      fwrite(&n_xy, sizeof(double), 1, file);
+    }
+  }
+}
+
+/**
+* @brief Function to output the integrated density in x and z direction n(x,z)
+* @param psi: Host: 3D psi array
+* @param x: Host: x array
+* @param z: Host: z array
+* @param tmpx: Host: temporary array for x direction
+* @param file: File pointer to the output file
+*/
+void outdenxz(double *psi, MultiArray<double> &x, MultiArray<double> &z, MultiArray<double> &tmpx, FILE *file){
+  for(long cnti= 0; cnti < Nx; cnti++){
+    for(long cntk = 0; cntk < Nz; cntk++){
+      for(long cntj = 0; cntj < Ny; cntj++){
+        tmpx[cntj] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+      }
+      double n_xz = simpint(dy, tmpx.raw(), Ny);
+      // Write x,z, n(x,z) to file
+      fwrite(&x[cnti], sizeof(double), 1, file);
+      fwrite(&z[cntk], sizeof(double), 1, file);
+      fwrite(&n_xz, sizeof(double), 1, file);
+    }
+  }
+}
+
+/**
+* @brief Function to output the integrated density in y and z direction n(y,z)
+* @param psi: Host: 3D psi array
+* @param y: Host: y array
+* @param z: Host: z array
+* @param tmpx: Host: temporary array for x direction
+* @param file: File pointer to the output file
+*/
+void outdenyz(double *psi, MultiArray<double> &y, MultiArray<double> &z, MultiArray<double> &tmpx, FILE *file){
+  for(long cntj = 0; cntj < Ny; cntj++){
+    for(long cntk = 0; cntk < Nz; cntk++){
+      for(long cnti = 0; cnti < Nx; cnti++){
+        tmpx[cnti] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+      }
+      double n_yz = simpint(dx, tmpx.raw(), Nx);
+      // Write y,z, n(y,z) to file
+      fwrite(&y[cntj], sizeof(double), 1, file);
+      fwrite(&z[cntk], sizeof(double), 1, file);
+      fwrite(&n_yz, sizeof(double), 1, file);
+    }
+  }
+}
+
+/**
+* @brief Function to output the squared wave function in x and y direction psi2(x,y) for z = 0
+* @param psi: Host: 3D psi array
+* @param x: Host: x array
+* @param y: Host: y array
+* @param file: File pointer to the output file
+*/
+void outpsi2xy(double *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *file){
+  for (long cnti = 0; cnti < Nx; cnti++){
+    for (long cntj = 0; cntj < Ny; cntj++){
+      double psi2_xy = psi[Nz2 * Ny * Nx + cntj * Nx + cnti] * psi[Nz2 * Ny * Nx + cntj * Nx + cnti];
+      fwrite(&x[cnti], sizeof(double), 1, file);
+      fwrite(&y[cntj], sizeof(double), 1, file);
+      fwrite(&psi2_xy, sizeof(double), 1, file);
+    }
+  }
+}
+
+/**
+* @brief Function to output the squared wave function in x and z direction psi2(x,z) for y = 0
+* @param psi: Host: 3D psi array
+* @param x: Host: x array
+* @param z: Host: z array
+* @param file: File pointer to the output file
+*/
+void outpsi2xz(double *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *file){
+  for (long cnti = 0; cnti < Nx; cnti++){
+    for (long cntk = 0; cntk < Nz; cntk++){
+      double psi2_xz = psi[cntk * Ny * Nx + Ny2 * Nx + cnti] * psi[cntk * Ny * Nx + Ny2 * Nx + cnti];
+      fwrite(&x[cnti], sizeof(double), 1, file);
+      fwrite(&z[cntk], sizeof(double), 1, file);
+      fwrite(&psi2_xz, sizeof(double), 1, file);
+    }
+  }
+}
+
+/**
+* @brief Function to output the squared wave function in y and z direction psi2(y,z) for x = 0
+* @param psi: Host: 3D psi array
+* @param y: Host: y array
+* @param z: Host: z array
+* @param file: File pointer to the output file
+*/
+void outpsi2yz(double *psi, MultiArray<double> &y, MultiArray<double> &z, FILE *file){
+  for (long cntj = 0; cntj < Ny; cntj++){
+    for (long cntk = 0; cntk < Nz; cntk++){
+      double psi2_yz = psi[cntk * Ny * Nx + cntj * Nx + Nx2] * psi[cntk * Ny * Nx + cntj * Nx + Nx2];
+      fwrite(&y[cntj], sizeof(double), 1, file);
+      fwrite(&z[cntk], sizeof(double), 1, file);
+      fwrite(&psi2_yz, sizeof(double), 1, file);
+    }
+  }
 }

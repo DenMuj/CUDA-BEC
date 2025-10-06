@@ -1,0 +1,14 @@
+var searchData=
+[
+  ['operator_28_29_0',['operator()',['../classMultiArray.html#aa0cf2ef7e8d223f1a6e8bf0aa485830f',1,'MultiArray::operator()(size_t i, size_t j) const'],['../classMultiArray.html#a9f695f1abd2d270ffcb895fe6f16d05d',1,'MultiArray::operator()(size_t i, size_t j, size_t k)'],['../classMultiArray.html#abc1705322877ccd4cba5d316bcec5984',1,'MultiArray::operator()(size_t i, size_t j, size_t k) const'],['../classMultiArray.html#a3d97a6d181bbd3f75331ba5f8d06face',1,'MultiArray::operator()(size_t i, size_t j)']]],
+  ['operator_3d_1',['operator=',['../classCudaArray3D.html#a69058486c3d1592e01a8461cfa1a6506',1,'CudaArray3D::operator=(const CudaArray3D &amp;)=delete'],['../classCudaArray3D.html#a3a12f7836a8e958d95c3338de7587a82',1,'CudaArray3D::operator=(CudaArray3D &amp;&amp;other) noexcept'],['../classSimpson3DTiledIntegrator.html#ad20edc6129824a4c976b98c4e00c5c8f',1,'Simpson3DTiledIntegrator::operator=()']]],
+  ['operator_5b_5d_2',['operator[]',['../classMultiArray.html#a1ab1d66ee305df52537a72b372510955',1,'MultiArray::operator[](size_t i)'],['../classMultiArray.html#a29ff6fa0518b3fed289f81f9d25ebed8',1,'MultiArray::operator[](size_t i) const']]],
+  ['opt_3',['opt',['../imag3d-cuda_8cuh.html#a217e4b46670419e6c3665b3c9f96b7da',1,'opt:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a217e4b46670419e6c3665b3c9f96b7da',1,'opt:&#160;real3d-cuda.cuh']]],
+  ['optms_4',['optms',['../real3d-cuda_8cuh.html#ab0ddd547d51b554cb2e3c0ba16fe5f9f',1,'optms:&#160;real3d-cuda.cuh'],['../imag3d-cuda_8cuh.html#ab0ddd547d51b554cb2e3c0ba16fe5f9f',1,'optms:&#160;imag3d-cuda.cuh']]],
+  ['outflags_5',['outflags',['../imag3d-cuda_8cuh.html#aa5452af20625ef9ce360d1c86371dfe1',1,'outflags:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#aa5452af20625ef9ce360d1c86371dfe1',1,'outflags:&#160;real3d-cuda.cuh']]],
+  ['output_6',['output',['../imag3d-cuda_8cuh.html#a90e42c6e50541cb89274ff213b2c922f',1,'output:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a90e42c6e50541cb89274ff213b2c922f',1,'output:&#160;real3d-cuda.cuh']]],
+  ['outputflags_7',['outputflags',['../imag3d-cuda_8cuh.html#a103104703d869ab186e86f2f0f86adee',1,'OutputFlags:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a103104703d869ab186e86f2f0f86adee',1,'OutputFlags:&#160;real3d-cuda.cuh']]],
+  ['outstpx_8',['outstpx',['../imag3d-cuda_8cuh.html#aa506c58b23585fa8685f42cf0f938c8f',1,'outstpx:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#aa506c58b23585fa8685f42cf0f938c8f',1,'outstpx:&#160;real3d-cuda.cuh']]],
+  ['outstpy_9',['outstpy',['../imag3d-cuda_8cuh.html#aea3985442eda87007de8587d57d76126',1,'outstpy:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#aea3985442eda87007de8587d57d76126',1,'outstpy:&#160;real3d-cuda.cuh']]],
+  ['outstpz_10',['outstpz',['../imag3d-cuda_8cuh.html#a516c596cdf05d6d65bd164d02e58f5a0',1,'outstpz:&#160;imag3d-cuda.cuh'],['../real3d-cuda_8cuh.html#a516c596cdf05d6d65bd164d02e58f5a0',1,'outstpz:&#160;real3d-cuda.cuh']]]
+];

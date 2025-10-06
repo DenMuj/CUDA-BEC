@@ -1,0 +1,103 @@
+\doxysection{src/utils/cfg.cpp File Reference}
+\hypertarget{cfg_8cpp}{}\label{cfg_8cpp}\index{src/utils/cfg.cpp@{src/utils/cfg.cpp}}
+{\ttfamily \#include "{}cfg.\+h"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{cfg_8cpp_ac14323516f3b83fc6169678295d86973}{cfg\+\_\+init}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cfg\+\_\+file}})
+\begin{DoxyCompactList}\small\item\em Configuration file parsing. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{cfg_8cpp_a0bdc7bcad5ba1a718f7c62f9dea542d7}{cfg\+\_\+read}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{key}})
+\begin{DoxyCompactList}\small\item\em Configuration property value. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{cfg_8cpp_a74381b76e1be1bfb6a621215cf36d9a7}{cfg\+\_\+size}}
+\begin{DoxyCompactList}\small\item\em Configuration file parsing. cfg\+\_\+file -\/ stands for a configuration file, which is supplied on a command line. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \mbox{\hyperlink{cfg_8cpp_a2756252462d83bb1811e97f59472d262}{cfg\+\_\+key}} \mbox{[}256\mbox{]}\mbox{[}256\mbox{]}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \mbox{\hyperlink{cfg_8cpp_a865b40616b6947cc3be5d34fce913f61}{cfg\+\_\+val}} \mbox{[}256\mbox{]}\mbox{[}256\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{cfg_8cpp_ac14323516f3b83fc6169678295d86973}\label{cfg_8cpp_ac14323516f3b83fc6169678295d86973} 
+\index{cfg.cpp@{cfg.cpp}!cfg\_init@{cfg\_init}}
+\index{cfg\_init@{cfg\_init}!cfg.cpp@{cfg.cpp}}
+\doxysubsubsection{\texorpdfstring{cfg\_init()}{cfg\_init()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} cfg\+\_\+init (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}}]{cfg\+\_\+file }\end{DoxyParamCaption})}
+
+
+
+Configuration file parsing. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em cfg\+\_\+file} & Configuration file \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Configuration size 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{cfg_8cpp_source_l00018}{18}} of file \mbox{\hyperlink{cfg_8cpp_source}{cfg.\+cpp}}.
+
+\Hypertarget{cfg_8cpp_a0bdc7bcad5ba1a718f7c62f9dea542d7}\label{cfg_8cpp_a0bdc7bcad5ba1a718f7c62f9dea542d7} 
+\index{cfg.cpp@{cfg.cpp}!cfg\_read@{cfg\_read}}
+\index{cfg\_read@{cfg\_read}!cfg.cpp@{cfg.cpp}}
+\doxysubsubsection{\texorpdfstring{cfg\_read()}{cfg\_read()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*} cfg\+\_\+read (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}}]{key }\end{DoxyParamCaption})}
+
+
+
+Configuration property value. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & Property \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Property value 
+\end{DoxyReturn}
+
+
+Definition at line \mbox{\hyperlink{cfg_8cpp_source_l00042}{42}} of file \mbox{\hyperlink{cfg_8cpp_source}{cfg.\+cpp}}.
+
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{cfg_8cpp_a2756252462d83bb1811e97f59472d262}\label{cfg_8cpp_a2756252462d83bb1811e97f59472d262} 
+\index{cfg.cpp@{cfg.cpp}!cfg\_key@{cfg\_key}}
+\index{cfg\_key@{cfg\_key}!cfg.cpp@{cfg.cpp}}
+\doxysubsubsection{\texorpdfstring{cfg\_key}{cfg\_key}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} cfg\+\_\+key\mbox{[}256\mbox{]}\mbox{[}256\mbox{]}}
+
+
+
+Definition at line \mbox{\hyperlink{cfg_8cpp_source_l00010}{10}} of file \mbox{\hyperlink{cfg_8cpp_source}{cfg.\+cpp}}.
+
+\Hypertarget{cfg_8cpp_a74381b76e1be1bfb6a621215cf36d9a7}\label{cfg_8cpp_a74381b76e1be1bfb6a621215cf36d9a7} 
+\index{cfg.cpp@{cfg.cpp}!cfg\_size@{cfg\_size}}
+\index{cfg\_size@{cfg\_size}!cfg.cpp@{cfg.cpp}}
+\doxysubsubsection{\texorpdfstring{cfg\_size}{cfg\_size}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} cfg\+\_\+size}
+
+
+
+Configuration file parsing. cfg\+\_\+file -\/ stands for a configuration file, which is supplied on a command line. 
+
+
+
+Definition at line \mbox{\hyperlink{cfg_8cpp_source_l00009}{9}} of file \mbox{\hyperlink{cfg_8cpp_source}{cfg.\+cpp}}.
+
+\Hypertarget{cfg_8cpp_a865b40616b6947cc3be5d34fce913f61}\label{cfg_8cpp_a865b40616b6947cc3be5d34fce913f61} 
+\index{cfg.cpp@{cfg.cpp}!cfg\_val@{cfg\_val}}
+\index{cfg\_val@{cfg\_val}!cfg.cpp@{cfg.cpp}}
+\doxysubsubsection{\texorpdfstring{cfg\_val}{cfg\_val}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} cfg\+\_\+val\mbox{[}256\mbox{]}\mbox{[}256\mbox{]}}
+
+
+
+Definition at line \mbox{\hyperlink{cfg_8cpp_source_l00011}{11}} of file \mbox{\hyperlink{cfg_8cpp_source}{cfg.\+cpp}}.
+

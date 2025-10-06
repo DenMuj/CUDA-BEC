@@ -1,0 +1,187 @@
+\doxysection{src/utils/diffint.cuh File Reference}
+\hypertarget{diffint_8cuh}{}\label{diffint_8cuh}\index{src/utils/diffint.cuh@{src/utils/diffint.cuh}}
+{\ttfamily \#include $<$cuda\+\_\+runtime.\+h$>$}\newline
+{\ttfamily \#include $<$math.\+h$>$}\newline
+{\ttfamily \#include $<$cu\+Complex.\+h$>$}\newline
+{\ttfamily \#include "{}multiarray.\+h"{}}\newline
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{define}} \mbox{\hyperlink{diffint_8cuh_a49887fc2933ecf4ea4fbc48b48502fd4}{DIFFINT\+\_\+H}}
+\item 
+\#\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{define}} \mbox{\hyperlink{diffint_8cuh_a1ae52fb8ae836be4cd9d29c48c53e62a}{GAULEG\+\_\+\+EPS}}~1.\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{e}}-\/12
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{diffint_8cuh_a91e920fd30a68d5a64b5fcd37464a71d}{diff\+\_\+kernel}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hy}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f\+\_\+res}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nx, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} ny, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nz, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{imag3d-cuda_8cuh_a0244fcfffe8fe946579a9774fb960417}{par}})
+\begin{DoxyCompactList}\small\item\em Kernel function for the Richardson extrapolation formula for calculation of space derivatives. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{diffint_8cuh_ac62a7f1f76039aca1d4f18c281430189}{diff}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{h}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f\+\_\+res}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nx, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} ny, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nz, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{imag3d-cuda_8cuh_a0244fcfffe8fe946579a9774fb960417}{par}})
+\begin{DoxyCompactList}\small\item\em Richardson extrapolation formula for calculation of space derivatives. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{diffint_8cuh_a7be40dfc72241473f25de8fc38a2c920}{diff\+\_\+kernel\+\_\+complex}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hy}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f\+\_\+res}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nx, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} ny, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nz, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{imag3d-cuda_8cuh_a0244fcfffe8fe946579a9774fb960417}{par}})
+\begin{DoxyCompactList}\small\item\em Kernel function for the Richardson extrapolation formula for calculation of space derivatives for complex functions. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{diffint_8cuh_ab5cca5aa7519ee8b09c205482e8a44a5}{diff\+\_\+complex}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hy}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{hz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{f\+\_\+res}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nx, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} ny, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} nz, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{imag3d-cuda_8cuh_a0244fcfffe8fe946579a9774fb960417}{par}})
+\begin{DoxyCompactList}\small\item\em Richardson extrapolation formula for calculation of space derivatives for complex functions. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{diffint_8cuh_a6cf93d6d711b3659ca4972eead2fba1f}{gauleg}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x1}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{w}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{N}})
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{diffint_8cuh_a49887fc2933ecf4ea4fbc48b48502fd4}\label{diffint_8cuh_a49887fc2933ecf4ea4fbc48b48502fd4} 
+\index{diffint.cuh@{diffint.cuh}!DIFFINT\_H@{DIFFINT\_H}}
+\index{DIFFINT\_H@{DIFFINT\_H}!diffint.cuh@{diffint.cuh}}
+\doxysubsubsection{\texorpdfstring{DIFFINT\_H}{DIFFINT\_H}}
+{\footnotesize\ttfamily \#\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{define}} DIFFINT\+\_\+H}
+
+
+
+Definition at line \mbox{\hyperlink{diffint_8cuh_source_l00002}{2}} of file \mbox{\hyperlink{diffint_8cuh_source}{diffint.\+cuh}}.
+
+\Hypertarget{diffint_8cuh_a1ae52fb8ae836be4cd9d29c48c53e62a}\label{diffint_8cuh_a1ae52fb8ae836be4cd9d29c48c53e62a} 
+\index{diffint.cuh@{diffint.cuh}!GAULEG\_EPS@{GAULEG\_EPS}}
+\index{GAULEG\_EPS@{GAULEG\_EPS}!diffint.cuh@{diffint.cuh}}
+\doxysubsubsection{\texorpdfstring{GAULEG\_EPS}{GAULEG\_EPS}}
+{\footnotesize\ttfamily \#\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{define}} GAULEG\+\_\+\+EPS~1.\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{e}}-\/12}
+
+
+
+Definition at line \mbox{\hyperlink{diffint_8cuh_source_l00009}{9}} of file \mbox{\hyperlink{diffint_8cuh_source}{diffint.\+cuh}}.
+
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{diffint_8cuh_ac62a7f1f76039aca1d4f18c281430189}\label{diffint_8cuh_ac62a7f1f76039aca1d4f18c281430189} 
+\index{diffint.cuh@{diffint.cuh}!diff@{diff}}
+\index{diff@{diff}!diffint.cuh@{diffint.cuh}}
+\doxysubsubsection{\texorpdfstring{diff()}{diff()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} diff (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{h,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{f,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{f\+\_\+res,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}}}]{par }\end{DoxyParamCaption})}
+
+
+
+Richardson extrapolation formula for calculation of space derivatives. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em hx} & Space step \\
+\hline
+{\em hy} & Space step \\
+\hline
+{\em hz} & Space step \\
+\hline
+{\em f} & Function values \\
+\hline
+{\em f\+\_\+res} & Array with the first derivatives of the function \\
+\hline
+\end{DoxyParams}
+\Hypertarget{diffint_8cuh_ab5cca5aa7519ee8b09c205482e8a44a5}\label{diffint_8cuh_ab5cca5aa7519ee8b09c205482e8a44a5} 
+\index{diffint.cuh@{diffint.cuh}!diff\_complex@{diff\_complex}}
+\index{diff\_complex@{diff\_complex}!diffint.cuh@{diffint.cuh}}
+\doxysubsubsection{\texorpdfstring{diff\_complex()}{diff\_complex()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} diff\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hy,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{f,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{f\+\_\+res,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}}}]{par }\end{DoxyParamCaption})}
+
+
+
+Richardson extrapolation formula for calculation of space derivatives for complex functions. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em hx} & Space step \\
+\hline
+{\em hy} & Space step \\
+\hline
+{\em hz} & Space step \\
+\hline
+{\em f} & Function values for complex functions \\
+\hline
+{\em f\+\_\+res} & Array with the first derivatives of the function\\
+\hline
+\end{DoxyParams}
+Richardson extrapolation formula for calculation of space derivatives for complex functions.
+
+
+\begin{DoxyParams}{Parameters}
+{\em hx} & Space step \\
+\hline
+{\em hy} & Space step \\
+\hline
+{\em hz} & Space step \\
+\hline
+{\em f} & Function values for complex functions \\
+\hline
+{\em f\+\_\+res} & Array with the first derivatives of the function \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{diffint_8cu_source_l00135}{135}} of file \mbox{\hyperlink{diffint_8cu_source}{diffint.\+cu}}.
+
+\Hypertarget{diffint_8cuh_a91e920fd30a68d5a64b5fcd37464a71d}\label{diffint_8cuh_a91e920fd30a68d5a64b5fcd37464a71d} 
+\index{diffint.cuh@{diffint.cuh}!diff\_kernel@{diff\_kernel}}
+\index{diff\_kernel@{diff\_kernel}!diffint.cuh@{diffint.cuh}}
+\doxysubsubsection{\texorpdfstring{diff\_kernel()}{diff\_kernel()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} diff\+\_\+kernel (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hy,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{f\+\_\+res,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}}}]{par }\end{DoxyParamCaption})}
+
+
+
+Kernel function for the Richardson extrapolation formula for calculation of space derivatives. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em hx} & Space step \\
+\hline
+{\em hy} & Space step \\
+\hline
+{\em hz} & Space step \\
+\hline
+{\em psi} & Function values \\
+\hline
+{\em f\+\_\+res} & Array with the first derivatives of the function \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{diffint_8cu_source_l00041}{41}} of file \mbox{\hyperlink{diffint_8cu_source}{diffint.\+cu}}.
+
+\Hypertarget{diffint_8cuh_a7be40dfc72241473f25de8fc38a2c920}\label{diffint_8cuh_a7be40dfc72241473f25de8fc38a2c920} 
+\index{diffint.cuh@{diffint.cuh}!diff\_kernel\_complex@{diff\_kernel\_complex}}
+\index{diff\_kernel\_complex@{diff\_kernel\_complex}!diffint.cuh@{diffint.cuh}}
+\doxysubsubsection{\texorpdfstring{diff\_kernel\_complex()}{diff\_kernel\_complex()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} diff\+\_\+kernel\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hy,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{hz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{f\+\_\+res,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{nz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}}}]{par }\end{DoxyParamCaption})}
+
+
+
+Kernel function for the Richardson extrapolation formula for calculation of space derivatives for complex functions. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em hx} & Space step \\
+\hline
+{\em hy} & Space step \\
+\hline
+{\em hz} & Space step \\
+\hline
+{\em f} & Function values for complex functions \\
+\hline
+{\em f\+\_\+res} & Array with the first derivatives of the function\\
+\hline
+{\em hx} & Space step \\
+\hline
+{\em hy} & Space step \\
+\hline
+{\em hz} & Space step \\
+\hline
+{\em psi} & Function values for complex functions \\
+\hline
+{\em f\+\_\+res} & Array with the first derivatives of the function \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{diffint_8cu_source_l00157}{157}} of file \mbox{\hyperlink{diffint_8cu_source}{diffint.\+cu}}.
+
+\Hypertarget{diffint_8cuh_a6cf93d6d711b3659ca4972eead2fba1f}\label{diffint_8cuh_a6cf93d6d711b3659ca4972eead2fba1f} 
+\index{diffint.cuh@{diffint.cuh}!gauleg@{gauleg}}
+\index{gauleg@{gauleg}!diffint.cuh@{diffint.cuh}}
+\doxysubsubsection{\texorpdfstring{gauleg()}{gauleg()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} gauleg (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{x1,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{x2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{x,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{w,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{N }\end{DoxyParamCaption})}
+

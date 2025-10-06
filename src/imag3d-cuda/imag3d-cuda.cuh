@@ -17,6 +17,7 @@
 #include <memory>
 #include <iomanip>
 #include <iostream>
+#include <omp.h>
 
 #define BOHR_RADIUS        5.2917720859e-11
 #define MAX_FILENAME_SIZE  256
@@ -35,6 +36,7 @@ long Nx, Ny, Nz;
 long Nx2, Ny2, Nz2;
 __constant__ long d_Nx, d_Ny, d_Nz;
 
+
 double edd, h2, h4, q3, q5, norm_psi2, norm_psi3, sx, sy, sz, murel, muend;
 int QF, QDEPL;
 int opt, optms;
@@ -42,7 +44,7 @@ int MS;
 double Na;
 long Niter, Nsnap;
 double Nad;
-double g, gd, g3;
+double g, gd;
 double aho, as, add;
 double dx, dy, dz, dx2, dy2, dz2;
 double dt;
@@ -54,7 +56,7 @@ double mx,my,mz,mt;
 
 // Function declerations
 void readpar();
-void initpsi(double  *psi, MultiArray<double>& x2, MultiArray<double>& y2, MultiArray<double>& z2);
+void initpsi(double  *psi, MultiArray<double>& x2, MultiArray<double>& y2, MultiArray<double>& z2, MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &z);
 void initpot(MultiArray<double>& pot, MultiArray<double>& x2, MultiArray<double>& y2, MultiArray<double>& z2);
 
 
@@ -85,8 +87,8 @@ extern __global__ void diff_kernel(double hx, double hy, double hz, double* __re
 void calcnorm(double *d_psi, double *d_psi2, double& norm, Simpson3DTiledIntegrator& integ);
 __global__ void multiply_by_norm(double* __restrict__ d_psi, const double norm);
 
-void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd);
-__global__ void calcnu_kernel(double* __restrict__ d_psi, double* __restrict__ d_psi2, const double* __restrict__ pot, const double g, const double gd);
+void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, double h2);
+__global__ void calcnu_kernel(double* __restrict__ d_psi, double* __restrict__ d_psi2, const double* __restrict__ pot, const double g, const double gd, const double h2);
 
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgammax, double d_Ax0r, double d_Ax);
 __global__ void calclux_kernel(
@@ -124,12 +126,13 @@ __global__ void compute_psid2_potdd(cufftDoubleComplex * d_psi2_fft,
 
 __global__ void calcpsidd2_boundaries(double *psidd2);
 
-void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd, double *d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,Simpson3DTiledIntegrator &integ, const double g, const double gd);
+void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd, double *d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2);
 
 // Optimized fused kernels
 __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double *__restrict__ d_result, double g);
 __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_pot);
 __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double gd);
+__global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result, const double h2);
 
 // Original kernels (kept for reference)
 __global__ void calcmuen_kernel_con(double *__restrict__ d_psi2, double g);
@@ -142,3 +145,13 @@ void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, lon
 
 void rms_output(FILE *filerms);
 void mu_output(FILE *filemu);
+
+void outdenx(double *psi, MultiArray<double> &x, MultiArray<double> &tmpy, MultiArray<double> &tmpz, FILE *file);
+void outdeny(double *psi, MultiArray<double> &y, MultiArray<double> &tmpx, MultiArray<double> &tmpz, FILE *file);
+void outdenz(double *psi, MultiArray<double> &z, MultiArray<double> &tmpx, MultiArray<double> &tmpy, FILE *file);
+void outdenxy(double *psi, MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &tmpz, FILE *file);
+void outdenxz(double *psi, MultiArray<double> &x, MultiArray<double> &z, MultiArray<double> &tmpx, FILE *file);
+void outdenyz(double *psi, MultiArray<double> &y, MultiArray<double> &z, MultiArray<double> &tmpx, FILE *file);
+void outpsi2xy(double *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *file);
+void outpsi2xz(double *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *file);
+void outpsi2yz(double *psi, MultiArray<double> &y, MultiArray<double> &z, FILE *file);

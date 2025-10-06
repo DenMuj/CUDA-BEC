@@ -1,0 +1,927 @@
+\doxysection{src/real3d-\/cuda/real3d-\/cuda.cu File Reference}
+\hypertarget{real3d-cuda_8cu}{}\label{real3d-cuda_8cu}\index{src/real3d-\/cuda/real3d-\/cuda.cu@{src/real3d-\/cuda/real3d-\/cuda.cu}}
+{\ttfamily \#include "{}real3d-\/cuda.\+cuh"{}}\newline
+{\ttfamily \#include $<$cu\+Complex.\+h$>$}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{real3d-cuda_8cu_a3c04138a5bfe5d72780bb7e82a18e627}{main}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{argc}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{argv}})
+\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a8591930b5a64822ab409dec2ee40b7e2}{readpar}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}})
+\begin{DoxyCompactList}\small\item\em Reading input parameters from the configuration file. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a7cf9e11a154a15d0cdb6cee0bbaf4da9}{compute\+\_\+rms\+\_\+values}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+work\+\_\+array}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+x2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+y2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+z2}}, \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{integ}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{h\+\_\+rms\+\_\+pinned}})
+\begin{DoxyCompactList}\small\item\em Function to compute RMS values on device. \end{DoxyCompactList}\item 
+\+\_\+\+\_\+global\+\_\+\+\_\+ void \mbox{\hyperlink{real3d-cuda_8cu_af9447fbd4c1eb364b652a4ce87316a44}{compute\+\_\+single\+\_\+weighted\+\_\+psi\+\_\+squared}} (const cu\+Double\+Complex \texorpdfstring{$\ast$}{*}\+\_\+\+\_\+restrict\+\_\+\+\_\+ psi, const double \texorpdfstring{$\ast$}{*}\+\_\+\+\_\+restrict\+\_\+\+\_\+ coord\+\_\+squared, double \texorpdfstring{$\ast$}{*}result, int direction)
+\begin{DoxyCompactList}\small\item\em Kernel to compute single weighted psi squared. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_af6315684ace341b885bf8cc151989ecf}{calc\+\_\+d\+\_\+psi2}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2}})
+\begin{DoxyCompactList}\small\item\em Function to compute squared wave function on device. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a0086c647b344da1d2e17cbc387f0fe1a}{compute\+\_\+d\+\_\+psi2}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2}})
+\begin{DoxyCompactList}\small\item\em Kernel to compute squared wave function. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_aff8364142450b4a15aca1ee0cd1007c0}{initpsi}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z2}})
+\begin{DoxyCompactList}\small\item\em Function to initialize wave function. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_ab470d5fc409ec637f783d9f96f8f4963}{initpot}} (\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{pot}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z2}})
+\begin{DoxyCompactList}\small\item\em Function to initialize trap potential. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a7eb3a1f0925ce9f001269a7c286ae737}{initpotdd}} (\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{potdd}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{kx}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{ky}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{kz}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{kx2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{ky2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{kz2}})
+\begin{DoxyCompactList}\small\item\em Function to initialize dipolar potential. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_af5471dadb4e3b9296a1630150c0380cb}{calcnorm}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{norm}}, \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{integ}})
+\begin{DoxyCompactList}\small\item\em Function to calculate the wave function norm and normalization on device. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a071e3a67505f62f9ab07c793f7ff7315}{multiply\+\_\+by\+\_\+norm}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{norm}})
+\begin{DoxyCompactList}\small\item\em Kernel to multiply the wave function by the norm on device. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a35e0ee501afe34c5c930c7c09eb39c3b}{compute\+\_\+psid2\+\_\+potdd}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2\+\_\+fft}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{potdd}})
+\begin{DoxyCompactList}\small\item\em Kernel to compute the squared wave function multiplied by the dipolar potential. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_aede4c05461a5d039dd1ae80d6f057b83}{calcpsidd2\+\_\+boundaries}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psidd2}})
+\begin{DoxyCompactList}\small\item\em Kernel to compute the boundaries of the FFT psi2 array. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a8694a17240a79d26dff8e7b117e9a7c5}{calc\+\_\+psid2\+\_\+potdd}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{forward\+\_\+plan}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{backward\+\_\+plan}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2\+\_\+real}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2\+\_\+fft}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{potdd}})
+\begin{DoxyCompactList}\small\item\em Function to compute the FFT of the squared wave function multiplied by the dipolar potential. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_ab8b5afe9f94e1d8c017b3ae4ef715c51}{gencoef}} (\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{calphax}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cgammax}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{calphay}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cgammay}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{calphaz}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cgammaz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ax0}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ay0}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Az0}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ax0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ay0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Az0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ax}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ay}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Az}})
+\begin{DoxyCompactList}\small\item\em Function to generate the Crank-\/\+Nicolson scheme coefficients. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a2070dfcbd7be3583b6ccf13f2cad5eb7}{calcnu}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+pot}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ab30c765b9be1b7776c97c899a12a66bb}{g}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_a4d21681d5da1d524f78b9038121b1d72}{gd}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ac2d9b75feeec68992c955b63e813e7ce}{h2}})
+\begin{DoxyCompactList}\small\item\em Function to compute the time propagation with respect to H1 (part of the Hamiltonian without spatial derivatives). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a343b6c07affb7cc8f5075411b063e649}{calcnu\+\_\+kernel}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+pot}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ab30c765b9be1b7776c97c899a12a66bb}{g}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_a4d21681d5da1d524f78b9038121b1d72}{gd}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ac2d9b75feeec68992c955b63e813e7ce}{h2}})
+\begin{DoxyCompactList}\small\item\em Kernel to compute the time propagation with respect to H1 (part of the Hamiltonian without spatial derivatives). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a5473ba9ca07912a8fc1d3643e87f4c67}{calclux}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+cbeta}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+calphax}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+cgammax}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ax0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ax}})
+\begin{DoxyCompactList}\small\item\em Function to compute the time propagation with respect to H2 (x-\/part of the Laplacian). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_ac3776dc885757ca789c9301d21d108f4}{calclux\+\_\+kernel}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cbeta}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{calphax}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cgammax}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ax0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ax}})
+\begin{DoxyCompactList}\small\item\em Kernel to compute the time propagation with respect to H2 (x-\/part of the Laplacian). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a941687eedf43b3e94157e6025e616041}{calcluy}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+cbeta}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+calphay}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+cgammay}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ay0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ay}})
+\begin{DoxyCompactList}\small\item\em Function to compute the time propagation with respect to H3 (y-\/part of the Laplacian). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a087f0429df7e3c345e6587d855226920}{calcluy\+\_\+kernel}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cbeta}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{calphay}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cgammay}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ay0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Ay}})
+\begin{DoxyCompactList}\small\item\em Kernel to compute the time propagation with respect to H3 (y-\/part of the Laplacian). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a0afa3fc7fe09cabcb786184f64896c3e}{calcluz}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+cbeta}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+calphaz}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+cgammaz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Az0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Az}})
+\begin{DoxyCompactList}\small\item\em Function to compute the time propagation with respect to H4 (z-\/part of the Laplacian). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_ac50321ea6afdc8b327e5f7c5cb0c2eab}{calcluz\+\_\+kernel}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cbeta}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{calphaz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cgammaz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Az0r}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{Az}})
+\begin{DoxyCompactList}\small\item\em Kernel to compute the time propagation with respect to H4 (z-\/part of the Laplacian). \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_ae2360dc7594b82edc67d4f0dac5e529e}{calcmuen}} (\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{muen}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+pot}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2dd}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+potdd}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi2\+\_\+fft}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{forward\+\_\+plan}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{backward\+\_\+plan}}, \mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{integ}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ab30c765b9be1b7776c97c899a12a66bb}{g}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_a4d21681d5da1d524f78b9038121b1d72}{gd}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ac2d9b75feeec68992c955b63e813e7ce}{h2}})
+\begin{DoxyCompactList}\small\item\em Function to compute the chemical potential of the system. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_ac9f6eff4b6db7622ecb36d952645b7cd}{calcmuen\+\_\+fused\+\_\+contact}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+result}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ab30c765b9be1b7776c97c899a12a66bb}{g}})
+\begin{DoxyCompactList}\small\item\em Kernel to calculate contact energy term. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a027902ee9a6405f2e6e04dcdd860b18c}{calcmuen\+\_\+fused\+\_\+potential}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+result}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+pot}})
+\begin{DoxyCompactList}\small\item\em Kernel to calculate trap potential energy term. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a8da9ea0a15c19e6df920f710c6c74097}{calcmuen\+\_\+fused\+\_\+dipolar}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+result}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psidd2}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_a4d21681d5da1d524f78b9038121b1d72}{gd}})
+\begin{DoxyCompactList}\small\item\em Kernel to calculate dipolar energy term. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a96a6ee3b662971d5513fca26e973ff97}{calcmuen\+\_\+fused\+\_\+h2}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+result}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \mbox{\hyperlink{imag3d-cuda_8cuh_ac2d9b75feeec68992c955b63e813e7ce}{h2}})
+\begin{DoxyCompactList}\small\item\em Kernel to calculate quantum fluctuation energy term. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_aafd03da8e73729fc28414f9af27e49c9}{calcmuen\+\_\+kin}} (\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+work\+\_\+array}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} \mbox{\hyperlink{imag3d-cuda_8cuh_a0244fcfffe8fe946579a9774fb960417}{par}})
+\begin{DoxyCompactList}\small\item\em Function to calculate kinetic energy term. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a2d7208abdb09745425fffd7f1ba6dfc8}{rms\+\_\+output}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{filerms}})
+\begin{DoxyCompactList}\small\item\em Function to output the rms values. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_a01728e9aa7a6ac9af504d94a01a7cb28}{mu\+\_\+output}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{filemu}})
+\begin{DoxyCompactList}\small\item\em Function to output the chemical potential values. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_ae187563ab5e50a21dfcb4090534e209a}{save\+\_\+psi\+\_\+from\+\_\+gpu}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{d\+\_\+psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{filename}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}{Nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}{Ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff}{Nz}})
+\begin{DoxyCompactList}\small\item\em Function to save the psi array from the GPU to a binary file. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{real3d-cuda_8cu_aeb912df363ed4ba4c4e27c192b1bb2fb}{read\+\_\+psi\+\_\+from\+\_\+file\+\_\+complex}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{filename}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}{Nx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}{Ny}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}} \mbox{\hyperlink{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff}{Nz}})
+\begin{DoxyCompactList}\small\item\em Function to read the psi array from a binary file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{real3d-cuda_8cu_af6315684ace341b885bf8cc151989ecf}\label{real3d-cuda_8cu_af6315684ace341b885bf8cc151989ecf} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calc\_d\_psi2@{calc\_d\_psi2}}
+\index{calc\_d\_psi2@{calc\_d\_psi2}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calc\_d\_psi2()}{calc\_d\_psi2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calc\+\_\+d\+\_\+psi2 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi2 }\end{DoxyParamCaption})}
+
+
+
+Function to compute squared wave function on device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi2} & Device\+: 3D psi2 array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00622}{622}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a8694a17240a79d26dff8e7b117e9a7c5}\label{real3d-cuda_8cu_a8694a17240a79d26dff8e7b117e9a7c5} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calc\_psid2\_potdd@{calc\_psid2\_potdd}}
+\index{calc\_psid2\_potdd@{calc\_psid2\_potdd}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calc\_psid2\_potdd()}{calc\_psid2\_potdd()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calc\+\_\+psid2\+\_\+potdd (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}}}]{forward\+\_\+plan,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}}}]{backward\+\_\+plan,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi2\+\_\+real,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi2\+\_\+fft,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{potdd }\end{DoxyParamCaption})}
+
+
+
+Function to compute the FFT of the squared wave function multiplied by the dipolar potential. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em forward\+\_\+plan} & Forward FFT plan \\
+\hline
+{\em backward\+\_\+plan} & Backward FFT plan \\
+\hline
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi2\+\_\+real} & Device\+: 3D psi2 array \\
+\hline
+{\em d\+\_\+psi2\+\_\+fft} & Device\+: 3D psi2 array in FFT format \\
+\hline
+{\em potdd} & Device\+: 3D dipolar potential array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00903}{903}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a5473ba9ca07912a8fc1d3643e87f4c67}\label{real3d-cuda_8cu_a5473ba9ca07912a8fc1d3643e87f4c67} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calclux@{calclux}}
+\index{calclux@{calclux}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calclux()}{calclux()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calclux (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+cbeta,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+calphax,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+cgammax,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ax0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ax }\end{DoxyParamCaption})}
+
+
+
+Function to compute the time propagation with respect to H2 (x-\/part of the Laplacian). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+cbeta} & Device\+: 3D cbeta array \\
+\hline
+{\em d\+\_\+calphax} & Device\+: 3D calphax array \\
+\hline
+{\em d\+\_\+cgammax} & Device\+: 3D cgammax array \\
+\hline
+{\em Ax0r} & Host to Device\+: Ax0r coefficient \\
+\hline
+{\em Ax} & Host to Device\+: Ax coefficient \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01051}{1051}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_ac3776dc885757ca789c9301d21d108f4}\label{real3d-cuda_8cu_ac3776dc885757ca789c9301d21d108f4} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calclux\_kernel@{calclux\_kernel}}
+\index{calclux\_kernel@{calclux\_kernel}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calclux\_kernel()}{calclux\_kernel()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calclux\+\_\+kernel (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{cbeta,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{calphax,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{cgammax,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ax0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ax }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute the time propagation with respect to H2 (x-\/part of the Laplacian). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+cbeta} & Device\+: 3D cbeta array \\
+\hline
+{\em d\+\_\+calphax} & Device\+: 3D calphax array \\
+\hline
+{\em d\+\_\+cgammax} & Device\+: 3D cgammax array \\
+\hline
+{\em Ax0r} & Host to Device\+: Ax0r coefficient \\
+\hline
+{\em Ax} & Host to Device\+: Ax coefficient \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01074}{1074}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a941687eedf43b3e94157e6025e616041}\label{real3d-cuda_8cu_a941687eedf43b3e94157e6025e616041} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcluy@{calcluy}}
+\index{calcluy@{calcluy}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcluy()}{calcluy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcluy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+cbeta,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+calphay,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+cgammay,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ay0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ay }\end{DoxyParamCaption})}
+
+
+
+Function to compute the time propagation with respect to H3 (y-\/part of the Laplacian). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+cbeta} & Device\+: 3D cbeta array \\
+\hline
+{\em d\+\_\+calphay} & Device\+: 3D calphay array \\
+\hline
+{\em d\+\_\+cgammay} & Device\+: 3D cgammay array \\
+\hline
+{\em Ay0r} & Host to Device\+: Ay0r coefficient \\
+\hline
+{\em Ay} & Host to Device\+: Ay coefficient \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01136}{1136}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a087f0429df7e3c345e6587d855226920}\label{real3d-cuda_8cu_a087f0429df7e3c345e6587d855226920} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcluy\_kernel@{calcluy\_kernel}}
+\index{calcluy\_kernel@{calcluy\_kernel}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcluy\_kernel()}{calcluy\_kernel()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcluy\+\_\+kernel (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{cbeta,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{calphay,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{cgammay,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ay0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Ay }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute the time propagation with respect to H3 (y-\/part of the Laplacian). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+cbeta} & Device\+: 3D cbeta array \\
+\hline
+{\em d\+\_\+calphay} & Device\+: 3D calphay array \\
+\hline
+{\em d\+\_\+cgammay} & Device\+: 3D cgammay array \\
+\hline
+{\em Ay0r} & Host to Device\+: Ay0r coefficient \\
+\hline
+{\em Ay} & Host to Device\+: Ay coefficient \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01159}{1159}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a0afa3fc7fe09cabcb786184f64896c3e}\label{real3d-cuda_8cu_a0afa3fc7fe09cabcb786184f64896c3e} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcluz@{calcluz}}
+\index{calcluz@{calcluz}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcluz()}{calcluz()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcluz (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+cbeta,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+calphaz,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+cgammaz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Az0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Az }\end{DoxyParamCaption})}
+
+
+
+Function to compute the time propagation with respect to H4 (z-\/part of the Laplacian). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+cbeta} & Device\+: 3D cbeta array \\
+\hline
+{\em d\+\_\+calphaz} & Device\+: 3D calphaz array \\
+\hline
+{\em d\+\_\+cgammaz} & Device\+: 3D cgammaz array \\
+\hline
+{\em Az0r} & Host to Device\+: Az0r coefficient \\
+\hline
+{\em Az} & Host to Device\+: Az coefficient \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01221}{1221}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_ac50321ea6afdc8b327e5f7c5cb0c2eab}\label{real3d-cuda_8cu_ac50321ea6afdc8b327e5f7c5cb0c2eab} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcluz\_kernel@{calcluz\_kernel}}
+\index{calcluz\_kernel@{calcluz\_kernel}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcluz\_kernel()}{calcluz\_kernel()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcluz\+\_\+kernel (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{cbeta,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{calphaz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{cgammaz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Az0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}}}]{Az }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute the time propagation with respect to H4 (z-\/part of the Laplacian). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+cbeta} & Device\+: 3D cbeta array \\
+\hline
+{\em d\+\_\+calphaz} & Device\+: 3D calphaz array \\
+\hline
+{\em d\+\_\+cgammaz} & Device\+: 3D cgammaz array \\
+\hline
+{\em Az0r} & Host to Device\+: Az0r coefficient \\
+\hline
+{\em Az} & Host to Device\+: Az coefficient \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01244}{1244}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_ae2360dc7594b82edc67d4f0dac5e529e}\label{real3d-cuda_8cu_ae2360dc7594b82edc67d4f0dac5e529e} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcmuen@{calcmuen}}
+\index{calcmuen@{calcmuen}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcmuen()}{calcmuen()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcmuen (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{muen,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+psi2,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+pot,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+psi2dd,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+potdd,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi2\+\_\+fft,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}}}]{forward\+\_\+plan,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Handle}}}]{backward\+\_\+plan,  }\item[{\mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&}]{integ,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{g,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{gd,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{h2 }\end{DoxyParamCaption})}
+
+
+
+Function to compute the chemical potential of the system. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em muen} & Host\+: 3D muen array that stores the chemical potential of the system and its contributions \\
+\hline
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi2} & Device\+: 3D psi2 array \\
+\hline
+{\em d\+\_\+pot} & Device\+: 3D trap potential array \\
+\hline
+{\em d\+\_\+psi2dd} & Device\+: 3D psi2dd array \\
+\hline
+{\em d\+\_\+potdd} & Device\+: 3D dipolar potential array \\
+\hline
+{\em d\+\_\+psi2\+\_\+fft} & Device\+: 3D psi2\+\_\+fft array \\
+\hline
+{\em forward\+\_\+plan} & FFT forward plan \\
+\hline
+{\em backward\+\_\+plan} & FFT backward plan \\
+\hline
+{\em integ} & \doxylink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator} \\
+\hline
+{\em g} & Host to Device\+: g coefficient for contact interaction term \\
+\hline
+{\em gd} & Host to Device\+: gd coefficient for dipolar interaction term \\
+\hline
+{\em h2} & Host to Device\+: h2 coefficient for quantum fluctuation term \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01314}{1314}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_ac9f6eff4b6db7622ecb36d952645b7cd}\label{real3d-cuda_8cu_ac9f6eff4b6db7622ecb36d952645b7cd} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcmuen\_fused\_contact@{calcmuen\_fused\_contact}}
+\index{calcmuen\_fused\_contact@{calcmuen\_fused\_contact}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcmuen\_fused\_contact()}{calcmuen\_fused\_contact()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcmuen\+\_\+fused\+\_\+contact (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+result,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{g }\end{DoxyParamCaption})}
+
+
+
+Kernel to calculate contact energy term. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+result} & Device\+: 3D result array \\
+\hline
+{\em g} & Host to Device\+: g coefficient for contact interaction term \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01350}{1350}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a8da9ea0a15c19e6df920f710c6c74097}\label{real3d-cuda_8cu_a8da9ea0a15c19e6df920f710c6c74097} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcmuen\_fused\_dipolar@{calcmuen\_fused\_dipolar}}
+\index{calcmuen\_fused\_dipolar@{calcmuen\_fused\_dipolar}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcmuen\_fused\_dipolar()}{calcmuen\_fused\_dipolar()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcmuen\+\_\+fused\+\_\+dipolar (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+result,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psidd2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{gd }\end{DoxyParamCaption})}
+
+
+
+Kernel to calculate dipolar energy term. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+result} & Device\+: 3D result array \\
+\hline
+{\em d\+\_\+psidd2} & Device\+: 3D dipolar psi squared array \\
+\hline
+{\em gd} & Host to Device\+: gd coefficient for dipolar interaction term \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01392}{1392}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a96a6ee3b662971d5513fca26e973ff97}\label{real3d-cuda_8cu_a96a6ee3b662971d5513fca26e973ff97} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcmuen\_fused\_h2@{calcmuen\_fused\_h2}}
+\index{calcmuen\_fused\_h2@{calcmuen\_fused\_h2}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcmuen\_fused\_h2()}{calcmuen\_fused\_h2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcmuen\+\_\+fused\+\_\+h2 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+result,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{h2 }\end{DoxyParamCaption})}
+
+
+
+Kernel to calculate quantum fluctuation energy term. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+result} & Device\+: 3D result array \\
+\hline
+{\em h2} & Host to Device\+: h2 coefficient for quantum fluctuation term \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01413}{1413}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a027902ee9a6405f2e6e04dcdd860b18c}\label{real3d-cuda_8cu_a027902ee9a6405f2e6e04dcdd860b18c} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcmuen\_fused\_potential@{calcmuen\_fused\_potential}}
+\index{calcmuen\_fused\_potential@{calcmuen\_fused\_potential}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcmuen\_fused\_potential()}{calcmuen\_fused\_potential()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcmuen\+\_\+fused\+\_\+potential (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+result,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+pot }\end{DoxyParamCaption})}
+
+
+
+Kernel to calculate trap potential energy term. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+result} & Device\+: 3D result array \\
+\hline
+{\em d\+\_\+pot} & Device\+: 3D trap potential array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01371}{1371}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_aafd03da8e73729fc28414f9af27e49c9}\label{real3d-cuda_8cu_aafd03da8e73729fc28414f9af27e49c9} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcmuen\_kin@{calcmuen\_kin}}
+\index{calcmuen\_kin@{calcmuen\_kin}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcmuen\_kin()}{calcmuen\_kin()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcmuen\+\_\+kin (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+work\+\_\+array,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}}}]{par }\end{DoxyParamCaption})}
+
+
+
+Function to calculate kinetic energy term. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+work\+\_\+array} & Device\+: 3D work array \\
+\hline
+{\em par} & Host to Device\+: par coefficient either 1 or 2, defined in Input file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01435}{1435}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_af5471dadb4e3b9296a1630150c0380cb}\label{real3d-cuda_8cu_af5471dadb4e3b9296a1630150c0380cb} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcnorm@{calcnorm}}
+\index{calcnorm@{calcnorm}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcnorm()}{calcnorm()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcnorm (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+psi2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \&}]{norm,  }\item[{\mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&}]{integ }\end{DoxyParamCaption})}
+
+
+
+Function to calculate the wave function norm and normalization on device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi2} & Device\+: 3D psi2 array \\
+\hline
+{\em norm} & Wave function norm \\
+\hline
+{\em integ} & \doxylink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator} \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00775}{775}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a2070dfcbd7be3583b6ccf13f2cad5eb7}\label{real3d-cuda_8cu_a2070dfcbd7be3583b6ccf13f2cad5eb7} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcnu@{calcnu}}
+\index{calcnu@{calcnu}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcnu()}{calcnu()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcnu (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+psi2,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+pot,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{g,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{gd,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{h2 }\end{DoxyParamCaption})}
+
+
+
+Function to compute the time propagation with respect to H1 (part of the Hamiltonian without spatial derivatives). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi2} & Device\+: 3D psi2 array \\
+\hline
+{\em d\+\_\+pot} & Device\+: 3D trap potential array \\
+\hline
+{\em g} & Host to Device\+: g coefficient for contact interaction term \\
+\hline
+{\em gd} & Host to Device\+: gd coefficient for dipolar interaction term \\
+\hline
+{\em h2} & Host to Device\+: h2 coefficient for quantum fluctuation term \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00995}{995}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a343b6c07affb7cc8f5075411b063e649}\label{real3d-cuda_8cu_a343b6c07affb7cc8f5075411b063e649} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcnu\_kernel@{calcnu\_kernel}}
+\index{calcnu\_kernel@{calcnu\_kernel}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcnu\_kernel()}{calcnu\_kernel()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcnu\+\_\+kernel (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+pot,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{g,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{gd,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{h2 }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute the time propagation with respect to H1 (part of the Hamiltonian without spatial derivatives). 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi2} & Device\+: 3D psi2 array \\
+\hline
+{\em d\+\_\+pot} & Device\+: 3D trap potential array \\
+\hline
+{\em g} & Host\+: g coefficient for contact interaction term \\
+\hline
+{\em gd} & Host\+: gd coefficient for dipolar interaction term \\
+\hline
+{\em h2} & Host\+: h2 coefficient for quantum fluctuation term \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01019}{1019}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_aede4c05461a5d039dd1ae80d6f057b83}\label{real3d-cuda_8cu_aede4c05461a5d039dd1ae80d6f057b83} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!calcpsidd2\_boundaries@{calcpsidd2\_boundaries}}
+\index{calcpsidd2\_boundaries@{calcpsidd2\_boundaries}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{calcpsidd2\_boundaries()}{calcpsidd2\_boundaries()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} calcpsidd2\+\_\+boundaries (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psidd2 }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute the boundaries of the FFT psi2 array. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psidd2} & Device\+: 3D psi2 array multiplied by the dipolar potential \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00849}{849}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a0086c647b344da1d2e17cbc387f0fe1a}\label{real3d-cuda_8cu_a0086c647b344da1d2e17cbc387f0fe1a} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!compute\_d\_psi2@{compute\_d\_psi2}}
+\index{compute\_d\_psi2@{compute\_d\_psi2}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{compute\_d\_psi2()}{compute\_d\_psi2()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} compute\+\_\+d\+\_\+psi2 (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi2 }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute squared wave function. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi2} & Device\+: 3D psi2 array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00636}{636}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a35e0ee501afe34c5c930c7c09eb39c3b}\label{real3d-cuda_8cu_a35e0ee501afe34c5c930c7c09eb39c3b} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!compute\_psid2\_potdd@{compute\_psid2\_potdd}}
+\index{compute\_psid2\_potdd@{compute\_psid2\_potdd}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{compute\_psid2\_potdd()}{compute\_psid2\_potdd()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} compute\+\_\+psid2\+\_\+potdd (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cufft\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi2\+\_\+fft,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{potdd }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute the squared wave function multiplied by the dipolar potential. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi2\+\_\+fft} & Device\+: 3D psi2 array in FFT format \\
+\hline
+{\em potdd} & Device\+: 3D dipolar potential array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00819}{819}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a7cf9e11a154a15d0cdb6cee0bbaf4da9}\label{real3d-cuda_8cu_a7cf9e11a154a15d0cdb6cee0bbaf4da9} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!compute\_rms\_values@{compute\_rms\_values}}
+\index{compute\_rms\_values@{compute\_rms\_values}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{compute\_rms\_values()}{compute\_rms\_values()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} compute\+\_\+rms\+\_\+values (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+work\+\_\+array,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+x2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+y2,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{classCudaArray3D}{Cuda\+Array3D}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{d\+\_\+z2,  }\item[{\mbox{\hyperlink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator}} \&}]{integ,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{h\+\_\+rms\+\_\+pinned }\end{DoxyParamCaption})}
+
+
+
+Function to compute RMS values on device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em d\+\_\+work\+\_\+array} & Work array \\
+\hline
+{\em d\+\_\+x2} & x2 array \\
+\hline
+{\em d\+\_\+y2} & y2 array \\
+\hline
+{\em d\+\_\+z2} & z2 array \\
+\hline
+{\em integ} & \doxylink{classSimpson3DTiledIntegrator}{Simpson3\+DTiled\+Integrator} \\
+\hline
+{\em h\+\_\+rms\+\_\+pinned} & Output RMS values in pinned memory \mbox{[}rms\+\_\+x, rms\+\_\+y, rms\+\_\+z\mbox{]} \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00530}{530}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_af9447fbd4c1eb364b652a4ce87316a44}\label{real3d-cuda_8cu_af9447fbd4c1eb364b652a4ce87316a44} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!compute\_single\_weighted\_psi\_squared@{compute\_single\_weighted\_psi\_squared}}
+\index{compute\_single\_weighted\_psi\_squared@{compute\_single\_weighted\_psi\_squared}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{compute\_single\_weighted\_psi\_squared()}{compute\_single\_weighted\_psi\_squared()}}
+{\footnotesize\ttfamily \+\_\+\+\_\+global\+\_\+\+\_\+ void compute\+\_\+single\+\_\+weighted\+\_\+psi\+\_\+squared (\begin{DoxyParamCaption}\item[{const cu\+Double\+Complex \texorpdfstring{$\ast$}{*}\+\_\+\+\_\+restrict\+\_\+\+\_\+}]{psi,  }\item[{const double \texorpdfstring{$\ast$}{*}\+\_\+\+\_\+restrict\+\_\+\+\_\+}]{coord\+\_\+squared,  }\item[{double \texorpdfstring{$\ast$}{*}}]{result,  }\item[{int}]{direction }\end{DoxyParamCaption})}
+
+
+
+Kernel to compute single weighted psi squared. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Device\+: 3D psi array \\
+\hline
+{\em coord\+\_\+squared} & x2, y2, or z2 array \\
+\hline
+{\em result} & Result array \\
+\hline
+{\em direction} & Direction (0=x, 1=y, 2=z) \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00589}{589}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_ab8b5afe9f94e1d8c017b3ae4ef715c51}\label{real3d-cuda_8cu_ab8b5afe9f94e1d8c017b3ae4ef715c51} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!gencoef@{gencoef}}
+\index{gencoef@{gencoef}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{gencoef()}{gencoef()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} gencoef (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{calphax,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{cgammax,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{calphay,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{cgammay,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{calphaz,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} $>$ \&}]{cgammaz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Ax0,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Ay0,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Az0,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Ax0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Ay0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Az0r,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Ax,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Ay,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \&}]{Az }\end{DoxyParamCaption})}
+
+
+
+Function to generate the Crank-\/\+Nicolson scheme coefficients. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em calphax} & Host\+: 3D alpha x coefficient \\
+\hline
+{\em cgammax} & Host\+: 3D gamma x coefficient \\
+\hline
+{\em calphay} & Host\+: 3D alpha y coefficient \\
+\hline
+{\em cgammay} & Host\+: 3D gamma y coefficient \\
+\hline
+{\em calphaz} & Host\+: 3D alpha z coefficient \\
+\hline
+{\em cgammaz} & Host\+: 3D gamma z coefficient \\
+\hline
+{\em Ax0} & Device\+: Ax0 coefficient \\
+\hline
+{\em Ay0} & Host\+: Ay0 coefficient \\
+\hline
+{\em Az0} & Host\+: Az0 coefficient \\
+\hline
+{\em Ax0r} & Host\+: Ax0r coefficient \\
+\hline
+{\em Ay0r} & Host\+: Ay0r coefficient \\
+\hline
+{\em Az0r} & Host\+: Az0r coefficient \\
+\hline
+{\em Ax} & Host\+: Ax coefficient \\
+\hline
+{\em Ay} & Host\+: Ay coefficient \\
+\hline
+{\em Az} & Host\+: Az coefficient \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00936}{936}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_ab470d5fc409ec637f783d9f96f8f4963}\label{real3d-cuda_8cu_ab470d5fc409ec637f783d9f96f8f4963} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!initpot@{initpot}}
+\index{initpot@{initpot}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{initpot()}{initpot()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} initpot (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{pot,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z2 }\end{DoxyParamCaption})}
+
+
+
+Function to initialize trap potential. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pot} & Device\+: 3D trap potential array \\
+\hline
+{\em x2} & x2 array \\
+\hline
+{\em y2} & y2 array \\
+\hline
+{\em z2} & z2 array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00702}{702}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a7eb3a1f0925ce9f001269a7c286ae737}\label{real3d-cuda_8cu_a7eb3a1f0925ce9f001269a7c286ae737} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!initpotdd@{initpotdd}}
+\index{initpotdd@{initpotdd}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{initpotdd()}{initpotdd()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} initpotdd (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{potdd,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{kx,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{ky,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{kz,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{kx2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{ky2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{kz2 }\end{DoxyParamCaption})}
+
+
+
+Function to initialize dipolar potential. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em potdd} & Device\+: 3D dipolar potential array \\
+\hline
+{\em kx} & Device\+: 3D kx array \\
+\hline
+{\em ky} & Device\+: 3D ky array \\
+\hline
+{\em kz} & Device\+: 3D kz array \\
+\hline
+{\em kx2} & Device\+: 3D kx2 array \\
+\hline
+{\em ky2} & Device\+: 3D ky2 array \\
+\hline
+{\em kz2} & Device\+: 3D kz2 array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00730}{730}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_aff8364142450b4a15aca1ee0cd1007c0}\label{real3d-cuda_8cu_aff8364142450b4a15aca1ee0cd1007c0} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!initpsi@{initpsi}}
+\index{initpsi@{initpsi}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{initpsi()}{initpsi()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} initpsi (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z2 }\end{DoxyParamCaption})}
+
+
+
+Function to initialize wave function. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Device\+: 3D psi array \\
+\hline
+{\em x2} & x2 array \\
+\hline
+{\em y2} & y2 array \\
+\hline
+{\em z2} & z2 array \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00659}{659}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a3c04138a5bfe5d72780bb7e82a18e627}\label{real3d-cuda_8cu_a3c04138a5bfe5d72780bb7e82a18e627} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!main@{main}}
+\index{main@{main}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}} main (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{int}}}]{argc,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}}]{argv }\end{DoxyParamCaption})}
+
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00005}{5}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a01728e9aa7a6ac9af504d94a01a7cb28}\label{real3d-cuda_8cu_a01728e9aa7a6ac9af504d94a01a7cb28} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!mu\_output@{mu\_output}}
+\index{mu\_output@{mu\_output}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{mu\_output()}{mu\_output()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} mu\+\_\+output (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{filemu }\end{DoxyParamCaption})}
+
+
+
+Function to output the chemical potential values. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filemu} & File pointer to the chemical potential output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01488}{1488}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a071e3a67505f62f9ab07c793f7ff7315}\label{real3d-cuda_8cu_a071e3a67505f62f9ab07c793f7ff7315} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!multiply\_by\_norm@{multiply\_by\_norm}}
+\index{multiply\_by\_norm@{multiply\_by\_norm}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{multiply\_by\_norm()}{multiply\_by\_norm()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+global\+\_\+\+\_\+}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} multiply\+\_\+by\+\_\+norm (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{\+\_\+\+\_\+restrict\+\_\+\+\_\+}}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}}}]{norm }\end{DoxyParamCaption})}
+
+
+
+Kernel to multiply the wave function by the norm on device. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em norm} & Wave function norm \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00802}{802}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_aeb912df363ed4ba4c4e27c192b1bb2fb}\label{real3d-cuda_8cu_aeb912df363ed4ba4c4e27c192b1bb2fb} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!read\_psi\_from\_file\_complex@{read\_psi\_from\_file\_complex}}
+\index{read\_psi\_from\_file\_complex@{read\_psi\_from\_file\_complex}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{read\_psi\_from\_file\_complex()}{read\_psi\_from\_file\_complex()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} read\+\_\+psi\+\_\+from\+\_\+file\+\_\+complex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{cu\+Double\+Complex}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nz }\end{DoxyParamCaption})}
+
+
+
+Function to read the psi array from a binary file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em filename} & Name of the file to read the psi array \\
+\hline
+{\em Nx} & Host\+: Nx number of grid points in x direction \\
+\hline
+{\em Ny} & Host\+: Ny number of grid points in y direction \\
+\hline
+{\em Nz} & Host\+: Nz number of grid points in z direction \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01576}{1576}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a8591930b5a64822ab409dec2ee40b7e2}\label{real3d-cuda_8cu_a8591930b5a64822ab409dec2ee40b7e2} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!readpar@{readpar}}
+\index{readpar@{readpar}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{readpar()}{readpar()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} readpar (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}}}]{ }\end{DoxyParamCaption})}
+
+
+
+Reading input parameters from the configuration file. 
+
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l00299}{299}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_a2d7208abdb09745425fffd7f1ba6dfc8}\label{real3d-cuda_8cu_a2d7208abdb09745425fffd7f1ba6dfc8} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!rms\_output@{rms\_output}}
+\index{rms\_output@{rms\_output}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{rms\_output()}{rms\_output()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} rms\+\_\+output (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{filerms }\end{DoxyParamCaption})}
+
+
+
+Function to output the rms values. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filerms} & File pointer to the rms output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01443}{1443}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+
+\Hypertarget{real3d-cuda_8cu_ae187563ab5e50a21dfcb4090534e209a}\label{real3d-cuda_8cu_ae187563ab5e50a21dfcb4090534e209a} 
+\index{real3d-\/cuda.cu@{real3d-\/cuda.cu}!save\_psi\_from\_gpu@{save\_psi\_from\_gpu}}
+\index{save\_psi\_from\_gpu@{save\_psi\_from\_gpu}!real3d-\/cuda.cu@{real3d-\/cuda.cu}}
+\doxysubsubsection{\texorpdfstring{save\_psi\_from\_gpu()}{save\_psi\_from\_gpu()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} save\+\_\+psi\+\_\+from\+\_\+gpu (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{d\+\_\+psi,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{const}} \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{char}} \texorpdfstring{$\ast$}{*}}]{filename,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Ny,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{long}}}]{Nz }\end{DoxyParamCaption})}
+
+
+
+Function to save the psi array from the GPU to a binary file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em d\+\_\+psi} & Device\+: 3D psi array \\
+\hline
+{\em filename} & Name of the file to save the psi array \\
+\hline
+{\em Nx} & Host\+: Nx number of grid points in x direction \\
+\hline
+{\em Ny} & Host\+: Ny number of grid points in y direction \\
+\hline
+{\em Nz} & Host\+: Nz number of grid points in z direction \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{real3d-cuda_8cu_source_l01537}{1537}} of file \mbox{\hyperlink{real3d-cuda_8cu_source}{real3d-\/cuda.\+cu}}.
+

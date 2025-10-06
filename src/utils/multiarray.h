@@ -4,6 +4,12 @@
 #include <vector>
 #include <stdexcept>
 
+/**
+ * @brief MultiArray class for 1D, 2D, and 3D arrays
+ * 
+ * This class provides a flexible and efficient way to handle arrays of different dimensions.
+ * It supports resizing, bounds checking, and efficient access to elements.
+ */
 template<typename T>
 class MultiArray {
 private:

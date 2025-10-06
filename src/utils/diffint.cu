@@ -1,12 +1,20 @@
+/**
+ * @file diffint.cu
+ * @brief Implementation of richardson extrapolation formula for calculation of space derivatives.
+ * 
+ * This file contains the implementation of the richardson extrapolation formula for calculation of space derivatives.
+ */
+
 #include "diffint.cuh"
 #include <cuComplex.h>
 
-
 /**
- *    Richardson extrapolation formula for calculation of space derivatives.
- *    h  - space step
- *    f  - array with the function values
- *    df - array with the first derivatives of the function
+ * @brief Richardson extrapolation formula for calculation of space derivatives.
+ * @param hx Space step
+ * @param hy Space step
+ * @param hz Space step
+ * @param f Function values
+ * @param f_res Array with the first derivatives of the function
  */
  void diff(double hx, double hy, double hz, double* f, double* __restrict__ f_res, long nx, long ny, long nz, int par) {
     // Get raw pointers and size from MultiArray
@@ -22,6 +30,14 @@
    diff_kernel<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, par);
 }
 
+/**
+ * @brief Kernel function for the Richardson extrapolation formula for calculation of space derivatives.
+ * @param hx Space step
+ * @param hy Space step
+ * @param hz Space step
+ * @param psi Function values
+ * @param f_res Array with the first derivatives of the function
+ */
 __global__ void diff_kernel(
    double hx, double hy, double hz,
    double* __restrict__ psi,
@@ -108,6 +124,14 @@ __global__ void diff_kernel(
    f_res[idx] = (dpsidx * dpsidx + dpsidy * dpsidy + dpsidz * dpsidz)*con;
 }
 
+/**
+ * @brief Kernel function for the Richardson extrapolation formula for calculation of space derivatives for complex functions.
+ * @param hx Space step
+ * @param hy Space step
+ * @param hz Space step
+ * @param f Function values for complex functions
+ * @param f_res Array with the first derivatives of the function
+ */
 void diff_complex(double hx, double hy, double hz, cuDoubleComplex* f, double* __restrict__ f_res, long nx, long ny, long nz, int par) {
     // Get raw pointers and size from MultiArray
    cuDoubleComplex* f_ptr = f;
@@ -122,6 +146,14 @@ void diff_complex(double hx, double hy, double hz, cuDoubleComplex* f, double* _
    diff_kernel_complex<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, par);
 }
 
+/**
+ * @brief Kernel function for the Richardson extrapolation formula for calculation of space derivatives for complex functions.
+ * @param hx Space step
+ * @param hy Space step
+ * @param hz Space step
+ * @param psi Function values for complex functions
+ * @param f_res Array with the first derivatives of the function
+ */
 __global__ void diff_kernel_complex(
     double hx, double hy, double hz,
     cuDoubleComplex* __restrict__ psi,
@@ -283,3 +315,29 @@ void gauleg(double x1, double x2, MultiArray<double>& x, MultiArray<double>& w) 
 
     return;
 }
+
+/**
+ * @file diffint.cu
+ * @brief Implementation of spatial 1D integration with Simpson's rule.
+ * @param h Space step
+ * @param f Array with the function values
+ * @param N Number of integration points
+ * @return Integrated value
+ */
+__host__ double simpint(double h, double *f, long N) {
+    long cnti;
+    double sum, sumi, sumj, sumk;
+ 
+    sumi = 0.; sumj = 0.; sumk = 0.;
+ 
+    for(cnti = 1; cnti < N - 1; cnti += 2) {
+       sumi += f[cnti];
+       sumj += f[cnti - 1];
+       sumk += f[cnti + 1];
+    }
+ 
+    sum = sumj + 4. * sumi + sumk;
+    if(N % 2 == 0) sum += (5. * f[N - 1] + 8. * f[N - 2] - f[N - 3]) / 4.;
+ 
+    return sum * h / 3.;
+ }

@@ -1,21 +1,15 @@
 /**
- * @file CudaArray3D.cpp
+ * @file CudaArray.cpp
  * @brief Implementation of CudaArray3D class for CUDA 3D device memory management
  * 
  * This file contains the implementation of all CudaArray3D member functions,
  * including constructors, memory transfer operations, and utility functions.
- * The implementation handles both pitched and linear memory layouts with
- * automatic fallback mechanisms for robustness.
- * 
- * @author CUDA-BEC Project
- * @date 2025
+ * The implementation handles both pitched and linear memory layouts
  */
 
 #include "CudaArray.h"
 #include <stdexcept>
 #include <cstring>
-
-// ========== INTERNAL HELPER FUNCTIONS ==========
 
 /**
  * @brief Reset all member variables to default/empty state
@@ -43,9 +37,6 @@ void CudaArray3D<T>::reset() {
  * - For true 3D arrays (nz > 1, ny > 1): Uses cudaMalloc3D for pitched memory
  * - For 2D arrays (nz = 1, ny > 1): Uses cudaMallocPitch for pitched memory  
  * - For 1D arrays or when pitched fails: Falls back to linear cudaMalloc
- * 
- * The automatic fallback ensures the allocation always succeeds if sufficient
- * memory is available, even on systems with limited pitched memory support.
  */
 template<typename T>
 CudaArray3D<T>::CudaArray3D(size_t nx_, size_t ny_, size_t nz_, bool use_pitched_memory) 
@@ -108,8 +99,7 @@ CudaArray3D<T>::CudaArray3D(size_t nx_, size_t ny_, size_t nz_, bool use_pitched
  * @brief Construct a 1D CUDA array (special case)
  * 
  * This constructor creates a 1D array by delegating to the 3D constructor
- * with ny=1, nz=1, and pitched memory disabled. Linear memory allocation
- * is always used for 1D arrays since pitched memory provides no benefit.
+ * with ny=1, nz=1, and pitched memory disabled.
  */
 template<typename T>
 CudaArray3D<T>::CudaArray3D(size_t n) : CudaArray3D(n, 1, 1, false) {
@@ -121,7 +111,7 @@ CudaArray3D<T>::CudaArray3D(size_t n) : CudaArray3D(n, 1, 1, false) {
  * 
  * The destructor ensures proper cleanup of both pitched and linear memory
  * allocations. It uses the appropriate cudaFree call based on the memory
- * type and resets all member variables. RAII ensures no memory leaks.
+ * type and resets all member variables.
  */
 template<typename T>
 CudaArray3D<T>::~CudaArray3D() {
@@ -138,7 +128,7 @@ CudaArray3D<T>::~CudaArray3D() {
 /**
  * @brief Move constructor - transfers ownership of GPU memory
  * 
- * Efficiently transfers ownership of GPU memory from another object
+ * Transfers ownership of GPU memory from another object
  * without copying data. The source object is left in a valid but
  * empty state (all pointers set to nullptr, sizes to zero).
  */
@@ -157,8 +147,7 @@ CudaArray3D<T>::CudaArray3D(CudaArray3D&& other) noexcept
  * @brief Move assignment operator - transfers ownership of GPU memory
  * 
  * Frees any existing GPU memory held by this object, then transfers
- * ownership from the source object. Provides strong exception safety
- * and prevents self-assignment issues.
+ * ownership from the source object.
  */
 template<typename T>
 CudaArray3D<T>& CudaArray3D<T>::operator=(CudaArray3D&& other) noexcept {
@@ -191,10 +180,9 @@ CudaArray3D<T>& CudaArray3D<T>::operator=(CudaArray3D&& other) noexcept {
 /**
  * @brief Synchronously copy data from host to device
  * 
- * Copies data from host memory to GPU memory, handling the complexity
- * of different memory layouts automatically. For pitched memory, uses
+ * Copies data from host memory to GPU memory. For pitched memory, uses
  * cudaMemcpy3D to properly handle padding. For linear memory, uses
- * simple cudaMemcpy. This is a blocking operation.
+ * simple cudaMemcpy.
  */
 template<typename T>
 void CudaArray3D<T>::copyFromHost(const T* h_data) {
@@ -235,9 +223,8 @@ void CudaArray3D<T>::copyFromHost(const T* h_data) {
 /**
  * @brief Synchronously copy data from device to host
  * 
- * Copies data from GPU memory to host memory, automatically handling
- * different memory layouts. The host data will be in row-major order
- * regardless of the device memory layout. This is a blocking operation.
+ * Copies data from GPU memory to host memory. The host data will be in row-major order
+ * regardless of the device memory layout.
  */
 template<typename T>
 void CudaArray3D<T>::copyToHost(T* h_data) const {
@@ -279,9 +266,7 @@ void CudaArray3D<T>::copyToHost(T* h_data) const {
 /**
  * @brief Check CUDA error codes and throw exceptions on failure
  * 
- * Centralized error checking that provides meaningful error messages
- * by combining the user-provided message with CUDA's detailed error
- * description. Throws std::runtime_error for any CUDA error.
+ * Centralized error checking. Throws std::runtime_error for any CUDA error.
  */
 template<typename T>
 void CudaArray3D<T>::checkCudaError(cudaError_t error, const char* msg) const {
