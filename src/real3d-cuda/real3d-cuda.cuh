@@ -61,18 +61,15 @@ void initpot(MultiArray<double>& pot, MultiArray<double>& x2, MultiArray<double>
 
 void compute_rms_values(
     const CudaArray3D<cuDoubleComplex>& d_psi,                 // Device: 3D psi array
-    CudaArray3D<double>& d_work_array,  // Single work array instead of 3
-    const CudaArray3D<double>& d_x2,
-    const CudaArray3D<double>& d_y2,
-    const CudaArray3D<double>& d_z2,
+    CudaArray3D<double>& d_work_array,  // Temporary work array
     Simpson3DTiledIntegrator& integ,
     double* h_rms_pinned); // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 
 __global__ void compute_single_weighted_psi_squared(
         const cuDoubleComplex* __restrict__ psi,
-        const double* __restrict__ coord_squared,  // x2, y2, or z2
         double* result,
-        int direction);
+        int direction,
+        const double scale);
 
 void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2);
 __global__ void compute_d_psi2(

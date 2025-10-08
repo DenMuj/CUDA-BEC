@@ -51,7 +51,7 @@
 #  defined.
 #  Required: conditionally
 #  Type: double
-   AS = 110.
+   AS = 100.
 
 #  Dipole-dipole interaction strength in units of Bohr radius.
 #  Required: conditionally
@@ -80,7 +80,7 @@
    MX = 10
    MY = 10
    MZ = 10
-   MT = 2
+   MT = 5
 
 
 #  Spatial discretization step in the x-direction.
@@ -121,12 +121,12 @@
 #  Number of iterations with.
 #  Required: yes
 #  Type: long
-   NITER = 100
+   NITER = 1000000
 
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
 #  density profiles and write them to specified output files.
-   NSNAP = 100
+   NSNAP = 1000000
 
 #  Input file with the wave function, obtained from previous executions.
 #  Required: no
@@ -138,7 +138,7 @@
 #  If not defined, the wave function will not be saved.
 #  Required: no
 #  Type: string
-   NITEROUT = real3d-den-niter
+#   NITEROUT = real3d-den-niter
 
 #  Output file with the summary of final values of all physical quantities. If
 #  not defined, standard output will be used.

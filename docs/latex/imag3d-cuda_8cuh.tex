@@ -18,6 +18,7 @@
 {\ttfamily \#include $<$memory$>$}\newline
 {\ttfamily \#include $<$iomanip$>$}\newline
 {\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$omp.\+h$>$}\newline
 \doxysubsubsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
@@ -52,7 +53,7 @@ enum \mbox{\hyperlink{imag3d-cuda_8cuh_a103104703d869ab186e86f2f0f86adee}{Output
 \item 
 \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_ae680e4f1d4d75e1f062617fec439f424}{readpar}} ()
 \begin{DoxyCompactList}\small\item\em Reading input parameters from the configuration file. \end{DoxyCompactList}\item 
-\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_aff8364142450b4a15aca1ee0cd1007c0}{initpsi}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z2}})
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a181da9fbd377353f6df4d7ae4dbc9d1f}{initpsi}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z}})
 \begin{DoxyCompactList}\small\item\em Function to initialize wave function. \end{DoxyCompactList}\item 
 \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_ab470d5fc409ec637f783d9f96f8f4963}{initpot}} (\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{pot}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y2}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z2}})
 \begin{DoxyCompactList}\small\item\em Function to initialize trap potential. \end{DoxyCompactList}\item 
@@ -123,7 +124,25 @@ enum \mbox{\hyperlink{imag3d-cuda_8cuh_a103104703d869ab186e86f2f0f86adee}{Output
 \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a2d7208abdb09745425fffd7f1ba6dfc8}{rms\+\_\+output}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{filerms}})
 \begin{DoxyCompactList}\small\item\em Function to output the rms values. \end{DoxyCompactList}\item 
 \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a01728e9aa7a6ac9af504d94a01a7cb28}{mu\+\_\+output}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{filemu}})
-\begin{DoxyCompactList}\small\item\em Function to output the chemical potential values. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Function to output the chemical potential values. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a2256aca46d1efe92204fbc36d102df54}{outdenx}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpy}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the integrated density in x direction n(x) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a7c3b36e2a2385ad7f8d5482adb12a2f0}{outdeny}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpx}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the integrated density in y direction n(y) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a128d5cf51bde281b63051e1514548d86}{outdenz}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpx}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpy}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the integrated density in z direction n(z) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a23599d36a59894edf414e069482c09c6}{outdenxy}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpz}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the integrated density in x and y direction n(x,y) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a7540d482a29aeb40bcd7d932b987fcef}{outdenxz}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the integrated density in x and z direction n(x,z) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a47c4c59151456eeef40e394da6ba83ba}{outdenyz}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{tmpx}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the integrated density in y and z direction n(y,z) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a8c03a6dd8ecb7cdea840fd2c95e2b3fa}{outpsi2xy}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the squared wave function in x and y direction psi2(x,y) for z = 0. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_a30b432eeafcca9f6410577e65f4ed2f6}{outpsi2xz}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{x}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the squared wave function in x and z direction psi2(x,z) for y = 0. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} \mbox{\hyperlink{imag3d-cuda_8cuh_ae432b53a28d0db14f2a6eb1e20e52a3d}{outpsi2yz}} (\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{psi}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{y}}, \mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{z}}, \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{file}})
+\begin{DoxyCompactList}\small\item\em Function to output the squared wave function in y and z direction psi2(y,z) for x = 0. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsubsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
@@ -266,7 +285,7 @@ enum \mbox{\hyperlink{imag3d-cuda_8cuh_a103104703d869ab186e86f2f0f86adee}{Output
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00021}{21}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00022}{22}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a1da41d527b391b557b30acdc9e2cf425}\label{imag3d-cuda_8cuh_a1da41d527b391b557b30acdc9e2cf425} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!MAX\_FILENAME\_SIZE@{MAX\_FILENAME\_SIZE}}
@@ -276,7 +295,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00021}{21}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00022}{22}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00023}{23}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 
 
@@ -343,7 +362,7 @@ ARG\+\_\+0\+YZ&\\
 \end{DoxyEnumFields}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00024}{24}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00025}{25}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 
 
@@ -367,7 +386,7 @@ Function to compute squared wave function on device.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00611}{611}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00794}{794}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_abfbbeac5dde0cbb0b7bd4712b049da86}\label{imag3d-cuda_8cuh_abfbbeac5dde0cbb0b7bd4712b049da86} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calc\_psid2\_potdd@{calc\_psid2\_potdd}}
@@ -396,7 +415,7 @@ Function to compute the FFT of the squared wave function multiplied by the dipol
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00876}{876}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01064}{1064}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a24ba9c4861ba0375611a6c9676746ceb}\label{imag3d-cuda_8cuh_a24ba9c4861ba0375611a6c9676746ceb} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calclux@{calclux}}
@@ -425,7 +444,7 @@ Function to compute the time propagation with respect to H2 (x-\/part of the Lap
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01015}{1015}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01203}{1203}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a0a9ad2b5c6b8a1e8c2676b4f907275e4}\label{imag3d-cuda_8cuh_a0a9ad2b5c6b8a1e8c2676b4f907275e4} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calclux\_kernel@{calclux\_kernel}}
@@ -454,7 +473,7 @@ Kernel to compute the time propagation with respect to H2 (x-\/part of the Lapla
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01038}{1038}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01226}{1226}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a232ad1b0dd3021e53482e3a370daa047}\label{imag3d-cuda_8cuh_a232ad1b0dd3021e53482e3a370daa047} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcluy@{calcluy}}
@@ -483,7 +502,7 @@ Function to compute the time propagation with respect to H3 (y-\/part of the Lap
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01089}{1089}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01277}{1277}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ab96d3478ccdf017f00c9ed50c89d53d2}\label{imag3d-cuda_8cuh_ab96d3478ccdf017f00c9ed50c89d53d2} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcluy\_kernel@{calcluy\_kernel}}
@@ -512,7 +531,7 @@ Kernel to compute the time propagation with respect to H3 (y-\/part of the Lapla
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01113}{1113}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01301}{1301}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a825dc7c4b8935bc2ff8e8d2d566354ee}\label{imag3d-cuda_8cuh_a825dc7c4b8935bc2ff8e8d2d566354ee} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcluz@{calcluz}}
@@ -541,7 +560,7 @@ Function to compute the time propagation with respect to H4 (z-\/part of the Lap
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01169}{1169}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01357}{1357}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a9e7071dc57784601c2ae6acd82ffbf72}\label{imag3d-cuda_8cuh_a9e7071dc57784601c2ae6acd82ffbf72} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcluz\_kernel@{calcluz\_kernel}}
@@ -570,7 +589,7 @@ Kernel to compute the time propagation with respect to H4 (z-\/part of the Lapla
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01192}{1192}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01380}{1380}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a6bc360bec7816dd7309dc9a04eaa1580}\label{imag3d-cuda_8cuh_a6bc360bec7816dd7309dc9a04eaa1580} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcmuen@{calcmuen}}
@@ -613,7 +632,7 @@ Function to compute the chemical potential of the system.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01253}{1253}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01441}{1441}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a307d306cad930d8fab967e4871dbe2b0}\label{imag3d-cuda_8cuh_a307d306cad930d8fab967e4871dbe2b0} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcmuen\_fused\_contact@{calcmuen\_fused\_contact}}
@@ -636,7 +655,7 @@ Kernel to calculate contact energy term.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01289}{1289}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01477}{1477}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a966a9e5625088265dd2c6c8ede49bd2b}\label{imag3d-cuda_8cuh_a966a9e5625088265dd2c6c8ede49bd2b} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcmuen\_fused\_dipolar@{calcmuen\_fused\_dipolar}}
@@ -661,7 +680,7 @@ Kernel to calculate dipolar energy term.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01331}{1331}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01519}{1519}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ae5e62f159f32f7bf7228292caa16c2ae}\label{imag3d-cuda_8cuh_ae5e62f159f32f7bf7228292caa16c2ae} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcmuen\_fused\_h2@{calcmuen\_fused\_h2}}
@@ -684,7 +703,7 @@ Kernel to calculate quantum fluctuation energy term.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01352}{1352}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01540}{1540}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a7ccb8ebf960a49a65979e77a1d50f00c}\label{imag3d-cuda_8cuh_a7ccb8ebf960a49a65979e77a1d50f00c} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcmuen\_fused\_potential@{calcmuen\_fused\_potential}}
@@ -707,7 +726,7 @@ Kernel to calculate trap potential energy term.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01310}{1310}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01498}{1498}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aab7465b2e33ddc098f32e23bb5a08015}\label{imag3d-cuda_8cuh_aab7465b2e33ddc098f32e23bb5a08015} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcmuen\_kernel\_con@{calcmuen\_kernel\_con}}
@@ -748,7 +767,7 @@ Function to calculate kinetic energy term.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01372}{1372}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01560}{1560}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ad09d4d11eaa2c77824add10db7a6b39b}\label{imag3d-cuda_8cuh_ad09d4d11eaa2c77824add10db7a6b39b} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcnorm@{calcnorm}}
@@ -773,7 +792,7 @@ Function to calculate the wave function norm and normalization on device.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00761}{761}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00949}{949}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aef1b15f12b4cf271adab584a9858fee1}\label{imag3d-cuda_8cuh_aef1b15f12b4cf271adab584a9858fee1} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcnu@{calcnu}}
@@ -802,7 +821,7 @@ Function to compute the time propagation with respect to H1 (part of the Hamilto
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00961}{961}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01149}{1149}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a91c389353f9a11594800f0475131b9e4}\label{imag3d-cuda_8cuh_a91c389353f9a11594800f0475131b9e4} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcnu\_kernel@{calcnu\_kernel}}
@@ -831,7 +850,7 @@ Kernel to compute the time propagation with respect to H1 (part of the Hamiltoni
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00985}{985}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01173}{1173}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aede4c05461a5d039dd1ae80d6f057b83}\label{imag3d-cuda_8cuh_aede4c05461a5d039dd1ae80d6f057b83} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!calcpsidd2\_boundaries@{calcpsidd2\_boundaries}}
@@ -850,7 +869,7 @@ Kernel to compute the boundaries of the FFT psi2 array.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00830}{830}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01018}{1018}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ac8d62e5fa68c6e91569e8b7d1464d356}\label{imag3d-cuda_8cuh_ac8d62e5fa68c6e91569e8b7d1464d356} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!compute\_d\_psi2@{compute\_d\_psi2}}
@@ -871,7 +890,7 @@ Kernel to compute squared wave function.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00625}{625}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00808}{808}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a35e0ee501afe34c5c930c7c09eb39c3b}\label{imag3d-cuda_8cuh_a35e0ee501afe34c5c930c7c09eb39c3b} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!compute\_psid2\_potdd@{compute\_psid2\_potdd}}
@@ -892,7 +911,7 @@ Kernel to compute the squared wave function multiplied by the dipolar potential.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00800}{800}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00988}{988}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_af0b829e0f66b60fac02004c421859f45}\label{imag3d-cuda_8cuh_af0b829e0f66b60fac02004c421859f45} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!compute\_rms\_values@{compute\_rms\_values}}
@@ -923,7 +942,7 @@ Function to compute RMS values on device.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00516}{516}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00699}{699}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_afaf6dab3e9b4810733c8338a9e9c8e7c}\label{imag3d-cuda_8cuh_afaf6dab3e9b4810733c8338a9e9c8e7c} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!compute\_single\_weighted\_psi\_squared@{compute\_single\_weighted\_psi\_squared}}
@@ -948,7 +967,7 @@ Kernel to compute single weighted psi squared.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00578}{578}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00761}{761}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a155b89a5158b188a80f07313644b8fa4}\label{imag3d-cuda_8cuh_a155b89a5158b188a80f07313644b8fa4} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!diff@{diff}}
@@ -1049,7 +1068,7 @@ Function to generate the Crank-\/\+Nicolson scheme coefficients.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00909}{909}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01097}{1097}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ab470d5fc409ec637f783d9f96f8f4963}\label{imag3d-cuda_8cuh_ab470d5fc409ec637f783d9f96f8f4963} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!initpot@{initpot}}
@@ -1074,7 +1093,7 @@ Function to initialize trap potential.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00690}{690}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00878}{878}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a7eb3a1f0925ce9f001269a7c286ae737}\label{imag3d-cuda_8cuh_a7eb3a1f0925ce9f001269a7c286ae737} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!initpotdd@{initpotdd}}
@@ -1105,13 +1124,13 @@ Function to initialize dipolar potential.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00718}{718}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00906}{906}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
-\Hypertarget{imag3d-cuda_8cuh_aff8364142450b4a15aca1ee0cd1007c0}\label{imag3d-cuda_8cuh_aff8364142450b4a15aca1ee0cd1007c0} 
+\Hypertarget{imag3d-cuda_8cuh_a181da9fbd377353f6df4d7ae4dbc9d1f}\label{imag3d-cuda_8cuh_a181da9fbd377353f6df4d7ae4dbc9d1f} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!initpsi@{initpsi}}
 \index{initpsi@{initpsi}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
 \doxysubsubsection{\texorpdfstring{initpsi()}{initpsi()}}
-{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} initpsi (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z2 }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} initpsi (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z2,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z }\end{DoxyParamCaption})}
 
 
 
@@ -1127,10 +1146,16 @@ Function to initialize wave function.
 \hline
 {\em z2} & z2 array \\
 \hline
+{\em x} & x array \\
+\hline
+{\em y} & y array \\
+\hline
+{\em z} & z array \\
+\hline
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00647}{647}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00833}{833}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a01728e9aa7a6ac9af504d94a01a7cb28}\label{imag3d-cuda_8cuh_a01728e9aa7a6ac9af504d94a01a7cb28} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!mu\_output@{mu\_output}}
@@ -1149,7 +1174,7 @@ Function to output the chemical potential values.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01425}{1425}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01613}{1613}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a1064612390c427db5793e65616dc06f3}\label{imag3d-cuda_8cuh_a1064612390c427db5793e65616dc06f3} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!multiply\_by\_norm@{multiply\_by\_norm}}
@@ -1170,7 +1195,244 @@ Kernel to multiply the wave function by the norm on device.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00783}{783}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00971}{971}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a2256aca46d1efe92204fbc36d102df54}\label{imag3d-cuda_8cuh_a2256aca46d1efe92204fbc36d102df54} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outdenx@{outdenx}}
+\index{outdenx@{outdenx}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outdenx()}{outdenx()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outdenx (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpy,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the integrated density in x direction n(x) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em x} & Host\+: x array \\
+\hline
+{\em tmpy} & Host\+: temporary array for y direction \\
+\hline
+{\em tmpz} & Host\+: temporary array for z direction \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01730}{1730}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a23599d36a59894edf414e069482c09c6}\label{imag3d-cuda_8cuh_a23599d36a59894edf414e069482c09c6} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outdenxy@{outdenxy}}
+\index{outdenxy@{outdenxy}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outdenxy()}{outdenxy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outdenxy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the integrated density in x and y direction n(x,y) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em x} & Host\+: x array \\
+\hline
+{\em y} & Host\+: y array \\
+\hline
+{\em tmpz} & Host\+: temporary array for z direction \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01813}{1813}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a7540d482a29aeb40bcd7d932b987fcef}\label{imag3d-cuda_8cuh_a7540d482a29aeb40bcd7d932b987fcef} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outdenxz@{outdenxz}}
+\index{outdenxz@{outdenxz}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outdenxz()}{outdenxz()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outdenxz (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the integrated density in x and z direction n(x,z) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em x} & Host\+: x array \\
+\hline
+{\em z} & Host\+: z array \\
+\hline
+{\em tmpx} & Host\+: temporary array for x direction \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01836}{1836}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a7c3b36e2a2385ad7f8d5482adb12a2f0}\label{imag3d-cuda_8cuh_a7c3b36e2a2385ad7f8d5482adb12a2f0} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outdeny@{outdeny}}
+\index{outdeny@{outdeny}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outdeny()}{outdeny()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outdeny (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpx,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpz,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the integrated density in y direction n(y) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em y} & Host\+: y array \\
+\hline
+{\em tmpx} & Host\+: temporary array for x direction \\
+\hline
+{\em tmpz} & Host\+: temporary array for z direction \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01758}{1758}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a47c4c59151456eeef40e394da6ba83ba}\label{imag3d-cuda_8cuh_a47c4c59151456eeef40e394da6ba83ba} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outdenyz@{outdenyz}}
+\index{outdenyz@{outdenyz}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outdenyz()}{outdenyz()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outdenyz (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpx,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the integrated density in y and z direction n(y,z) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em y} & Host\+: y array \\
+\hline
+{\em z} & Host\+: z array \\
+\hline
+{\em tmpx} & Host\+: temporary array for x direction \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01859}{1859}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a128d5cf51bde281b63051e1514548d86}\label{imag3d-cuda_8cuh_a128d5cf51bde281b63051e1514548d86} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outdenz@{outdenz}}
+\index{outdenz@{outdenz}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outdenz()}{outdenz()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outdenz (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpx,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{tmpy,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the integrated density in z direction n(z) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em z} & Host\+: z array \\
+\hline
+{\em tmpx} & Host\+: temporary array for x direction \\
+\hline
+{\em tmpy} & Host\+: temporary array for y direction \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01785}{1785}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a8c03a6dd8ecb7cdea840fd2c95e2b3fa}\label{imag3d-cuda_8cuh_a8c03a6dd8ecb7cdea840fd2c95e2b3fa} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outpsi2xy@{outpsi2xy}}
+\index{outpsi2xy@{outpsi2xy}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outpsi2xy()}{outpsi2xy()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outpsi2xy (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the squared wave function in x and y direction psi2(x,y) for z = 0. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em x} & Host\+: x array \\
+\hline
+{\em y} & Host\+: y array \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01881}{1881}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_a30b432eeafcca9f6410577e65f4ed2f6}\label{imag3d-cuda_8cuh_a30b432eeafcca9f6410577e65f4ed2f6} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outpsi2xz@{outpsi2xz}}
+\index{outpsi2xz@{outpsi2xz}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outpsi2xz()}{outpsi2xz()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outpsi2xz (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{x,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the squared wave function in x and z direction psi2(x,z) for y = 0. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em x} & Host\+: x array \\
+\hline
+{\em z} & Host\+: z array \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01899}{1899}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+
+\Hypertarget{imag3d-cuda_8cuh_ae432b53a28d0db14f2a6eb1e20e52a3d}\label{imag3d-cuda_8cuh_ae432b53a28d0db14f2a6eb1e20e52a3d} 
+\index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outpsi2yz@{outpsi2yz}}
+\index{outpsi2yz@{outpsi2yz}!imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}}
+\doxysubsubsection{\texorpdfstring{outpsi2yz()}{outpsi2yz()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{void}} outpsi2yz (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} \texorpdfstring{$\ast$}{*}}]{psi,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{y,  }\item[{\mbox{\hyperlink{classMultiArray}{Multi\+Array}}$<$ \mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{double}} $>$ \&}]{z,  }\item[{\mbox{\hyperlink{imag3d-cuda_8cu_afaf6dab3e9b4810733c8338a9e9c8e7c}{FILE}} \texorpdfstring{$\ast$}{*}}]{file }\end{DoxyParamCaption})}
+
+
+
+Function to output the squared wave function in y and z direction psi2(y,z) for x = 0. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em psi} & Host\+: 3D psi array \\
+\hline
+{\em y} & Host\+: y array \\
+\hline
+{\em z} & Host\+: z array \\
+\hline
+{\em file} & File pointer to the output file \\
+\hline
+\end{DoxyParams}
+
+
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01917}{1917}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a52dd3fc09d2f9b46320f750d47d2e2a9}\label{imag3d-cuda_8cuh_a52dd3fc09d2f9b46320f750d47d2e2a9} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!read\_psi\_from\_file@{read\_psi\_from\_file}}
@@ -1197,7 +1459,7 @@ Function to read the psi array from a binary file.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01513}{1513}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01701}{1701}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ae680e4f1d4d75e1f062617fec439f424}\label{imag3d-cuda_8cuh_ae680e4f1d4d75e1f062617fec439f424} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!readpar@{readpar}}
@@ -1211,7 +1473,7 @@ Reading input parameters from the configuration file.
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00285}{285}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l00487}{487}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a2d7208abdb09745425fffd7f1ba6dfc8}\label{imag3d-cuda_8cuh_a2d7208abdb09745425fffd7f1ba6dfc8} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!rms\_output@{rms\_output}}
@@ -1230,7 +1492,7 @@ Function to output the rms values.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01380}{1380}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01568}{1568}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ae187563ab5e50a21dfcb4090534e209a}\label{imag3d-cuda_8cuh_ae187563ab5e50a21dfcb4090534e209a} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!save\_psi\_from\_gpu@{save\_psi\_from\_gpu}}
@@ -1259,7 +1521,7 @@ Function to save the psi array from the GPU to a binary file.
 \end{DoxyParams}
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01474}{1474}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01662}{1662}} of file \mbox{\hyperlink{imag3d-cuda_8cu_source}{imag3d-\/cuda.\+cu}}.
 
 
 
@@ -1272,7 +1534,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cu_source_l01474}{1474}} of fil
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a1c3ff9022241fc6c64da64ea28318395}\label{imag3d-cuda_8cuh_a1c3ff9022241fc6c64da64ea28318395} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!aho@{aho}}
@@ -1282,7 +1544,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a227245fee3351583169a3a906450210c}\label{imag3d-cuda_8cuh_a227245fee3351583169a3a906450210c} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!as@{as}}
@@ -1292,7 +1554,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a034fbedcce0aee66ee125138543e2703}\label{imag3d-cuda_8cuh_a034fbedcce0aee66ee125138543e2703} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!cutoff@{cutoff}}
@@ -1302,7 +1564,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00053}{53}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a73197eed5bcda31eef79ed204c0928fe}\label{imag3d-cuda_8cuh_a73197eed5bcda31eef79ed204c0928fe} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!d\_dt@{d\_dt}}
@@ -1312,7 +1574,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00053}{53}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00050}{50}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00051}{51}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a55e2bbb5da4eb6ae62cb4a8248d3bbc2}\label{imag3d-cuda_8cuh_a55e2bbb5da4eb6ae62cb4a8248d3bbc2} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!d\_Nx@{d\_Nx}}
@@ -1322,7 +1584,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00050}{50}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00037}{37}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a0250350631c97836ba79dedb38c8671e}\label{imag3d-cuda_8cuh_a0250350631c97836ba79dedb38c8671e} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!d\_Ny@{d\_Ny}}
@@ -1332,7 +1594,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00037}{37}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ada6585ae599e53a66ee67754bbb69d19}\label{imag3d-cuda_8cuh_ada6585ae599e53a66ee67754bbb69d19} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!d\_Nz@{d\_Nz}}
@@ -1342,7 +1604,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00037}{37}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a03e28be41881b703c836edbfe9b51b17}\label{imag3d-cuda_8cuh_a03e28be41881b703c836edbfe9b51b17} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!dt@{dt}}
@@ -1352,7 +1614,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00050}{50}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a229d11aff11a7482259d1296b9b70b8a}\label{imag3d-cuda_8cuh_a229d11aff11a7482259d1296b9b70b8a} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!dx@{dx}}
@@ -1362,7 +1624,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a50bc8c5443698b3fb4b4cd594056062c}\label{imag3d-cuda_8cuh_a50bc8c5443698b3fb4b4cd594056062c} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!dx2@{dx2}}
@@ -1372,7 +1634,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a9deb6f886b19d50e714d890c3c268efc}\label{imag3d-cuda_8cuh_a9deb6f886b19d50e714d890c3c268efc} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!dy@{dy}}
@@ -1382,7 +1644,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a01be97c7151e8f44183f10d93af2973e}\label{imag3d-cuda_8cuh_a01be97c7151e8f44183f10d93af2973e} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!dy2@{dy2}}
@@ -1392,7 +1654,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a5a198de8c3f38514f4e55231aa69cd10}\label{imag3d-cuda_8cuh_a5a198de8c3f38514f4e55231aa69cd10} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!dz@{dz}}
@@ -1402,7 +1664,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a33fabf8c32ba663fd6b0d0c5775aac9c}\label{imag3d-cuda_8cuh_a33fabf8c32ba663fd6b0d0c5775aac9c} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!dz2@{dz2}}
@@ -1412,7 +1674,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00049}{49}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a395618b7fffa19d6d95b7938f32a32e8}\label{imag3d-cuda_8cuh_a395618b7fffa19d6d95b7938f32a32e8} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!edd@{edd}}
@@ -1422,7 +1684,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00048}{48}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ac33c4dbb9023673a9b2a68ab72fe3632}\label{imag3d-cuda_8cuh_ac33c4dbb9023673a9b2a68ab72fe3632} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!finalpsi@{finalpsi}}
@@ -1432,7 +1694,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ab30c765b9be1b7776c97c899a12a66bb}\label{imag3d-cuda_8cuh_ab30c765b9be1b7776c97c899a12a66bb} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!g@{g}}
@@ -1442,7 +1704,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00046}{46}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a4d21681d5da1d524f78b9038121b1d72}\label{imag3d-cuda_8cuh_a4d21681d5da1d524f78b9038121b1d72} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!gd@{gd}}
@@ -1452,7 +1714,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00046}{46}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00046}{46}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00047}{47}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ac2d9b75feeec68992c955b63e813e7ce}\label{imag3d-cuda_8cuh_ac2d9b75feeec68992c955b63e813e7ce} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!h2@{h2}}
@@ -1462,7 +1724,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00046}{46}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a40b544b5f22197434cf4bb2ccca5c8a6}\label{imag3d-cuda_8cuh_a40b544b5f22197434cf4bb2ccca5c8a6} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!h4@{h4}}
@@ -1472,7 +1734,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a9adc11d527cdd7b029b0d2ccd910ff3b}\label{imag3d-cuda_8cuh_a9adc11d527cdd7b029b0d2ccd910ff3b} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!input@{input}}
@@ -1482,7 +1744,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aae4c3d58ef766e962785c7ef0a4b1e2f}\label{imag3d-cuda_8cuh_aae4c3d58ef766e962785c7ef0a4b1e2f} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!input\_type@{input\_type}}
@@ -1492,7 +1754,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_acba9ab8fd21891baa3cbaab507313d02}\label{imag3d-cuda_8cuh_acba9ab8fd21891baa3cbaab507313d02} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!MS@{MS}}
@@ -1502,7 +1764,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00042}{42}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00043}{43}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a8a7f5d6a4e9f1d5c016e0e9d9c5d899c}\label{imag3d-cuda_8cuh_a8a7f5d6a4e9f1d5c016e0e9d9c5d899c} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!mt@{mt}}
@@ -1512,7 +1774,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00042}{42}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00055}{55}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a6ff07c037e228f97de4b0f73be51358d}\label{imag3d-cuda_8cuh_a6ff07c037e228f97de4b0f73be51358d} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!muend@{muend}}
@@ -1522,7 +1784,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ac916ff55e3c1bc8682cb3a7ea6b1bcc0}\label{imag3d-cuda_8cuh_ac916ff55e3c1bc8682cb3a7ea6b1bcc0} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!muoutput@{muoutput}}
@@ -1532,7 +1794,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ae8e6d9e3c4c9eb92fcf7f199f7d9f2f5}\label{imag3d-cuda_8cuh_ae8e6d9e3c4c9eb92fcf7f199f7d9f2f5} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!murel@{murel}}
@@ -1542,7 +1804,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ac5703f79bb8db911feaccf28272a4e15}\label{imag3d-cuda_8cuh_ac5703f79bb8db911feaccf28272a4e15} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!mx@{mx}}
@@ -1552,7 +1814,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00055}{55}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ae9c09fae0681037d1a58e1f2e38f8a81}\label{imag3d-cuda_8cuh_ae9c09fae0681037d1a58e1f2e38f8a81} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!my@{my}}
@@ -1562,7 +1824,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00055}{55}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a4875c817b86796d284439e89731a4b78}\label{imag3d-cuda_8cuh_a4875c817b86796d284439e89731a4b78} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!mz@{mz}}
@@ -1572,7 +1834,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00055}{55}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a56b1711f98765b1349660dbb17ba5e7d}\label{imag3d-cuda_8cuh_a56b1711f98765b1349660dbb17ba5e7d} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Na@{Na}}
@@ -1582,7 +1844,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00054}{54}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00043}{43}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00044}{44}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ab6b7b1f6c7f334640a2c18f30a5dd41c}\label{imag3d-cuda_8cuh_ab6b7b1f6c7f334640a2c18f30a5dd41c} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Nad@{Nad}}
@@ -1592,7 +1854,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00043}{43}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00045}{45}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00046}{46}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ad10983fd38843b833979823a8181dc73}\label{imag3d-cuda_8cuh_ad10983fd38843b833979823a8181dc73} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Niter@{Niter}}
@@ -1602,7 +1864,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00045}{45}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00044}{44}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00045}{45}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a92ff90d9bbdb1270dec17ebdf45473a5}\label{imag3d-cuda_8cuh_a92ff90d9bbdb1270dec17ebdf45473a5} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Niterout@{Niterout}}
@@ -1612,7 +1874,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00044}{44}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a9b18d4b2b6f2f019d61e4b7c7d00627d}\label{imag3d-cuda_8cuh_a9b18d4b2b6f2f019d61e4b7c7d00627d} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!norm\_psi2@{norm\_psi2}}
@@ -1622,7 +1884,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_af8cb402ffc961946ecf095149f7efe57}\label{imag3d-cuda_8cuh_af8cb402ffc961946ecf095149f7efe57} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!norm\_psi3@{norm\_psi3}}
@@ -1632,7 +1894,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_abe2682efe583a9f4452cc72c2d413e41}\label{imag3d-cuda_8cuh_abe2682efe583a9f4452cc72c2d413e41} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Nsnap@{Nsnap}}
@@ -1642,7 +1904,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00044}{44}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00045}{45}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9}\label{imag3d-cuda_8cuh_a97700218037a126a9957568d3fe1a8a9} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Nx@{Nx}}
@@ -1652,7 +1914,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00044}{44}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00034}{34}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a284e7e9b9ab63eaec46adc671f430883}\label{imag3d-cuda_8cuh_a284e7e9b9ab63eaec46adc671f430883} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Nx2@{Nx2}}
@@ -1662,7 +1924,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00034}{34}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185}\label{imag3d-cuda_8cuh_a8202396220c6bb040150929886702185} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Ny@{Ny}}
@@ -1672,7 +1934,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00034}{34}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a5a2eb31dd8f1dcd867eadad3b95e2ccd}\label{imag3d-cuda_8cuh_a5a2eb31dd8f1dcd867eadad3b95e2ccd} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Ny2@{Ny2}}
@@ -1682,7 +1944,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00034}{34}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff}\label{imag3d-cuda_8cuh_a51376252920a483727821c5db4ee36ff} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Nz@{Nz}}
@@ -1692,7 +1954,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00034}{34}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ae6911f0277e40658a8eb7219e9d3b1fa}\label{imag3d-cuda_8cuh_ae6911f0277e40658a8eb7219e9d3b1fa} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!Nz2@{Nz2}}
@@ -1702,7 +1964,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00034}{34}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00036}{36}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a217e4b46670419e6c3665b3c9f96b7da}\label{imag3d-cuda_8cuh_a217e4b46670419e6c3665b3c9f96b7da} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!opt@{opt}}
@@ -1712,7 +1974,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00035}{35}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00041}{41}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00042}{42}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ab0ddd547d51b554cb2e3c0ba16fe5f9f}\label{imag3d-cuda_8cuh_ab0ddd547d51b554cb2e3c0ba16fe5f9f} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!optms@{optms}}
@@ -1722,7 +1984,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00041}{41}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00041}{41}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00042}{42}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aa5452af20625ef9ce360d1c86371dfe1}\label{imag3d-cuda_8cuh_aa5452af20625ef9ce360d1c86371dfe1} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outflags@{outflags}}
@@ -1732,7 +1994,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00041}{41}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00025}{25}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00026}{26}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a90e42c6e50541cb89274ff213b2c922f}\label{imag3d-cuda_8cuh_a90e42c6e50541cb89274ff213b2c922f} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!output@{output}}
@@ -1742,7 +2004,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00025}{25}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aa506c58b23585fa8685f42cf0f938c8f}\label{imag3d-cuda_8cuh_aa506c58b23585fa8685f42cf0f938c8f} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outstpx@{outstpx}}
@@ -1752,7 +2014,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00031}{31}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aea3985442eda87007de8587d57d76126}\label{imag3d-cuda_8cuh_aea3985442eda87007de8587d57d76126} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outstpy@{outstpy}}
@@ -1762,7 +2024,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00031}{31}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a516c596cdf05d6d65bd164d02e58f5a0}\label{imag3d-cuda_8cuh_a516c596cdf05d6d65bd164d02e58f5a0} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!outstpz@{outstpz}}
@@ -1772,7 +2034,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00031}{31}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a0244fcfffe8fe946579a9774fb960417}\label{imag3d-cuda_8cuh_a0244fcfffe8fe946579a9774fb960417} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!par@{par}}
@@ -1782,7 +2044,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00052}{52}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00053}{53}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a31c17cc321db72d5ab448b71ea92792f}\label{imag3d-cuda_8cuh_a31c17cc321db72d5ab448b71ea92792f} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!pi@{pi}}
@@ -1792,7 +2054,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00052}{52}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00027}{27}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00028}{28}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a56dd77a485238d149e4b482c098d8b9f}\label{imag3d-cuda_8cuh_a56dd77a485238d149e4b482c098d8b9f} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!q3@{q3}}
@@ -1802,7 +2064,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00027}{27}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aac70d465c7e204add4f1ead8849a0ec5}\label{imag3d-cuda_8cuh_aac70d465c7e204add4f1ead8849a0ec5} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!q5@{q5}}
@@ -1812,7 +2074,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ad6a721952e8b875c1df05fb8ae4b23f4}\label{imag3d-cuda_8cuh_ad6a721952e8b875c1df05fb8ae4b23f4} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!QDEPL@{QDEPL}}
@@ -1822,7 +2084,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00041}{41}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_acc0282d03de59434f8bc247877861b25}\label{imag3d-cuda_8cuh_acc0282d03de59434f8bc247877861b25} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!QF@{QF}}
@@ -1832,7 +2094,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00041}{41}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a61269581e8d6ef150e5926fe6a7bbf52}\label{imag3d-cuda_8cuh_a61269581e8d6ef150e5926fe6a7bbf52} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!rmsout@{rmsout}}
@@ -1842,7 +2104,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00030}{30}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_afdc197570c735e7e9eab5ee065500090}\label{imag3d-cuda_8cuh_afdc197570c735e7e9eab5ee065500090} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!sx@{sx}}
@@ -1852,7 +2114,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00029}{29}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a969933eb4ae8b2e39e355bf35e44fe42}\label{imag3d-cuda_8cuh_a969933eb4ae8b2e39e355bf35e44fe42} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!sy@{sy}}
@@ -1862,7 +2124,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a64498b99794067bd1c04bd722547995e}\label{imag3d-cuda_8cuh_a64498b99794067bd1c04bd722547995e} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!sz@{sz}}
@@ -1872,7 +2134,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00040}{40}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_a57dd1d2e24fea24697cbc74bf144cdc4}\label{imag3d-cuda_8cuh_a57dd1d2e24fea24697cbc74bf144cdc4} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!vgamma@{vgamma}}
@@ -1882,7 +2144,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00039}{39}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00051}{51}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00052}{52}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_aa0a23d01252887c6b457628c77ef2091}\label{imag3d-cuda_8cuh_aa0a23d01252887c6b457628c77ef2091} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!vlambda@{vlambda}}
@@ -1892,7 +2154,7 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00051}{51}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00051}{51}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00052}{52}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 
 \Hypertarget{imag3d-cuda_8cuh_ac3b6f790067e85c02a24301d9bfe3749}\label{imag3d-cuda_8cuh_ac3b6f790067e85c02a24301d9bfe3749} 
 \index{imag3d-\/cuda.cuh@{imag3d-\/cuda.cuh}!vnu@{vnu}}
@@ -1902,5 +2164,5 @@ Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00051}{51}} of file
 
 
 
-Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00051}{51}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
+Definition at line \mbox{\hyperlink{imag3d-cuda_8cuh_source_l00052}{52}} of file \mbox{\hyperlink{imag3d-cuda_8cuh_source}{imag3d-\/cuda.\+cuh}}.
 

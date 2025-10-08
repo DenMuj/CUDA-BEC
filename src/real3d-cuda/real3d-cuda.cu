@@ -114,39 +114,71 @@ int main(int argc, char **argv) {
   CudaArray3D<cuDoubleComplex> d_cgammaz(Nz - 1);
 
   // Allocate memory for psi on device
-  CudaArray3D<cuDoubleComplex> d_psi(Nx, Ny, Nz, true);
+  CudaArray3D<cuDoubleComplex> d_psi(Nx, Ny, Nz, false);
   
-  // Allocate memory for x2, y2, z2 on device
-  CudaArray3D<double> d_x2(Nx);
-  CudaArray3D<double> d_y2(Ny);
-  CudaArray3D<double> d_z2(Nz);
-
+ 
   // Allocate memory for work array on device
   CudaArray3D<double> d_work_array(Nx, Ny, Nz, true);
-  CudaArray3D<cuDoubleComplex> d_work_array_complex(Nx, Ny, Nz, true);
+  CudaArray3D<cuDoubleComplex> d_work_array_complex(Nx, Ny, Nz, false);
 
-  // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd) and memory for squared wave function multiplied by dipole potential (d_psi2dd)
-  CudaArray3D<double> d_pot(Nx, Ny, Nz, true);
-  CudaArray3D<double> d_potdd(Nx, Ny, Nz, true);
-  CudaArray3D<double> d_psi2dd(Nx, Ny, Nz, true);
+  // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd)
+  CudaArray3D<double> d_pot(Nx, Ny, Nz, false);
+  CudaArray3D<double> d_potdd(Nx, Ny, Nz, false);
+  // Reuse d_work_array as the real buffer for psidd2 to reduce memory
   
 
   // FFT arrays
   cufftDoubleComplex *d_psi2_fft;
   cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 +1) * sizeof(cufftDoubleComplex));
 
-  //Create plan for FFT of 3D array
+  //Create plan for FFT of 3D array with explicit work area management
   cufftHandle forward_plan, backward_plan;
-  cufftResult res = cufftPlan3d(&forward_plan, Nz, Ny, Nx, CUFFT_D2Z);
-    if (res != CUFFT_SUCCESS) {
-        std::cerr << "CUFFT error: Plan creation failed - Forward plan" << std::endl;
-        return -1;
-    }
-
-  res = cufftPlan3d(&backward_plan, Nz, Ny, Nx, CUFFT_Z2D);
+  size_t forward_worksize, backward_worksize;
+  void *forward_work = nullptr;
+  void *backward_work = nullptr;
+  
+  // Create forward plan
+  cufftResult res = cufftCreate(&forward_plan);
   if (res != CUFFT_SUCCESS) {
-    std::cerr << "CUFFT error: Plan creation failed - Backward plan" << std::endl;
+    std::cerr << "CUFFT error: Forward plan creation failed" << std::endl;
     return -1;
+  }
+  
+  res = cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize);
+  if (res != CUFFT_SUCCESS) {
+    std::cerr << "CUFFT error: Forward plan setup failed" << std::endl;
+    cufftDestroy(forward_plan);
+    return -1;
+  }
+  
+  // Defer work area allocation until both plan sizes are known; will share one buffer
+
+  // Create backward plan
+  res = cufftCreate(&backward_plan);
+  if (res != CUFFT_SUCCESS) {
+    std::cerr << "CUFFT error: Backward plan creation failed" << std::endl;
+    if (forward_work) cudaFree(forward_work);
+    cufftDestroy(forward_plan);
+    return -1;
+  }
+  
+  res = cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize);
+  if (res != CUFFT_SUCCESS) {
+    std::cerr << "CUFFT error: Backward plan setup failed" << std::endl;
+    if (forward_work) cudaFree(forward_work);
+    cufftDestroy(forward_plan);
+    cufftDestroy(backward_plan);
+    return -1;
+  }
+  
+  // Allocate a single shared work area for both forward and backward plans
+  {
+    size_t shared_worksize = (forward_worksize > backward_worksize) ? forward_worksize : backward_worksize;
+    if (shared_worksize > 0) {
+      cudaMalloc(&forward_work, shared_worksize);
+      cufftSetWorkArea(forward_plan, forward_work);
+      cufftSetWorkArea(backward_plan, forward_work);
+    }
   }
 
   // Allocate pinned memory for RMS results
@@ -197,11 +229,6 @@ int main(int argc, char **argv) {
   // Copy psi data to device
   d_psi.copyFromHost(psi);
 
-  // Copy x2, y2, z2 to device
-  d_x2.copyFromHost(x2.raw());
-  d_y2.copyFromHost(y2.raw());
-  d_z2.copyFromHost(z2.raw());
-
   // Copy trap potential and dipole potential to device
   d_pot.copyFromHost(pot.raw());
   d_potdd.copyFromHost(potdd.raw());
@@ -217,7 +244,7 @@ int main(int argc, char **argv) {
   calcnorm(d_psi, d_work_array, norm, integ);
 
   // Compute RMS values
-  compute_rms_values(d_psi, d_work_array, d_x2, d_y2, d_z2, integ, h_rms_pinned);
+  compute_rms_values(d_psi, d_work_array, integ, h_rms_pinned);
   if(rmsout != NULL) {
     double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
     fprintf(filerms, "%-9d %-19.10le %-19.16le %-19.16le %-19.16le\n", 0, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
@@ -227,7 +254,7 @@ int main(int argc, char **argv) {
 
   // Compute chemical potential terms
   if(muoutput != NULL) {
-    calcmuen(muen,d_psi,d_work_array, d_pot, d_psi2dd, d_potdd, d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+    calcmuen(muen,d_psi,d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
     fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2],muen[4]);
     fflush(filemu);
     mutotold = muen[0]+muen[1]+muen[2]+muen[3];
@@ -347,7 +374,7 @@ int main(int argc, char **argv) {
       calcnorm(d_psi, d_work_array, norm, integ);
     }
 
-    compute_rms_values(d_psi, d_work_array, d_x2, d_y2, d_z2, integ, h_rms_pinned);
+    compute_rms_values(d_psi, d_work_array, integ, h_rms_pinned);
     
     if(rmsout != NULL) {
       double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
@@ -355,7 +382,7 @@ int main(int argc, char **argv) {
       //fflush(filerms);
     }
   
-    calcmuen(muen,d_psi,d_work_array, d_pot, d_psi2dd, d_potdd, d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+    calcmuen(muen,d_psi,d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
     if(muoutput != NULL) {
         fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2],muen[4]);
         //fflush(filemu);
@@ -481,8 +508,10 @@ int main(int argc, char **argv) {
   cudaFreeHost(h_rms_pinned);
   cudaFreeHost(psi);
 
-  // Cleanup FFT plan
+  // Cleanup FFT plans and work areas
   cudaFree(d_psi2_fft);
+  if (forward_work) cudaFree(forward_work);
+  if (backward_work) cudaFree(backward_work);
   cufftDestroy(forward_plan);
   cufftDestroy(backward_plan);
   return 0;
@@ -704,8 +733,7 @@ void readpar(void) {
  * @param h_rms_pinned: Output RMS values in pinned memory [rms_x, rms_y, rms_z]
  */ 
 void compute_rms_values(const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D psi array
-                        CudaArray3D<double> &d_work_array, const CudaArray3D<double> &d_x2,
-                        const CudaArray3D<double> &d_y2, const CudaArray3D<double> &d_z2,
+                        CudaArray3D<double> &d_work_array,
                         Simpson3DTiledIntegrator &integ, 
                         double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]clean
 {
@@ -723,9 +751,9 @@ void compute_rms_values(const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D
 
   // Compute x^2 * psi^2
   compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(
-      d_psi.raw(), d_x2.raw(), d_work_array.raw(),
-      0 // 0 for x direction
-       );
+      d_psi.raw(), d_work_array.raw(),
+      0, // 0 for x direction
+      dx);
 
   cudaDeviceSynchronize();
   double x2_integral =
@@ -733,18 +761,18 @@ void compute_rms_values(const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D
 
   // Compute y^2 * psi^2 (reuse d_work_array)
   compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(
-      d_psi.raw(), d_y2.raw(), d_work_array.raw(),
-      1 // 1 for y direction
-  );
+      d_psi.raw(), d_work_array.raw(),
+      1, // 1 for y direction
+      dy);
   cudaDeviceSynchronize();
   double y2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
   // Compute z^2 * psi^2 (reuse d_work_array)
   compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(
-      d_psi.raw(), d_z2.raw(), d_work_array.raw(),
-      2 // 2 for z direction
-  );
+      d_psi.raw(), d_work_array.raw(),
+      2, // 2 for z direction
+      dz);
   cudaDeviceSynchronize();
   double z2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
@@ -764,9 +792,9 @@ void compute_rms_values(const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D
  */
 __global__ void compute_single_weighted_psi_squared(
     const cuDoubleComplex *__restrict__ psi,
-    const double *__restrict__ coord_squared, // x2, y2, or z2
     double *result,
-    int direction) // 0=x, 1=y, 2=z
+    int direction, // 0=x, 1=y, 2=z
+    const double scale)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -780,12 +808,16 @@ __global__ void compute_single_weighted_psi_squared(
   double psi_squared = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
 
   double weight = 0.0;
-  if (direction == 0)
-    weight = __ldg(&coord_squared[idx]); // x^2 - read-only cache
-  else if (direction == 1)
-    weight = __ldg(&coord_squared[idy]); // y^2 - read-only cache
-  else if (direction == 2)
-    weight = __ldg(&coord_squared[idz]); // z^2 - read-only cache
+  if (direction == 0) {
+    double x = (static_cast<double>(idx) - static_cast<double>(d_Nx) * 0.5) * scale;
+    weight = x * x;
+  } else if (direction == 1) {
+    double y = (static_cast<double>(idy) - static_cast<double>(d_Ny) * 0.5) * scale;
+    weight = y * y;
+  } else if (direction == 2) {
+    double z = (static_cast<double>(idz) - static_cast<double>(d_Nz) * 0.5) * scale;
+    weight = z * z;
+  }
 
   result[linear_idx] = weight * psi_squared;
 }

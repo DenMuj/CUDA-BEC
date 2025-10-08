@@ -23,7 +23,7 @@
   <td id="projectalign">
    <div id="projectname">CUDA-BEC
    </div>
-   <div id="projectbrief">CUDA-accelerated Bose-Einstein Condensate Solver</div>
+   <div id="projectbrief">CUDA-accelerated Dipolar Bose-Einstein Condensate Solver</div>
   </td>
  </tr>
  </tbody>
@@ -100,6 +100,7 @@ $(function() {
 <code>#include &lt;memory&gt;</code><br />
 <code>#include &lt;iomanip&gt;</code><br />
 <code>#include &lt;iostream&gt;</code><br />
+<code>#include &lt;omp.h&gt;</code><br />
 </div>
 <p><a href="imag3d-cuda_8cuh_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -138,9 +139,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ae680e4f1d4d75e1f062617fec439f424" id="r_ae680e4f1d4d75e1f062617fec439f424"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#ae680e4f1d4d75e1f062617fec439f424">readpar</a> ()</td></tr>
 <tr class="memdesc:ae680e4f1d4d75e1f062617fec439f424"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reading input parameters from the configuration file.  <br /></td></tr>
 <tr class="separator:ae680e4f1d4d75e1f062617fec439f424"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff8364142450b4a15aca1ee0cd1007c0" id="r_aff8364142450b4a15aca1ee0cd1007c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#aff8364142450b4a15aca1ee0cd1007c0">initpsi</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z2</a>)</td></tr>
-<tr class="memdesc:aff8364142450b4a15aca1ee0cd1007c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to initialize wave function.  <br /></td></tr>
-<tr class="separator:aff8364142450b4a15aca1ee0cd1007c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a181da9fbd377353f6df4d7ae4dbc9d1f" id="r_a181da9fbd377353f6df4d7ae4dbc9d1f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a181da9fbd377353f6df4d7ae4dbc9d1f">initpsi</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z</a>)</td></tr>
+<tr class="memdesc:a181da9fbd377353f6df4d7ae4dbc9d1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to initialize wave function.  <br /></td></tr>
+<tr class="separator:a181da9fbd377353f6df4d7ae4dbc9d1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab470d5fc409ec637f783d9f96f8f4963" id="r_ab470d5fc409ec637f783d9f96f8f4963"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#ab470d5fc409ec637f783d9f96f8f4963">initpot</a> (<a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">pot</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z2</a>)</td></tr>
 <tr class="memdesc:ab470d5fc409ec637f783d9f96f8f4963"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to initialize trap potential.  <br /></td></tr>
 <tr class="separator:ab470d5fc409ec637f783d9f96f8f4963"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -243,6 +244,33 @@ Functions</h2></td></tr>
 <tr class="memitem:a01728e9aa7a6ac9af504d94a01a7cb28" id="r_a01728e9aa7a6ac9af504d94a01a7cb28"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a01728e9aa7a6ac9af504d94a01a7cb28">mu_output</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">filemu</a>)</td></tr>
 <tr class="memdesc:a01728e9aa7a6ac9af504d94a01a7cb28"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the chemical potential values.  <br /></td></tr>
 <tr class="separator:a01728e9aa7a6ac9af504d94a01a7cb28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2256aca46d1efe92204fbc36d102df54" id="r_a2256aca46d1efe92204fbc36d102df54"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a2256aca46d1efe92204fbc36d102df54">outdenx</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpy</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpz</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a2256aca46d1efe92204fbc36d102df54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the integrated density in x direction n(x)  <br /></td></tr>
+<tr class="separator:a2256aca46d1efe92204fbc36d102df54"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c3b36e2a2385ad7f8d5482adb12a2f0" id="r_a7c3b36e2a2385ad7f8d5482adb12a2f0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a7c3b36e2a2385ad7f8d5482adb12a2f0">outdeny</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpx</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpz</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a7c3b36e2a2385ad7f8d5482adb12a2f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the integrated density in y direction n(y)  <br /></td></tr>
+<tr class="separator:a7c3b36e2a2385ad7f8d5482adb12a2f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a128d5cf51bde281b63051e1514548d86" id="r_a128d5cf51bde281b63051e1514548d86"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a128d5cf51bde281b63051e1514548d86">outdenz</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpx</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpy</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a128d5cf51bde281b63051e1514548d86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the integrated density in z direction n(z)  <br /></td></tr>
+<tr class="separator:a128d5cf51bde281b63051e1514548d86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a23599d36a59894edf414e069482c09c6" id="r_a23599d36a59894edf414e069482c09c6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a23599d36a59894edf414e069482c09c6">outdenxy</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpz</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a23599d36a59894edf414e069482c09c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the integrated density in x and y direction n(x,y)  <br /></td></tr>
+<tr class="separator:a23599d36a59894edf414e069482c09c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7540d482a29aeb40bcd7d932b987fcef" id="r_a7540d482a29aeb40bcd7d932b987fcef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a7540d482a29aeb40bcd7d932b987fcef">outdenxz</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpx</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a7540d482a29aeb40bcd7d932b987fcef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the integrated density in x and z direction n(x,z)  <br /></td></tr>
+<tr class="separator:a7540d482a29aeb40bcd7d932b987fcef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47c4c59151456eeef40e394da6ba83ba" id="r_a47c4c59151456eeef40e394da6ba83ba"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a47c4c59151456eeef40e394da6ba83ba">outdenyz</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">tmpx</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a47c4c59151456eeef40e394da6ba83ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the integrated density in y and z direction n(y,z)  <br /></td></tr>
+<tr class="separator:a47c4c59151456eeef40e394da6ba83ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c03a6dd8ecb7cdea840fd2c95e2b3fa" id="r_a8c03a6dd8ecb7cdea840fd2c95e2b3fa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a8c03a6dd8ecb7cdea840fd2c95e2b3fa">outpsi2xy</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a8c03a6dd8ecb7cdea840fd2c95e2b3fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the squared wave function in x and y direction psi2(x,y) for z = 0.  <br /></td></tr>
+<tr class="separator:a8c03a6dd8ecb7cdea840fd2c95e2b3fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30b432eeafcca9f6410577e65f4ed2f6" id="r_a30b432eeafcca9f6410577e65f4ed2f6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#a30b432eeafcca9f6410577e65f4ed2f6">outpsi2xz</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:a30b432eeafcca9f6410577e65f4ed2f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the squared wave function in x and z direction psi2(x,z) for y = 0.  <br /></td></tr>
+<tr class="separator:a30b432eeafcca9f6410577e65f4ed2f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae432b53a28d0db14f2a6eb1e20e52a3d" id="r_ae432b53a28d0db14f2a6eb1e20e52a3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="imag3d-cuda_8cuh.html#ae432b53a28d0db14f2a6eb1e20e52a3d">outpsi2yz</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">psi</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">y</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">z</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">file</a>)</td></tr>
+<tr class="memdesc:ae432b53a28d0db14f2a6eb1e20e52a3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Function to output the squared wave function in y and z direction psi2(y,z) for x = 0.  <br /></td></tr>
+<tr class="separator:ae432b53a28d0db14f2a6eb1e20e52a3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -388,7 +416,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00021">21</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00022">22</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -404,7 +432,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00022">22</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00023">23</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -436,7 +464,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a103104703d869ab186e86f2f0f86adeea73a453b2381396f378b2f7a3297b670f" name="a103104703d869ab186e86f2f0f86adeea73a453b2381396f378b2f7a3297b670f"></a>ARG_0YZ&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00024">24</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00025">25</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -476,7 +504,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00611">611</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00794">794</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -543,7 +571,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00876">876</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01064">1064</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -610,7 +638,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01015">1015</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01203">1203</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -677,7 +705,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01038">1038</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01226">1226</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -744,7 +772,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01089">1089</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01277">1277</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -811,7 +839,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01113">1113</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01301">1301</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -878,7 +906,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01169">1169</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01357">1357</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -945,7 +973,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01192">1192</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01380">1380</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1061,7 +1089,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01253">1253</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01441">1441</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1107,7 +1135,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01289">1289</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01477">1477</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1160,7 +1188,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01331">1331</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01519">1519</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1206,7 +1234,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01352">1352</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01540">1540</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1252,7 +1280,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01310">1310</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01498">1498</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1388,7 +1416,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01372">1372</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01560">1560</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1441,7 +1469,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00761">761</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00949">949</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1508,7 +1536,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00961">961</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01149">1149</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1575,7 +1603,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00985">985</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01173">1173</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1603,7 +1631,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00830">830</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01018">1018</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1642,7 +1670,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00625">625</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00808">808</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1681,7 +1709,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00800">800</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00988">988</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1755,7 +1783,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00516">516</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00699">699</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -1808,7 +1836,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00578">578</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00761">761</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2114,7 +2142,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00909">909</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01097">1097</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2167,7 +2195,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00690">690</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00878">878</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2241,12 +2269,12 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00718">718</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00906">906</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
-<a id="aff8364142450b4a15aca1ee0cd1007c0" name="aff8364142450b4a15aca1ee0cd1007c0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aff8364142450b4a15aca1ee0cd1007c0">&#9670;&#160;</a></span>initpsi()</h2>
+<a id="a181da9fbd377353f6df4d7ae4dbc9d1f" name="a181da9fbd377353f6df4d7ae4dbc9d1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a181da9fbd377353f6df4d7ae4dbc9d1f">&#9670;&#160;</a></span>initpsi()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2273,7 +2301,25 @@ Variables</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
-          <td class="paramname"><em>z2</em>&#160;</td>
+          <td class="paramname"><em>z2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>z</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -2290,11 +2336,14 @@ Variables</h2></td></tr>
     <tr><td class="paramname">x2</td><td>x2 array </td></tr>
     <tr><td class="paramname">y2</td><td>y2 array </td></tr>
     <tr><td class="paramname">z2</td><td>z2 array </td></tr>
+    <tr><td class="paramname">x</td><td>x array </td></tr>
+    <tr><td class="paramname">y</td><td>y array </td></tr>
+    <tr><td class="paramname">z</td><td>z array </td></tr>
   </table>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00647">647</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00833">833</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2322,7 +2371,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01425">1425</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01613">1613</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2361,7 +2410,526 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00783">783</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00971">971</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a2256aca46d1efe92204fbc36d102df54" name="a2256aca46d1efe92204fbc36d102df54"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2256aca46d1efe92204fbc36d102df54">&#9670;&#160;</a></span>outdenx()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outdenx </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the integrated density in x direction n(x) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">x</td><td>Host: x array </td></tr>
+    <tr><td class="paramname">tmpy</td><td>Host: temporary array for y direction </td></tr>
+    <tr><td class="paramname">tmpz</td><td>Host: temporary array for z direction </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01730">1730</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a23599d36a59894edf414e069482c09c6" name="a23599d36a59894edf414e069482c09c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a23599d36a59894edf414e069482c09c6">&#9670;&#160;</a></span>outdenxy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outdenxy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the integrated density in x and y direction n(x,y) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">x</td><td>Host: x array </td></tr>
+    <tr><td class="paramname">y</td><td>Host: y array </td></tr>
+    <tr><td class="paramname">tmpz</td><td>Host: temporary array for z direction </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01813">1813</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a7540d482a29aeb40bcd7d932b987fcef" name="a7540d482a29aeb40bcd7d932b987fcef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7540d482a29aeb40bcd7d932b987fcef">&#9670;&#160;</a></span>outdenxz()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outdenxz </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the integrated density in x and z direction n(x,z) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">x</td><td>Host: x array </td></tr>
+    <tr><td class="paramname">z</td><td>Host: z array </td></tr>
+    <tr><td class="paramname">tmpx</td><td>Host: temporary array for x direction </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01836">1836</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a7c3b36e2a2385ad7f8d5482adb12a2f0" name="a7c3b36e2a2385ad7f8d5482adb12a2f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c3b36e2a2385ad7f8d5482adb12a2f0">&#9670;&#160;</a></span>outdeny()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outdeny </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the integrated density in y direction n(y) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">y</td><td>Host: y array </td></tr>
+    <tr><td class="paramname">tmpx</td><td>Host: temporary array for x direction </td></tr>
+    <tr><td class="paramname">tmpz</td><td>Host: temporary array for z direction </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01758">1758</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a47c4c59151456eeef40e394da6ba83ba" name="a47c4c59151456eeef40e394da6ba83ba"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47c4c59151456eeef40e394da6ba83ba">&#9670;&#160;</a></span>outdenyz()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outdenyz </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the integrated density in y and z direction n(y,z) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">y</td><td>Host: y array </td></tr>
+    <tr><td class="paramname">z</td><td>Host: z array </td></tr>
+    <tr><td class="paramname">tmpx</td><td>Host: temporary array for x direction </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01859">1859</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a128d5cf51bde281b63051e1514548d86" name="a128d5cf51bde281b63051e1514548d86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a128d5cf51bde281b63051e1514548d86">&#9670;&#160;</a></span>outdenz()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outdenz </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tmpy</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the integrated density in z direction n(z) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">z</td><td>Host: z array </td></tr>
+    <tr><td class="paramname">tmpx</td><td>Host: temporary array for x direction </td></tr>
+    <tr><td class="paramname">tmpy</td><td>Host: temporary array for y direction </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01785">1785</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a8c03a6dd8ecb7cdea840fd2c95e2b3fa" name="a8c03a6dd8ecb7cdea840fd2c95e2b3fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c03a6dd8ecb7cdea840fd2c95e2b3fa">&#9670;&#160;</a></span>outpsi2xy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outpsi2xy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the squared wave function in x and y direction psi2(x,y) for z = 0. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">x</td><td>Host: x array </td></tr>
+    <tr><td class="paramname">y</td><td>Host: y array </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01881">1881</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="a30b432eeafcca9f6410577e65f4ed2f6" name="a30b432eeafcca9f6410577e65f4ed2f6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30b432eeafcca9f6410577e65f4ed2f6">&#9670;&#160;</a></span>outpsi2xz()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outpsi2xz </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the squared wave function in x and z direction psi2(x,z) for y = 0. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">x</td><td>Host: x array </td></tr>
+    <tr><td class="paramname">z</td><td>Host: z array </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01899">1899</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+
+</div>
+</div>
+<a id="ae432b53a28d0db14f2a6eb1e20e52a3d" name="ae432b53a28d0db14f2a6eb1e20e52a3d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae432b53a28d0db14f2a6eb1e20e52a3d">&#9670;&#160;</a></span>outpsi2yz()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a> outpsi2yz </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>psi</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>y</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;&#160;</td>
+          <td class="paramname"><em>z</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">FILE</a> *&#160;</td>
+          <td class="paramname"><em>file</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Function to output the squared wave function in y and z direction psi2(y,z) for x = 0. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">psi</td><td>Host: 3D psi array </td></tr>
+    <tr><td class="paramname">y</td><td>Host: y array </td></tr>
+    <tr><td class="paramname">z</td><td>Host: z array </td></tr>
+    <tr><td class="paramname">file</td><td>File pointer to the output file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01917">1917</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2421,7 +2989,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01513">1513</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01701">1701</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2442,7 +3010,7 @@ Variables</h2></td></tr>
 
 <p>Reading input parameters from the configuration file. </p>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00285">285</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l00487">487</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2470,7 +3038,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01380">1380</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01568">1568</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2537,7 +3105,7 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01474">1474</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cu_source.html#l01662">1662</a> of file <a class="el" href="imag3d-cuda_8cu_source.html">imag3d-cuda.cu</a>.</p>
 
 </div>
 </div>
@@ -2554,7 +3122,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00047">47</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2570,7 +3138,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00047">47</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2586,7 +3154,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00047">47</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2602,7 +3170,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00053">53</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00054">54</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2618,7 +3186,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00050">50</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00051">51</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2634,7 +3202,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00036">36</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00037">37</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2650,7 +3218,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00036">36</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00037">37</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2666,7 +3234,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00036">36</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00037">37</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2682,7 +3250,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00049">49</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00050">50</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2698,7 +3266,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00049">49</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2714,7 +3282,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00049">49</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2730,7 +3298,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00049">49</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2746,7 +3314,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00049">49</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2762,7 +3330,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00049">49</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2778,7 +3346,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00048">48</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00049">49</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2794,7 +3362,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2810,7 +3378,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00029">29</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2826,7 +3394,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00046">46</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00047">47</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2842,7 +3410,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00046">46</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00047">47</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2858,7 +3426,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2874,7 +3442,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2890,7 +3458,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00029">29</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2906,7 +3474,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00029">29</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2922,7 +3490,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00042">42</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00043">43</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2938,7 +3506,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00054">54</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00055">55</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2954,7 +3522,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2970,7 +3538,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00029">29</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -2986,7 +3554,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3002,7 +3570,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00054">54</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00055">55</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3018,7 +3586,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00054">54</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00055">55</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3034,7 +3602,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00054">54</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00055">55</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3050,7 +3618,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00043">43</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00044">44</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3066,7 +3634,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00045">45</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00046">46</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3082,7 +3650,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00044">44</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00045">45</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3098,7 +3666,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00029">29</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3114,7 +3682,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3130,7 +3698,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3146,7 +3714,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00044">44</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00045">45</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3162,7 +3730,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00034">34</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00035">35</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3178,7 +3746,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00035">35</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00036">36</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3194,7 +3762,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00034">34</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00035">35</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3210,7 +3778,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00035">35</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00036">36</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3226,7 +3794,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00034">34</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00035">35</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3242,7 +3810,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00035">35</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00036">36</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3258,7 +3826,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00041">41</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00042">42</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3274,7 +3842,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00041">41</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00042">42</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3290,7 +3858,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00025">25</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00026">26</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3306,7 +3874,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00029">29</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3322,7 +3890,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00031">31</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3338,7 +3906,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00031">31</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3354,7 +3922,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00031">31</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3370,7 +3938,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00052">52</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00053">53</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3386,7 +3954,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00027">27</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00028">28</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3402,7 +3970,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3418,7 +3986,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3434,7 +4002,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00041">41</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3450,7 +4018,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00041">41</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3466,7 +4034,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00029">29</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00030">30</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3482,7 +4050,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3498,7 +4066,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3514,7 +4082,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00039">39</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00040">40</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3530,7 +4098,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00051">51</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00052">52</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3546,7 +4114,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00051">51</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00052">52</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>
@@ -3562,7 +4130,7 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00051">51</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
+<p class="definition">Definition at line <a class="el" href="imag3d-cuda_8cuh_source.html#l00052">52</a> of file <a class="el" href="imag3d-cuda_8cuh_source.html">imag3d-cuda.cuh</a>.</p>
 
 </div>
 </div>

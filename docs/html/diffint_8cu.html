@@ -23,7 +23,7 @@
   <td id="projectalign">
    <div id="projectname">CUDA-BEC
    </div>
-   <div id="projectbrief">CUDA-accelerated Bose-Einstein Condensate Solver</div>
+   <div id="projectbrief">CUDA-accelerated Dipolar Bose-Einstein Condensate Solver</div>
   </td>
  </tr>
  </tbody>
@@ -103,10 +103,23 @@ Functions</h2></td></tr>
 <tr class="separator:a7ac37021bd1966756f0690be8331fad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e17bb1d18ab4e1317049843667af311" id="r_a3e17bb1d18ab4e1317049843667af311"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="diffint_8cu.html#a3e17bb1d18ab4e1317049843667af311">gauleg</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x1</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x2</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">x</a>, <a class="el" href="classMultiArray.html">MultiArray</a>&lt; <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> &gt; &amp;<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">w</a>)</td></tr>
 <tr class="separator:a3e17bb1d18ab4e1317049843667af311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ccadba4059138e15b48bcb002a208f7" id="r_a0ccadba4059138e15b48bcb002a208f7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">__host__</a> <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="diffint_8cu.html#a0ccadba4059138e15b48bcb002a208f7">simpint</a> (<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">h</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *<a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">f</a>, <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">long</a> <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">N</a>)</td></tr>
+<tr class="memdesc:a0ccadba4059138e15b48bcb002a208f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spatial 1D integration with Simpson's rule.  <br /></td></tr>
+<tr class="separator:a0ccadba4059138e15b48bcb002a208f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Implementation of richardson extrapolation formula for calculation of space derivatives. </p>
-<p>This file contains the implementation of the richardson extrapolation formula for calculation of space derivatives. </p>
+<p>Implementation of spatial 1D integration with Simpson's rule.</p>
+<p>This file contains the implementation of the richardson extrapolation formula for calculation of space derivatives.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">h</td><td>Space step </td></tr>
+    <tr><td class="paramname">f</td><td>Array with the function values </td></tr>
+    <tr><td class="paramname">N</td><td>Number of integration points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integrated value </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="diffint_8cu_source.html">diffint.cu</a>.</p>
 </div><h2 class="groupheader">Function Documentation</h2>
@@ -487,6 +500,53 @@ Functions</h2></td></tr>
 <p>Gauss-Legendre N-point quadrature formula. </p>
 
 <p class="definition">Definition at line <a class="el" href="diffint_8cu_source.html#l00281">281</a> of file <a class="el" href="diffint_8cu_source.html">diffint.cu</a>.</p>
+
+</div>
+</div>
+<a id="a0ccadba4059138e15b48bcb002a208f7" name="a0ccadba4059138e15b48bcb002a208f7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ccadba4059138e15b48bcb002a208f7">&#9670;&#160;</a></span>simpint()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">__host__</a> <a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> simpint </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a>&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">double</a> *&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="imag3d-cuda_8cu.html#afaf6dab3e9b4810733c8338a9e9c8e7c">long</a>&#160;</td>
+          <td class="paramname"><em>N</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Spatial 1D integration with Simpson's rule. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">h</td><td>Space step </td></tr>
+    <tr><td class="paramname">f</td><td>Array with the function values </td></tr>
+    <tr><td class="paramname">N</td><td>Number of integration points </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Integrated value </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="diffint_8cu_source.html#l00327">327</a> of file <a class="el" href="diffint_8cu_source.html">diffint.cu</a>.</p>
 
 </div>
 </div>
