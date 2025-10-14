@@ -147,7 +147,7 @@
 #  If not defined, the wave function will not be saved.
 #  Required: no
 #  Type: string
-   NITEROUT = imag3d-den-niter
+#   NITEROUT = imag3d-den-niter
 
 #  Output file with the final wave function obtained at program end that can
 #  subsequently be used as an input wave function. If not defined, the wave
