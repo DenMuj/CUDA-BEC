@@ -361,7 +361,7 @@ int main(int argc, char **argv) {
   }
 
   // Main loop that does the evolution of the wave function
-  double nsteps;
+  long nsteps;
   nsteps = Niter / Nsnap;
   auto start = std::chrono::high_resolution_clock::now();
   for (long snap = 1; snap <= Nsnap; snap++) {
@@ -755,7 +755,7 @@ void compute_rms_values(const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D
       0, // 0 for x direction
       dx);
 
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   double x2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
@@ -764,7 +764,7 @@ void compute_rms_values(const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D
       d_psi.raw(), d_work_array.raw(),
       1, // 1 for y direction
       dy);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   double y2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
@@ -773,7 +773,7 @@ void compute_rms_values(const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D
       d_psi.raw(), d_work_array.raw(),
       2, // 2 for z direction
       dz);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   double z2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
@@ -794,7 +794,7 @@ __global__ void compute_single_weighted_psi_squared(
     const cuDoubleComplex *__restrict__ psi,
     double *result,
     int direction, // 0=x, 1=y, 2=z
-    const double scale)
+    const double discretiz)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -809,17 +809,23 @@ __global__ void compute_single_weighted_psi_squared(
 
   double weight = 0.0;
   if (direction == 0) {
-    double x = (static_cast<double>(idx) - static_cast<double>(d_Nx) * 0.5) * scale;
-    weight = x * x;
+    // x = idx * scale + (-0.5 * d_Nx * scale)
+    double offset = (-0.5 * static_cast<double>(d_Nx)) * discretiz;
+    double x = fma(static_cast<double>(idx), discretiz, offset);
+    weight = fma(x,x,0.0);
   } else if (direction == 1) {
-    double y = (static_cast<double>(idy) - static_cast<double>(d_Ny) * 0.5) * scale;
-    weight = y * y;
+    // y = idy * scale + (-0.5 * d_Ny * scale)
+    double offset = (-0.5 * static_cast<double>(d_Ny)) * discretiz;
+    double y = fma(static_cast<double>(idy), discretiz, offset);
+    weight = fma(y,y,0.0);
   } else if (direction == 2) {
-    double z = (static_cast<double>(idz) - static_cast<double>(d_Nz) * 0.5) * scale;
-    weight = z * z;
+    // z = idz * scale + (-0.5 * d_Nz * scale)
+    double offset = (-0.5 * static_cast<double>(d_Nz)) * discretiz;
+    double z = fma(static_cast<double>(idz), discretiz, offset);
+    weight = fma(z,z,0.0);
   }
 
-  result[linear_idx] = weight * psi_squared;
+  result[linear_idx] = fma(weight, psi_squared, 0.0);
 }
 
 /**
@@ -852,7 +858,7 @@ __global__ void compute_d_psi2(const cuDoubleComplex *__restrict__ d_psi,
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
 
-  cuDoubleComplex psi_val = d_psi[linear_idx];
+  cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
 
   d_psi2[linear_idx] =  psi_val.x * psi_val.x + psi_val.y * psi_val.y;;
 }
@@ -1001,7 +1007,7 @@ void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, 
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
 
   multiply_by_norm<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), norm);
-  cudaDeviceSynchronize(); // Ensure completion
+  //cudaDeviceSynchronize(); // Ensure completion
 }
 
 /**
@@ -1212,7 +1218,7 @@ void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, Cu
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
   calcnu_kernel<<<numBlocks, threadsPerBlock>>>(
       d_psi.raw(), d_psi2.raw(), d_pot.raw(), g, gd, h2);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   return;
 }
 
@@ -1239,7 +1245,8 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi,
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double pot_val = __ldg(&d_pot[linear_idx]);
   cuDoubleComplex psi_val = d_psi[linear_idx];
-  double psi2dd = __ldg(&d_psi2[linear_idx])/((double)(d_Nx * d_Ny * d_Nz)) * gd;
+  double ratio_gd = gd/((double)(d_Nx * d_Ny * d_Nz));
+  double psi2dd = __ldg(&d_psi2[linear_idx])*ratio_gd;
   double psi_val2=psi_val.x * psi_val.x + psi_val.y * psi_val.y;
   double psi_val3=psi_val2 * sqrt(psi_val.x * psi_val.x + psi_val.y * psi_val.y);
   double tmp = -d_dt * (psi_val2 * g + pot_val +  psi2dd + psi_val3*h2);
@@ -1261,7 +1268,7 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi,
 void calclux(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta, CudaArray3D<cuDoubleComplex> &d_calphax,
              CudaArray3D<cuDoubleComplex> &d_cgammax, cuDoubleComplex Ax0r, cuDoubleComplex Ax) {
 
-  dim3 threadsPerBlock(16, 16); // 2D blocks for y-z planes
+  dim3 threadsPerBlock(32, 16); // 2D blocks for y-z planes
   dim3 numBlocks((Nz + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
@@ -1346,7 +1353,7 @@ __global__ void calclux_kernel(cuDoubleComplex *__restrict__ psi,
 void calcluy(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta, CudaArray3D<cuDoubleComplex> &d_calphay,
              CudaArray3D<cuDoubleComplex> &d_cgammay, cuDoubleComplex Ay0r, cuDoubleComplex Ay) {
 
-  dim3 threadsPerBlock(16, 16); // 2D blocks for x-z planes
+  dim3 threadsPerBlock(16, 32); // 2D blocks for x-z planes
   dim3 numBlocks((Nz + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Nx + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
@@ -1431,7 +1438,7 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
 void calcluz(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta, CudaArray3D<cuDoubleComplex> &d_calphaz,
              CudaArray3D<cuDoubleComplex> &d_cgammaz, cuDoubleComplex Az0r, cuDoubleComplex Az) {
 
-  dim3 threadsPerBlock(16, 16); // 2D blocks for x-y planes
+  dim3 threadsPerBlock(16, 32); // 2D blocks for x-y planes
   dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Nx + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
@@ -1539,7 +1546,8 @@ void calcmuen(MultiArray<double>& muen,CudaArray3D<cuDoubleComplex> &d_psi, Cuda
   // Step 3: Dipolar energy - requires FFT computation first
   calc_psid2_potdd(forward_plan, backward_plan, d_psi.raw(), d_psi2dd.raw(), d_psi2_fft, d_potdd.raw());
   calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), d_psi2dd.raw(), gd);
-  muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz)/((double)Nx * Ny * Nz);
+  double ratio=1/((double)Nx * Ny * Nz);
+  muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz)*ratio;
 
   // Step 4: Kinetic energy - calculate gradients and kinetic energy density directly
   calcmuen_kin(d_psi, d_psi2, par);
@@ -1566,7 +1574,7 @@ __global__ void calcmuen_fused_contact(const cuDoubleComplex *__restrict__ d_psi
     return;
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-  cuDoubleComplex psi_val = d_psi[linear_idx];
+  cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
   double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
   double psi4_val = psi2_val * psi2_val;
   d_result[linear_idx] = 0.5 * psi4_val * g;
@@ -1743,32 +1751,27 @@ void mu_output(FILE *filemu){
  * @param Nx: Host: Nx number of grid points in x direction
  * @param Ny: Host: Ny number of grid points in y direction
  * @param Nz: Host: Nz number of grid points in z direction
- */
-void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx, long Ny, long Nz) {
-  // Allocate host memory
+*/
+void save_psi_from_gpu(cuDoubleComplex *psi, cuDoubleComplex *d_psi, const char *filename, long Nx, long Ny, long Nz) {
   size_t total_size = Nx * Ny * Nz;
 
-  // Copy from device to host
-  cudaMemcpy(psi, d_psi, total_size * sizeof(double), cudaMemcpyDeviceToHost);
+  cudaMemcpy(psi, d_psi, total_size * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
   
-  // Check for CUDA errors
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
       fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
       return;
   }
   
-  // Write to binary file
   FILE *file = fopen(filename, "wb");
   if (file == NULL) {
       fprintf(stderr, "Failed to open file %s\n", filename);
       return;
   }
   
-  // Write the entire array
-  size_t written = fwrite(psi, sizeof(double), total_size, file);
+  size_t written = fwrite(psi, sizeof(cuDoubleComplex), total_size, file);
   if (written != total_size) {
-      fprintf(stderr, "Failed to write all data: wrote %zu of %zu elements\n", 
+      fprintf(stderr, "Failed to write all data: wrote %zu of %zu complex elements\n", 
               written, total_size);
   }
   
@@ -1793,7 +1796,7 @@ void read_psi_from_file_complex(cuDoubleComplex *psi, const char *filename, long
       return;
   }
   
-  // Read and convert real data to complex in one pass
+  // Read and convert real data to complex
   double real_value;
   for (size_t i = 0; i < total_size; i++) {
       if (fread(&real_value, sizeof(double), 1, file) != 1) {
@@ -1920,7 +1923,7 @@ void outdenxy(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &y
 * @param psi: Host: 3D psi array
 * @param x: Host: x array
 * @param z: Host: z array
-* @param tmpx: Host: temporary array for x direction
+* @param tmpx: Host: temporary array for y direction
 * @param file: File pointer to the output file
 */
 void outdenxz(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &z, MultiArray<double> &tmpx, FILE *file){

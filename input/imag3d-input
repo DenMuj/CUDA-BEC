@@ -18,7 +18,7 @@
 #  If 1, quantum fluctuation is considered.
 #  Required: yes
 #  Type: int
-   QF = 1
+   QF = 0
 
 #  Initial values for the wave function (for a Gaussian).
 #  Required: yes
@@ -62,17 +62,17 @@
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 184
+   NX = 128
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 184
+   NY = 128
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 184
+   NZ = 128
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
 #  Formula is DX = SX * MX * 2 / NX (same for DY and DZ)and DT = DY * DY / MT
@@ -135,7 +135,7 @@
 #  not defined, standard output will be used.
 #  Required: no
 #  Type: string
-   MUOUTPUT = imag3d-mu
+#   MUOUTPUT = imag3d-mu
 
 #  Output file with RMS values. The values are written in each snapshot.
 #  If not defined, the RMS values will not be saved.
@@ -147,7 +147,7 @@
 #  If not defined, the wave function will not be saved.
 #  Required: no
 #  Type: string
-#   NITEROUT = imag3d-den-niter
+   NITEROUT = imag3d-den-niter
 
 #  Output file with the final wave function obtained at program end that can
 #  subsequently be used as an input wave function. If not defined, the wave
@@ -174,4 +174,4 @@
 #  is defined.
 #  Required: conditionally
 #  Type: int
-OUTFLAGS = 56
+OUTFLAGS = 504

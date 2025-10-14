@@ -348,7 +348,7 @@ int main(int argc, char **argv) {
   }
 
   // Main loop that does the evolution of the wave function
-  double nsteps;
+  long nsteps;
   nsteps = Niter / Nsnap;
   auto start = std::chrono::high_resolution_clock::now();
   for (long snap = 1; snap <= Nsnap; snap++) {
@@ -732,7 +732,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
   }
 
   // Configure kernel launch parameters
-  dim3 blockSize(8, 8, 4); // Adjust based on your GPU
+  dim3 blockSize(8, 8, 8);
   dim3 gridSize((Nx + blockSize.x - 1) / blockSize.x,
                 (Ny + blockSize.y - 1) / blockSize.y,
                 (Nz + blockSize.z - 1) / blockSize.z);
@@ -743,7 +743,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       0, // 0 for x direction
       dx);
 
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   // Integrate x^2 * psi^2
   double x2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -753,7 +753,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       d_psi, d_work_array,
       1, // 1 for y direction
       dy);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   // Integrate y^2 * psi^2
   double y2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -763,7 +763,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       d_psi, d_work_array,
       2, // 2 for z direction
       dz);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   // Integrate z^2 * psi^2
   double z2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -785,7 +785,7 @@ __global__ void compute_single_weighted_psi_squared(
     const double *__restrict__ psi,
     double *result,
     int direction, // 0=x, 1=y, 2=z
-    const double scale)
+    const double discretiz)
 {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -796,21 +796,26 @@ __global__ void compute_single_weighted_psi_squared(
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double psi_val = __ldg(&psi[linear_idx]); // Read-only cache for psi
-  double psi_squared = psi_val * psi_val;
+  double psi_squared = fma(psi_val, psi_val, 0.0);
 
   double weight = 0.0;
   if (direction == 0) {
-    double x = (static_cast<double>(idx) - static_cast<double>(d_Nx) * 0.5) * scale;
-    weight = x * x;
+    // x = idx * scale + (-0.5 * d_Nx * scale)
+    double offset = (-0.5 * static_cast<double>(d_Nx)) * discretiz;
+    double x = fma(static_cast<double>(idx), discretiz, offset);
+    weight = fma(x,x,0.0);
   } else if (direction == 1) {
-    double y = (static_cast<double>(idy) - static_cast<double>(d_Ny) * 0.5) * scale;
-    weight = y * y;
+    // y = idy * scale + (-0.5 * d_Ny * scale)
+    double offset = (-0.5 * static_cast<double>(d_Ny)) * discretiz;
+    double y = fma(static_cast<double>(idy), discretiz, offset);
+    weight = fma(y,y,0.0);
   } else if (direction == 2) {
-    double z = (static_cast<double>(idz) - static_cast<double>(d_Nz) * 0.5) * scale;
-    weight = z * z;
+    // z = idz * scale + (-0.5 * d_Nz * scale)
+    double offset = (-0.5 * static_cast<double>(d_Nz)) * discretiz;
+    double z = fma(static_cast<double>(idz), discretiz, offset);
+    weight = fma(z,z,0.0);
   }
-
-  result[linear_idx] = weight * psi_squared;
+  result[linear_idx] = fma(weight, psi_squared, 0.0);
 }
 
 /**
@@ -843,12 +848,12 @@ __global__ void compute_d_psi2(const double *__restrict__ d_psi,
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
 
-  double psi_val = d_psi[linear_idx];
-  d_psi2[linear_idx] = psi_val * psi_val;
+  // Set d_psi to be read-only
+  double psi_val = __ldg(&d_psi[linear_idx]);
+  d_psi2[linear_idx] = fma(psi_val, psi_val, 0.0);
 }
 
-/**
- * @brief Function to initialize wave function
+/** @brief Function to initialize wave function
  * @param psi: Device: 3D psi array
  * @param x2: x2 array
  * @param y2: y2 array
@@ -987,7 +992,7 @@ void calcnorm(double *d_psi, double *d_psi2, double &norm,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
 
   multiply_by_norm<<<numBlocks, threadsPerBlock>>>(d_psi, norm);
-  cudaDeviceSynchronize(); // Ensure completion
+  //cudaDeviceSynchronize(); // Ensure completion
 }
 
 /**
@@ -1093,7 +1098,7 @@ void calc_psid2_potdd(cufftHandle forward_plan, cufftHandle backward_plan, const
   cufftExecD2Z(forward_plan, (cufftDoubleReal*)d_psi2_real, d_psi2_fft);
   
   dim3 threadsPerBlock(8, 8, 8);
-  dim3 numBlocks((Nx/2 + 1 + threadsPerBlock.x - 1) / threadsPerBlock.x,
+  dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
   compute_psid2_potdd<<<numBlocks, threadsPerBlock>>>(d_psi2_fft, potdd);
@@ -1183,7 +1188,7 @@ void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
   calcnu_kernel<<<numBlocks, threadsPerBlock>>>(
       d_psi, d_psi2, d_pot, g, gd, h2);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   return;
 }
 
@@ -1209,11 +1214,12 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi,
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double psi_val = d_psi[linear_idx];
-  double psi_val2 = psi_val * psi_val;
-  double psi_val3 = psi_val2 * fabs(psi_val);
-  double psi2dd = __ldg(&d_psi2[linear_idx])/((double)(d_Nx * d_Ny * d_Nz)) * gd; 
+  double psi_val2 = fma(psi_val, psi_val, 0.0); // psi^2
+  double psi_val3 = fma(psi_val2, fabs(psi_val), 0.0); // psi^3
+  double ratio_gd = gd/((double)(d_Nx * d_Ny * d_Nz));
+  double psi2dd = __ldg(&d_psi2[linear_idx])*ratio_gd; 
   double pot_val = __ldg(&d_pot[linear_idx]);
-  double tmp = d_dt * ( psi_val2 * g + psi2dd + psi_val3 * h2 + pot_val);
+  double tmp = d_dt * ( fma(psi_val2, g, psi2dd) + fma(psi_val3, h2, pot_val) );
   //double tmp = d_dt * (psi_val3*h2);
   d_psi[linear_idx] *= exp(-tmp);
 }
@@ -1230,7 +1236,7 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi,
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax,
              double *d_cgammax, double Ax0r, double Ax) {
 
-  dim3 threadsPerBlock(16, 16); // 2D blocks for y-z planes
+  dim3 threadsPerBlock(32, 16); // 2D blocks for y-z planes
   dim3 numBlocks((Nz + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
@@ -1272,11 +1278,10 @@ __global__ void calclux_kernel(double *__restrict__ psi,
 
   // Algorithm forward sweep
   for (int cnti = d_Nx - 2; cnti > 0; cnti--) {
-    double c = -Ax * psi[base_offset + cnti + 1] +
-               Ax0r * psi[base_offset + cnti] -
-               Ax * psi[base_offset + cnti - 1]; 
+    double c = fma(Ax0r, psi[base_offset + cnti],
+                   fma(-Ax, psi[base_offset + cnti - 1], -Ax * psi[base_offset + cnti + 1]));
     cbeta[base_offset + cnti - 1] =
-        __ldg(&cgammax[cnti]) * (Ax * cbeta[base_offset + cnti] - c); // Read-only cache for cgamma
+        __ldg(&cgammax[cnti]) * fma(Ax, cbeta[base_offset + cnti], -c); // Read-only cache for cgamma
   }
 
   // Boundary condition
@@ -1304,7 +1309,7 @@ __global__ void calclux_kernel(double *__restrict__ psi,
 void calcluy(double *d_psi, double *d_cbeta, double *d_calphay,
              double *d_cgammay, double Ay0r, double Ay) {
 
-  dim3 threadsPerBlock(16, 16); // 2D blocks for x-z planes
+  dim3 threadsPerBlock(16, 32); // 2D blocks for x-z planes
   dim3 numBlocks((Nz + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Nx + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
@@ -1312,7 +1317,7 @@ void calcluy(double *d_psi, double *d_cbeta, double *d_calphay,
       d_psi, d_cbeta, d_calphay, d_cgammay, Ay0r,
       Ay);
 
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   return;
 }
 
@@ -1348,12 +1353,11 @@ __global__ void calcluy_kernel(double *__restrict__ psi,
   for (int cntj = d_Ny - 2; cntj > 0; cntj--) {
     long base_offset = cntk * d_Ny * d_Nx + cnti;
 
-    double c = -Ay * psi[base_offset + (cntj + 1) * d_Nx] +
-               Ay0r * psi[base_offset + cntj * d_Nx] -
-               Ay * psi[base_offset + (cntj - 1) * d_Nx];
-
+    double c = fma(Ay0r, psi[base_offset + cntj * d_Nx],
+               fma(-Ay, psi[base_offset + (cntj - 1) * d_Nx],
+                   -Ay * psi[base_offset + (cntj + 1) * d_Nx]));
     cbeta[base_offset + (cntj - 1) * d_Nx] =
-        __ldg(&cgammay[cntj]) * (Ay * cbeta[base_offset + cntj * d_Nx] - c); // Read-only cache for cgamma
+        __ldg(&cgammay[cntj]) * fma(Ay, cbeta[base_offset + cntj * d_Nx], -c); // Read-only cache for cgamma
   }
 
   // Boundary condition
@@ -1384,14 +1388,14 @@ __global__ void calcluy_kernel(double *__restrict__ psi,
 void calcluz(double *d_psi, double *d_cbeta, double *d_calphaz,
              double *d_cgammaz, double Az0r, double Az) {
 
-  dim3 threadsPerBlock(16, 16); // 2D blocks for x-y planes
+  dim3 threadsPerBlock(16, 32); // 2D blocks for x-y planes
   dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Nx + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   calcluz_kernel<<<numBlocks, threadsPerBlock>>>(
       d_psi, d_cbeta, d_calphaz, d_cgammaz, Az0r, Az);
 
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   return;
 }
 
@@ -1427,12 +1431,12 @@ __global__ void calcluz_kernel(double *__restrict__ psi,
 
   // Algorithm forward sweep (working in z-direction)
   for (int cntk = d_Nz - 2; cntk > 0; cntk--) {
-    double c = -Az * psi[base_offset + (cntk + 1) * stride] +
-               Az0r * psi[base_offset + cntk * stride] -
-               Az * psi[base_offset + (cntk - 1) * stride];
+    double c = fma(Az0r, psi[base_offset + cntk * stride],
+               fma(-Az, psi[base_offset + (cntk - 1) * stride],
+                   -Az * psi[base_offset + (cntk + 1) * stride]));
 
     cbeta[base_offset + (cntk - 1) * stride] =
-        __ldg(&cgammaz[cntk]) * (Az * cbeta[base_offset + cntk * stride] - c); // Read-only cache for cgamma
+        __ldg(&cgammaz[cntk]) * fma(Az, cbeta[base_offset + cntk * stride], -c); // Read-only cache for cgamma
   }
 
   // Boundary condition
@@ -1483,7 +1487,8 @@ void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double 
   // Step 3: Dipolar energy - requires FFT computation first
   calc_psid2_potdd(forward_plan, backward_plan, d_psi, d_psi2dd, d_psi2_fft, d_potdd);
   calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_psi2dd, gd);
-  muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz)/((double)Nx * Ny * Nz);
+  double ratio=1/((double)Nx * Ny * Nz);
+  muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz)*ratio;
 
   // Step 4: Kinetic energy - calculate gradients and kinetic energy density directly
   calcmuen_kin(d_psi, d_psi2, par);
@@ -1510,10 +1515,10 @@ __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double 
     return;
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-  double psi_val = d_psi[linear_idx];
-  double psi2_val = psi_val * psi_val;
-  double psi4_val = psi2_val * psi2_val;
-  d_result[linear_idx] = 0.5 * psi4_val * g;
+  double psi_val = __ldg(&d_psi[linear_idx]);
+  double psi2_val = psi_val * psi_val;       // psi^2
+  double psi4_val = psi2_val * psi2_val;     // psi^4
+  d_result[linear_idx] = 0.5 * g * psi4_val; // final multiply
 }
 
 /**
@@ -1532,7 +1537,7 @@ __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi, doubl
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-  double psi2_val = psi_val * psi_val;
+  double psi2_val = psi_val * psi_val;       // psi^2
   d_result[linear_idx] = 0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
 }
 
@@ -1553,7 +1558,7 @@ __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double 
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-  double psi2_val = psi_val * psi_val;
+  double psi2_val = psi_val * psi_val;       // psi^2
   double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
   d_result[linear_idx] = 0.5 * psi2_val * psidd2_val * gd;
 }
@@ -1574,7 +1579,8 @@ __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__re
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-  double psi5_val = psi_val * psi_val * psi_val * psi_val * psi_val;
+  double t = psi_val * psi_val;      // psi^2
+  double psi5_val = t * t * psi_val; // t^2 * psi = psi^5
   d_result[linear_idx] = 0.5 *psi5_val * h2;
 }
 
@@ -1730,7 +1736,7 @@ void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, lon
 
   
   // Open file
-  FILE *file = fopen(filename, "rb");  // Note: "rb" for binary read
+  FILE *file = fopen(filename, "rb"); 
   if (file == NULL) {
       fprintf(stderr, "Failed to open file %s\n", filename);
       free(psi);     
@@ -1857,7 +1863,7 @@ void outdenxy(double *psi, MultiArray<double> &x, MultiArray<double> &y, MultiAr
 * @param psi: Host: 3D psi array
 * @param x: Host: x array
 * @param z: Host: z array
-* @param tmpx: Host: temporary array for x direction
+* @param tmpx: Host: temporary array for y direction
 * @param file: File pointer to the output file
 */
 void outdenxz(double *psi, MultiArray<double> &x, MultiArray<double> &z, MultiArray<double> &tmpx, FILE *file){

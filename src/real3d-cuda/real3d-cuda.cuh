@@ -53,23 +53,25 @@ double cutoff;
 double mx,my,mz,mt;
 cuDoubleComplex minusAx, minusAy, minusAz;
 __constant__ cuDoubleComplex d_minusAx, d_minusAy, d_minusAz;
-// Function declerations
+
+
+
 void readpar();
 void initpsi(double  *psi, MultiArray<double>& x2, MultiArray<double>& y2, MultiArray<double>& z2, MultiArray<double>& x, MultiArray<double>& y, MultiArray<double>& z);
 void initpot(MultiArray<double>& pot, MultiArray<double>& x2, MultiArray<double>& y2, MultiArray<double>& z2);
 
 
 void compute_rms_values(
-    const CudaArray3D<cuDoubleComplex>& d_psi,                 // Device: 3D psi array
-    CudaArray3D<double>& d_work_array,  // Temporary work array
+    const CudaArray3D<cuDoubleComplex>& d_psi,
+    CudaArray3D<double>& d_work_array,
     Simpson3DTiledIntegrator& integ,
-    double* h_rms_pinned); // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
+    double* h_rms_pinned);
 
 __global__ void compute_single_weighted_psi_squared(
         const cuDoubleComplex* __restrict__ psi,
         double* result,
         int direction,
-        const double scale);
+        const double discretiz);
 
 void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2);
 __global__ void compute_d_psi2(
@@ -126,14 +128,14 @@ __global__ void calcpsidd2_boundaries(double *psidd2);
 
 void calcmuen(MultiArray<double>& muen,CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, CudaArray3D<double> &d_pot, CudaArray3D<double> &d_psi2dd, CudaArray3D<double> &d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2);
 
-// Optimized fused kernels
+
 __global__ void calcmuen_fused_contact(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, double g);
 __global__ void calcmuen_fused_potential(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_pot);
 __global__ void calcmuen_fused_dipolar(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double gd);
 __global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double h2);
 void calcmuen_kin(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_work_array, int par);
 
-void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx, long Ny, long Nz);
+void save_psi_from_gpu(cuDoubleComplex *psi, cuDoubleComplex *d_psi, const char *filename, long Nx, long Ny, long Nz);
 void read_psi_from_file_complex(cuDoubleComplex *psi, const char *filename, long Nx, long Ny, long Nz);
 
 void rms_output(FILE *filerms);

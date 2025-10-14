@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
 #include <cmath>
 #include <chrono>
 #include <cuda_runtime.h>
@@ -54,23 +53,23 @@ double par;
 double cutoff;
 double mx,my,mz,mt;
 
-// Function declerations
+
 void readpar();
 void initpsi(double  *psi, MultiArray<double>& x2, MultiArray<double>& y2, MultiArray<double>& z2, MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &z);
 void initpot(MultiArray<double>& pot, MultiArray<double>& x2, MultiArray<double>& y2, MultiArray<double>& z2);
 
 
 void compute_rms_values(
-    const double *d_psi,                 // Device: 3D psi array
-    double *d_work_array,  // Temporary work array
+    const double *d_psi,
+    double *d_work_array,
     Simpson3DTiledIntegrator& integ,
-    double* h_rms_pinned); // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
+    double* h_rms_pinned);
 
 __global__ void compute_single_weighted_psi_squared(
         const double* __restrict__ psi,
         double* result,
         int direction,
-        const double scale);
+        const double discretiz);
 
 void calc_d_psi2(const double *d_psi, double *d_psi2);
 __global__ void compute_d_psi2(
@@ -125,16 +124,12 @@ __global__ void calcpsidd2_boundaries(double *psidd2);
 
 void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd, double *d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2);
 
-// Optimized fused kernels
+
 __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double *__restrict__ d_result, double g);
 __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_pot);
 __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double gd);
 __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result, const double h2);
 
-// Original kernels (kept for reference)
-__global__ void calcmuen_kernel_con(double *__restrict__ d_psi2, double g);
-__global__ void calcmuen_kernel_pot(double *__restrict__ d_psi2, double *__restrict__ d_pot);
-__global__ void calcmuen_kernel_potdd(double * __restrict__ d_psi2, double *__restrict__ d_psidd2, const double gd);
 void calcmuen_kin(double *d_psi, double *d_work_array, int par);
 
 void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx, long Ny, long Nz);
