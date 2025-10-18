@@ -42,7 +42,7 @@ public:
      * If pitched allocation fails, it automatically falls back to linear memory.
      * For 1D arrays (ny=nz=1), linear memory is used regardless of the flag.
      */
-    CudaArray3D(size_t nx, size_t ny, size_t nz, bool use_pitched_memory = true);
+    CudaArray3D(size_t nx, size_t ny, size_t nz, bool use_pitched_memory = false);
     
     /**
      * @brief Construct a 1D CUDA array (special case)

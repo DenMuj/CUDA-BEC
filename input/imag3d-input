@@ -30,7 +30,7 @@
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
 #  Type: double
-   MUREL = 1.000000e-25
+   MUREL = 1.000000e-10
 
 #  Absolute chemical potential for the end of the simulation.
 #  Required: yes
@@ -40,7 +40,7 @@
 #  Dipolar potential cutoff.
 #  Required: yes
 #  Type: double
-#   CUTOFF = 13.
+#  CUTOFF = 13.
 
 #  Unit of length in m (defined by a chosen referent frequency omega_ref).
 #  Required: yes
@@ -86,22 +86,22 @@
 #  Spatial discretization step in the x-direction.
 #  Required: no (if commented, will be calculated from MX, NX and SX)
 #  Type: double
-#   DX = 0.5
+#  DX = 0.5
 
 #  Spatial discretization step in the y-direction.
 #  Required: no (if commented, will be calculated from MY, NY and SY)
 #  Type: double
-#   DY = 0.5
+#  DY = 0.5
 
 #  Spatial discretization step in the z-direction.
 #  Required: no (if commented, will be calculated from MZ, NZ and SZ)
 #  Type: double
-#   DZ = 0.5
+#  DZ = 0.5
 
 #  Time discretization step DT.
 #  Required: no (if commented, will be calculated from MT and DY)
 #  Type: double
-#   DT = 0.1
+#  DT = 0.1
 
 #  Gamma coefficient of anisotropy of the trap.
 #  Required: yes
@@ -129,13 +129,13 @@
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
 #  density profiles and write them to specified output files.
-   NSNAP = 10
+   NSNAP = 100
 
 #  Output file with the summary of final values of all physical quantities. If
 #  not defined, standard output will be used.
 #  Required: no
 #  Type: string
-#   MUOUTPUT = imag3d-mu
+   MUOUTPUT = imag3d-mu
 
 #  Output file with RMS values. The values are written in each snapshot.
 #  If not defined, the RMS values will not be saved.
@@ -147,14 +147,14 @@
 #  If not defined, the wave function will not be saved.
 #  Required: no
 #  Type: string
-#   NITEROUT = imag3d-den-niter
+#  NITEROUT = imag3d-den-niter
 
 #  Output file with the final wave function obtained at program end that can
 #  subsequently be used as an input wave function. If not defined, the wave
 #  function will not be saved.
 #  Required: no
 #  Type: string
-#   FINALPSI = imag3d-finalpsi
+#  FINALPSI = imag3d-finalpsi
 
 #  Value that controls what density profiles will be written in output files.
 #  List of output functions:

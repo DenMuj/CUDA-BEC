@@ -86,22 +86,22 @@
 #  Spatial discretization step in the x-direction.
 #  Required: no (if commented, will be calculated from MX, NX and SX)
 #  Type: double
-#   DX = 0.5
+#  DX = 0.5
 
 #  Spatial discretization step in the y-direction.
 #  Required: no (if commented, will be calculated from MY, NY and SY)
 #  Type: double
-#   DY = 0.5
+#  DY = 0.5
 
 #  Spatial discretization step in the z-direction.
 #  Required: no (if commented, will be calculated from MZ, NZ and SZ)
 #  Type: double
-#   DZ = 0.5
+#  DZ = 0.5
 
 #  Time discretization step DT.
 #  Required: no (if commented, will be calculated from MT and DY)
 #  Type: double
-#   DT = 0.1
+#  DT = 0.1
 
 #  Gamma coefficient of anisotropy of the trap.
 #  Required: yes
@@ -138,7 +138,7 @@
 #  If not defined, the wave function will not be saved.
 #  Required: no
 #  Type: string
-#   NITEROUT = real3d-den-niter
+#  NITEROUT = real3d-den-niter
 
 #  Output file with the summary of final values of all physical quantities. If
 #  not defined, standard output will be used.

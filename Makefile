@@ -11,7 +11,7 @@ endif
 ARCH = -arch=sm_$(GPU_COMPUTE_CAPABILITY)
 
 # Compiler flags
-NVCCFLAGS = -std=c++20 -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,-fopenmp -lcufft
+NVCCFLAGS = -std=c++20 -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,-fopenmp -lcufft 
 CXXFLAGS = -std=c++20 -O1 -fPIC -fopenmp -O3
 
 # Include directories
