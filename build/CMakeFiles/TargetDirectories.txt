@@ -1,5 +1,10 @@
-/home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/cuda_utils.dir
+/home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/cuda_bec_utils.dir
 /home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/imag3d-cuda.dir
 /home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/real3d-cuda.dir
+/home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/clean-all.dir
 /home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/edit_cache.dir
 /home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/rebuild_cache.dir
+/home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/list_install_components.dir
+/home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/install.dir
+/home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/install/local.dir
+/home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles/install/strip.dir

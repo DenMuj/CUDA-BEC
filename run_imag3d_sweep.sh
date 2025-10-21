@@ -29,7 +29,7 @@ restore_input() {
 trap restore_input EXIT
 
 # Iterate N=184..384 step 8
-for N in $(seq 408 8 512); do
+for N in $(seq 128 8 432); do
   echo "=== Running for N=$N (NX=NY=NZ) ==="
 
   # Update NX, NY, NZ lines in-place while preserving leading spaces and format

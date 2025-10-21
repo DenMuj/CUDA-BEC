@@ -85,6 +85,51 @@ rebuild_cache:
 rebuild_cache/fast: rebuild_cache
 .PHONY : rebuild_cache/fast
 
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+.PHONY : list_install_components/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
+
 # The main all target
 all: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/denis/Documents/Programiranje/CUDA-BEC/build/CMakeFiles /home/denis/Documents/Programiranje/CUDA-BEC/build//CMakeFiles/progress.marks
@@ -117,17 +162,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named cuda_utils
+# Target rules for targets named cuda_bec_utils
 
 # Build rule for target.
-cuda_utils: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cuda_utils
-.PHONY : cuda_utils
+cuda_bec_utils: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cuda_bec_utils
+.PHONY : cuda_bec_utils
 
 # fast build rule for target.
-cuda_utils/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/build
-.PHONY : cuda_utils/fast
+cuda_bec_utils/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/build
+.PHONY : cuda_bec_utils/fast
 
 #=============================================================================
 # Target rules for targets named imag3d-cuda
@@ -154,6 +199,19 @@ real3d-cuda: cmake_check_build_system
 real3d-cuda/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/real3d-cuda.dir/build.make CMakeFiles/real3d-cuda.dir/build
 .PHONY : real3d-cuda/fast
+
+#=============================================================================
+# Target rules for targets named clean-all
+
+# Build rule for target.
+clean-all: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean-all
+.PHONY : clean-all
+
+# fast build rule for target.
+clean-all/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/clean-all.dir/build.make CMakeFiles/clean-all.dir/build
+.PHONY : clean-all/fast
 
 src/imag3d-cuda/imag3d-cuda.o: src/imag3d-cuda/imag3d-cuda.cu.o
 .PHONY : src/imag3d-cuda/imag3d-cuda.o
@@ -208,7 +266,7 @@ src/utils/CudaArray.o: src/utils/CudaArray.cpp.o
 
 # target to build an object file
 src/utils/CudaArray.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/CudaArray.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/CudaArray.cpp.o
 .PHONY : src/utils/CudaArray.cpp.o
 
 src/utils/CudaArray.i: src/utils/CudaArray.cpp.i
@@ -216,7 +274,7 @@ src/utils/CudaArray.i: src/utils/CudaArray.cpp.i
 
 # target to preprocess a source file
 src/utils/CudaArray.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/CudaArray.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/CudaArray.cpp.i
 .PHONY : src/utils/CudaArray.cpp.i
 
 src/utils/CudaArray.s: src/utils/CudaArray.cpp.s
@@ -224,7 +282,7 @@ src/utils/CudaArray.s: src/utils/CudaArray.cpp.s
 
 # target to generate assembly for a file
 src/utils/CudaArray.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/CudaArray.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/CudaArray.cpp.s
 .PHONY : src/utils/CudaArray.cpp.s
 
 src/utils/cfg.o: src/utils/cfg.cpp.o
@@ -232,7 +290,7 @@ src/utils/cfg.o: src/utils/cfg.cpp.o
 
 # target to build an object file
 src/utils/cfg.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/cfg.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/cfg.cpp.o
 .PHONY : src/utils/cfg.cpp.o
 
 src/utils/cfg.i: src/utils/cfg.cpp.i
@@ -240,7 +298,7 @@ src/utils/cfg.i: src/utils/cfg.cpp.i
 
 # target to preprocess a source file
 src/utils/cfg.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/cfg.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/cfg.cpp.i
 .PHONY : src/utils/cfg.cpp.i
 
 src/utils/cfg.s: src/utils/cfg.cpp.s
@@ -248,7 +306,7 @@ src/utils/cfg.s: src/utils/cfg.cpp.s
 
 # target to generate assembly for a file
 src/utils/cfg.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/cfg.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/cfg.cpp.s
 .PHONY : src/utils/cfg.cpp.s
 
 src/utils/diffint.o: src/utils/diffint.cu.o
@@ -256,7 +314,7 @@ src/utils/diffint.o: src/utils/diffint.cu.o
 
 # target to build an object file
 src/utils/diffint.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/diffint.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/diffint.cu.o
 .PHONY : src/utils/diffint.cu.o
 
 src/utils/diffint.i: src/utils/diffint.cu.i
@@ -264,7 +322,7 @@ src/utils/diffint.i: src/utils/diffint.cu.i
 
 # target to preprocess a source file
 src/utils/diffint.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/diffint.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/diffint.cu.i
 .PHONY : src/utils/diffint.cu.i
 
 src/utils/diffint.s: src/utils/diffint.cu.s
@@ -272,7 +330,7 @@ src/utils/diffint.s: src/utils/diffint.cu.s
 
 # target to generate assembly for a file
 src/utils/diffint.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/diffint.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/diffint.cu.s
 .PHONY : src/utils/diffint.cu.s
 
 src/utils/multiarray.o: src/utils/multiarray.cpp.o
@@ -280,7 +338,7 @@ src/utils/multiarray.o: src/utils/multiarray.cpp.o
 
 # target to build an object file
 src/utils/multiarray.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/multiarray.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/multiarray.cpp.o
 .PHONY : src/utils/multiarray.cpp.o
 
 src/utils/multiarray.i: src/utils/multiarray.cpp.i
@@ -288,7 +346,7 @@ src/utils/multiarray.i: src/utils/multiarray.cpp.i
 
 # target to preprocess a source file
 src/utils/multiarray.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/multiarray.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/multiarray.cpp.i
 .PHONY : src/utils/multiarray.cpp.i
 
 src/utils/multiarray.s: src/utils/multiarray.cpp.s
@@ -296,7 +354,7 @@ src/utils/multiarray.s: src/utils/multiarray.cpp.s
 
 # target to generate assembly for a file
 src/utils/multiarray.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/multiarray.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/multiarray.cpp.s
 .PHONY : src/utils/multiarray.cpp.s
 
 src/utils/simpson3d_integrator.o: src/utils/simpson3d_integrator.cu.o
@@ -304,7 +362,7 @@ src/utils/simpson3d_integrator.o: src/utils/simpson3d_integrator.cu.o
 
 # target to build an object file
 src/utils/simpson3d_integrator.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/simpson3d_integrator.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_integrator.cu.o
 .PHONY : src/utils/simpson3d_integrator.cu.o
 
 src/utils/simpson3d_integrator.i: src/utils/simpson3d_integrator.cu.i
@@ -312,7 +370,7 @@ src/utils/simpson3d_integrator.i: src/utils/simpson3d_integrator.cu.i
 
 # target to preprocess a source file
 src/utils/simpson3d_integrator.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/simpson3d_integrator.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_integrator.cu.i
 .PHONY : src/utils/simpson3d_integrator.cu.i
 
 src/utils/simpson3d_integrator.s: src/utils/simpson3d_integrator.cu.s
@@ -320,7 +378,7 @@ src/utils/simpson3d_integrator.s: src/utils/simpson3d_integrator.cu.s
 
 # target to generate assembly for a file
 src/utils/simpson3d_integrator.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/simpson3d_integrator.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_integrator.cu.s
 .PHONY : src/utils/simpson3d_integrator.cu.s
 
 src/utils/simpson3d_kernel.o: src/utils/simpson3d_kernel.cu.o
@@ -328,7 +386,7 @@ src/utils/simpson3d_kernel.o: src/utils/simpson3d_kernel.cu.o
 
 # target to build an object file
 src/utils/simpson3d_kernel.cu.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/simpson3d_kernel.cu.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_kernel.cu.o
 .PHONY : src/utils/simpson3d_kernel.cu.o
 
 src/utils/simpson3d_kernel.i: src/utils/simpson3d_kernel.cu.i
@@ -336,7 +394,7 @@ src/utils/simpson3d_kernel.i: src/utils/simpson3d_kernel.cu.i
 
 # target to preprocess a source file
 src/utils/simpson3d_kernel.cu.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/simpson3d_kernel.cu.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_kernel.cu.i
 .PHONY : src/utils/simpson3d_kernel.cu.i
 
 src/utils/simpson3d_kernel.s: src/utils/simpson3d_kernel.cu.s
@@ -344,7 +402,7 @@ src/utils/simpson3d_kernel.s: src/utils/simpson3d_kernel.cu.s
 
 # target to generate assembly for a file
 src/utils/simpson3d_kernel.cu.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_utils.dir/build.make CMakeFiles/cuda_utils.dir/src/utils/simpson3d_kernel.cu.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cuda_bec_utils.dir/build.make CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_kernel.cu.s
 .PHONY : src/utils/simpson3d_kernel.cu.s
 
 # Help Target
@@ -354,8 +412,13 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... edit_cache"
+	@echo "... install"
+	@echo "... install/local"
+	@echo "... install/strip"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... cuda_utils"
+	@echo "... clean-all"
+	@echo "... cuda_bec_utils"
 	@echo "... imag3d-cuda"
 	@echo "... real3d-cuda"
 	@echo "... src/imag3d-cuda/imag3d-cuda.o"

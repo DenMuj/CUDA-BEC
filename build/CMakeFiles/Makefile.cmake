@@ -28,6 +28,8 @@ set(CMAKE_MAKEFILE_DEPENDS
   "/usr/share/cmake-3.28/Modules/Compiler/GNU.cmake"
   "/usr/share/cmake-3.28/Modules/Compiler/NVIDIA-CUDA.cmake"
   "/usr/share/cmake-3.28/Modules/Compiler/NVIDIA.cmake"
+  "/usr/share/cmake-3.28/Modules/FindCUDA.cmake"
+  "/usr/share/cmake-3.28/Modules/FindCUDA/select_compute_arch.cmake"
   "/usr/share/cmake-3.28/Modules/FindCUDAToolkit.cmake"
   "/usr/share/cmake-3.28/Modules/FindOpenMP.cmake"
   "/usr/share/cmake-3.28/Modules/FindPackageHandleStandardArgs.cmake"
@@ -54,7 +56,8 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/cuda_utils.dir/DependInfo.cmake"
+  "CMakeFiles/cuda_bec_utils.dir/DependInfo.cmake"
   "CMakeFiles/imag3d-cuda.dir/DependInfo.cmake"
   "CMakeFiles/real3d-cuda.dir/DependInfo.cmake"
+  "CMakeFiles/clean-all.dir/DependInfo.cmake"
   )

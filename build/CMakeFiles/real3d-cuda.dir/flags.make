@@ -6,5 +6,5 @@ CUDA_DEFINES =
 
 CUDA_INCLUDES = --options-file CMakeFiles/real3d-cuda.dir/includes_CUDA.rsp
 
-CUDA_FLAGS = -O3 -DNDEBUG -std=c++20 "--generate-code=arch=compute_75,code=[compute_75,sm_75]" -Xcompiler=-fPIE -O3 --fmad=true
+CUDA_FLAGS =  -Xcompiler -fPIC -Xcompiler -O3 -std=c++20 --fmad=true -Xcompiler -fopenmp -std=c++20 "--generate-code=arch=compute_75,code=[compute_75,sm_75]"
 

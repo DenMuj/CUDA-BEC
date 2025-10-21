@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/real3d-cuda.dir/cmake_device_link.o"
   "CMakeFiles/real3d-cuda.dir/src/real3d-cuda/real3d-cuda.cu.o"
   "CMakeFiles/real3d-cuda.dir/src/real3d-cuda/real3d-cuda.cu.o.d"
   "real3d-cuda"

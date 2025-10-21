@@ -10,10 +10,10 @@ OUTPUT_FILE="imag3d_out_times.txt"
 for N in $(seq 128 8 512); do
   # Prefer 'range-N/N{N}/imag3d-out.txt' if it exists, otherwise 'N{N}/imag3d-out.txt'
   OUT_FILE=""
-  if [[ -f "range-N/N${N}/imag3d-out.txt" ]]; then
-    OUT_FILE="range-N/N${N}/imag3d-out.txt"
-  elif [[ -f "N${N}/imag3d-out.txt" ]]; then
-    OUT_FILE="N${N}/imag3d-out.txt"
+  if [[ -f "range-N/N${N}/imag3d-mu.txt" ]]; then
+    OUT_FILE="range-N/N${N}/imag3d-mu.txt"
+  elif [[ -f "N${N}/imag3d-mu.txt" ]]; then
+    OUT_FILE="N${N}/imag3d-mu.txt"
   fi
 
   CALC="NA"

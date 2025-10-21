@@ -1,4 +1,5 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/imag3d-cuda.dir/cmake_device_link.o"
   "CMakeFiles/imag3d-cuda.dir/src/imag3d-cuda/imag3d-cuda.cu.o"
   "CMakeFiles/imag3d-cuda.dir/src/imag3d-cuda/imag3d-cuda.cu.o.d"
   "imag3d-cuda"

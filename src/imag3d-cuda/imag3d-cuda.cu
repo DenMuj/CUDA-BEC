@@ -372,9 +372,13 @@ int main(int argc, char **argv) {
   }
 
   // Main loop that does the evolution of the wave function
-  double nsteps;
+  long nsteps;
   nsteps = Niter / Nsnap;
-  auto start = std::chrono::high_resolution_clock::now();
+  // CUDA events for GPU timing
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start);
   for (long snap = 1; snap <= Nsnap; snap++) {
     for(long j = 0; j<nsteps; j++){
       calc_psid2_potdd(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(), d_psi2_fft, d_potdd.raw());
@@ -499,17 +503,21 @@ int main(int argc, char **argv) {
     if (mutotnew > muend) break;
 
   }
-  auto end = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> duration = end - start;
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  
+  float gpu_time_ms = 0.0f;
+  cudaEventElapsedTime(&gpu_time_ms, start, stop);
+  double gpu_time_seconds = gpu_time_ms / 1000.0;
   if (rmsout != NULL) {
     fprintf(filerms, "-------------------------------------------------------------------\n\n");
-    fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
+    fprintf(filerms, "Total time on GPU: %f seconds\n", gpu_time_seconds);
     fprintf(filerms, "-------------------------------------------------------------------\n\n");
     fclose(filerms);
   }  
   if(muoutput != NULL) {
     fprintf(filemu, "---------------------------------------------------------------------------------\n\n");
-    fprintf(filemu, "Total time on GPU: %f seconds\n", duration.count());
+    fprintf(filemu, "Total time on GPU: %f seconds\n", gpu_time_seconds);
     fprintf(filemu, "---------------------------------------------------------------------------------\n\n");
     fclose(filemu);
   }
