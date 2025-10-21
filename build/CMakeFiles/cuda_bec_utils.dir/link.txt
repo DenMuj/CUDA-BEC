@@ -1,3 +1,0 @@
-/usr/bin/ar qc libcuda_bec_utils.a CMakeFiles/cuda_bec_utils.dir/src/utils/diffint.cu.o CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_kernel.cu.o CMakeFiles/cuda_bec_utils.dir/src/utils/simpson3d_integrator.cu.o CMakeFiles/cuda_bec_utils.dir/src/utils/multiarray.cpp.o CMakeFiles/cuda_bec_utils.dir/src/utils/cfg.cpp.o CMakeFiles/cuda_bec_utils.dir/src/utils/CudaArray.cpp.o
-/usr/bin/ar q libcuda_bec_utils.a CMakeFiles/cuda_bec_utils.dir/cmake_device_link.o
-/usr/bin/ranlib libcuda_bec_utils.a
