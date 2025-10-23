@@ -4,12 +4,12 @@
 
 int main(int argc, char **argv) {
   if ((argc != 3) || (strcmp(*(argv + 1), "-i") != 0)) {
-    fprintf(stderr, "Usage: %s -i <input parameter file> \n", *argv);
+    std::fprintf(stderr, "Usage: %s -i <input parameter file> \n", *argv);
     exit(EXIT_FAILURE);
   }
 
   if (!cfg_init(argv[2])) {
-    fprintf(stderr, "Wrong input parameter file.\n");
+    std::fprintf(stderr, "Wrong input parameter file.\n");
     exit(EXIT_FAILURE);
   }
   pi = M_PI;
@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
   compute_rms_values(d_psi, d_work_array, integ, h_rms_pinned);
   if(rmsout != NULL) {
     double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
-    fprintf(filerms, "%-9d %-19.10le %-19.16le %-19.16le %-19.16le\n", 0, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
+    std::fprintf(filerms, "%-9d %-19.10le %-19.16le %-19.16le %-19.16le\n", 0, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
     fflush(filerms);
   }
 
@@ -255,7 +255,7 @@ int main(int argc, char **argv) {
   // Compute chemical potential terms
   if(muoutput != NULL) {
     calcmuen(muen,d_psi,d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
-    fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2],muen[4]);
+    std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2],muen[4]);
     fflush(filemu);
     mutotold = muen[0]+muen[1]+muen[2]+muen[3];
   }
@@ -268,7 +268,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s1d_x.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outdenx(psi, x, tmpy, tmpz, file);
@@ -278,7 +278,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s1d_y.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outdeny(psi, y, tmpx, tmpz, file);
@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s1d_z.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outdenz(psi, z, tmpx, tmpy, file);
@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s2d_xy.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outdenxy(psi, x, y, tmpz, file);
@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s2d_xz.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outdenxz(psi, x, z, tmpy, file);
@@ -321,7 +321,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s2d_yz.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outdenyz(psi, y, z, tmpx, file);
@@ -331,7 +331,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s3d_xy0.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outpsi2xy(psi, x, y, file);
@@ -341,7 +341,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s3d_x0z.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outpsi2xz(psi, x, z, file);
@@ -351,7 +351,7 @@ int main(int argc, char **argv) {
       sprintf(filename, "%s%s3d_0yz.bin", Niterout, itername);
       file = fopen(filename, "wb");
       if(file == NULL) {
-        fprintf(stderr, "Failed to open file %s\n", filename);
+        std::fprintf(stderr, "Failed to open file %s\n", filename);
         exit(EXIT_FAILURE);
       }
       outpsi2yz(psi, y, z, file);
@@ -378,13 +378,13 @@ int main(int argc, char **argv) {
     
     if(rmsout != NULL) {
       double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
-      fprintf(filerms, "%-9li %-19.10le %-19.16le %-19.16le %-19.16le\n", snap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
+      std::fprintf(filerms, "%-9li %-19.10le %-19.16le %-19.16le %-19.16le\n", snap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
       //fflush(filerms);
     }
   
     calcmuen(muen,d_psi,d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
     if(muoutput != NULL) {
-        fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2],muen[4]);
+        std::fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2],muen[4]);
         //fflush(filemu);
       }
       if(Niterout != NULL) {
@@ -396,7 +396,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s1d_x.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outdenx(psi, x, tmpy, tmpz, file);
@@ -406,7 +406,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s1d_y.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outdeny(psi, y, tmpx, tmpz, file);
@@ -416,7 +416,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s1d_z.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outdenz(psi, z, tmpx, tmpy, file);
@@ -426,7 +426,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s2d_xy.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outdenxy(psi, x, y, tmpz, file);
@@ -436,7 +436,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s2d_xz.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outdenxz(psi, x, z, tmpy, file);
@@ -446,7 +446,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s2d_yz.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outdenyz(psi, y, z, tmpx, file);
@@ -456,7 +456,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s3d_xy0.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outpsi2xy(psi, x, y, file);
@@ -466,7 +466,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s3d_x0z.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outpsi2xz(psi, x, z, file);
@@ -476,7 +476,7 @@ int main(int argc, char **argv) {
           sprintf(filename, "%s%s3d_0yz.bin", Niterout, itername);
           file = fopen(filename, "wb");
           if(file == NULL) {
-            fprintf(stderr, "Failed to open file %s\n", filename);
+            std::fprintf(stderr, "Failed to open file %s\n", filename);
             exit(EXIT_FAILURE);
           }
           outpsi2yz(psi, y, z, file);
@@ -491,15 +491,15 @@ int main(int argc, char **argv) {
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> duration = end - start;
   if (rmsout != NULL) {
-    fprintf(filerms, "-------------------------------------------------------------------\n\n");
-    fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
-    fprintf(filerms, "-------------------------------------------------------------------\n\n");
+    std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
+    std::fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
+    std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
     fclose(filerms);
   }  
   if(muoutput != NULL) {
-    fprintf(filemu, "---------------------------------------------------------------------------------\n\n");
-    fprintf(filemu, "Total time on GPU: %f seconds\n", duration.count());
-    fprintf(filemu, "---------------------------------------------------------------------------------\n\n");
+    std::fprintf(filemu, "---------------------------------------------------------------------------------\n\n");
+    std::fprintf(filemu, "Total time on GPU: %f seconds\n", duration.count());
+    std::fprintf(filemu, "---------------------------------------------------------------------------------\n\n");
     fclose(filemu);
   }
 
@@ -524,12 +524,12 @@ void readpar(void) {
   const char *cfg_tmp;
 
   if ((cfg_tmp = cfg_read("OPTION")) == NULL) {
-    fprintf(stderr, "OPTION is not defined in the configuration file\n");
+    std::fprintf(stderr, "OPTION is not defined in the configuration file\n");
     exit(EXIT_FAILURE);
   }
   opt = atol(cfg_tmp);
   if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
-    fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
+    std::fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
     exit(EXIT_FAILURE);
   }
   optms = atol(cfg_tmp);
@@ -540,20 +540,20 @@ void readpar(void) {
   }
    
   if ((cfg_tmp = cfg_read("NATOMS")) == NULL) {
-    fprintf(stderr, "NATOMS is not defined in the configuration file.\n");
+    std::fprintf(stderr, "NATOMS is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   Na = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("AHO")) == NULL) {
-    fprintf(stderr, "AHO is not defined in the configuration file.\n");
+    std::fprintf(stderr, "AHO is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   aho = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("G")) == NULL) {
     if ((cfg_tmp = cfg_read("AS")) == NULL) {
-      fprintf(stderr, "AS is not defined in the configuration file.\n");
+      std::fprintf(stderr, "AS is not defined in the configuration file.\n");
       exit(EXIT_FAILURE);
     }
     as = atof(cfg_tmp);
@@ -565,7 +565,7 @@ void readpar(void) {
 
   if ((cfg_tmp = cfg_read("GDD")) == NULL) {
     if ((cfg_tmp = cfg_read("ADD")) == NULL) {
-      fprintf(stderr, "ADD is not defined in the configuration file.\n");
+      std::fprintf(stderr, "ADD is not defined in the configuration file.\n");
       exit(EXIT_FAILURE);
     }
     add = atof(cfg_tmp);
@@ -601,19 +601,19 @@ void readpar(void) {
     sz = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("NX")) == NULL) {
-    fprintf(stderr, "NX is not defined in the configuration file.\n");
+    std::fprintf(stderr, "NX is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   Nx = atol(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("NY")) == NULL) {
-    fprintf(stderr, "NY is not defined in the configuration file.\n");
+    std::fprintf(stderr, "NY is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   Ny = atol(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("NZ")) == NULL) {
-    fprintf(stderr, "Nz is not defined in the configuration file.\n");
+    std::fprintf(stderr, "Nz is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   Nz = atol(cfg_tmp);
@@ -658,37 +658,37 @@ void readpar(void) {
     dt = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("MUREL")) == NULL) {
-    fprintf(stderr, "MUREL is not defined in the configuration file.\n");
+    std::fprintf(stderr, "MUREL is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   murel = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("MUEND")) == NULL) {
-    fprintf(stderr, "MUEND is not defined in the configuration file.\n");
+    std::fprintf(stderr, "MUEND is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   muend = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("GAMMA")) == NULL) {
-    fprintf(stderr, "GAMMA is not defined in the configuration file.\n");
+    std::fprintf(stderr, "GAMMA is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   vgamma = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("NU")) == NULL) {
-    fprintf(stderr, "NU is not defined in the configuration file.\n");
+    std::fprintf(stderr, "NU is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   vnu = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("LAMBDA")) == NULL) {
-    fprintf(stderr, "LAMBDA is not defined in the configuration file.\n");
+    std::fprintf(stderr, "LAMBDA is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   vlambda = atof(cfg_tmp);
 
   if ((cfg_tmp = cfg_read("NITER")) == NULL) {
-    fprintf(stderr, "NITER is not defined in the configuration file.\n");
+    std::fprintf(stderr, "NITER is not defined in the configuration file.\n");
     exit(EXIT_FAILURE);
   }
   Niter = atol(cfg_tmp);
@@ -712,7 +712,7 @@ void readpar(void) {
 
   if (Niterout != NULL) {
     if ((cfg_tmp = cfg_read("OUTFLAGS")) == NULL) {
-      fprintf(stderr, "OUTFLAGS is not defined in the configuration file.\n");
+      std::fprintf(stderr, "OUTFLAGS is not defined in the configuration file.\n");
       exit(EXIT_FAILURE);
     }
     outflags = atoi(cfg_tmp);
@@ -1659,41 +1659,41 @@ void calcmuen_kin(CudaArray3D<cuDoubleComplex> &d_psi,CudaArray3D<double> &d_wor
  * @param filerms: File pointer to the rms output file
  */
 void rms_output(FILE *filerms){
-  fprintf(filerms, "\n**********************************************\n");
+  std::fprintf(filerms, "\n**********************************************\n");
   if (cfg_read("G") != NULL) {
-    fprintf(filerms, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
+    std::fprintf(filerms, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
   } else {
-    fprintf(filerms, "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad, as, g / par, g);
+    std::fprintf(filerms, "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad, as, g / par, g);
   }
   if(optms == 0) {
-    fprintf(filerms, "Regular ");
+    std::fprintf(filerms, "Regular ");
   } else {
-    fprintf(filerms, "Microwave-shielded ");
+    std::fprintf(filerms, "Microwave-shielded ");
   }
   if (cfg_read("GDD") != NULL) {
-    fprintf(filerms, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd, edd);
+    std::fprintf(filerms, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd, edd);
   } else {
-    fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);
+    std::fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);
   }
-  fprintf(filerms, "     Dipolar cutoff Scut = %.6le,\n\n",cutoff);
+  std::fprintf(filerms, "     Dipolar cutoff Scut = %.6le,\n\n",cutoff);
   if (QF == 1) {
-    fprintf(filerms, "QF = 1: h2 = %.6le,        q5 = %.6le\n\n", h2, q5);
-  } else  fprintf(filerms, "QF = 0\n\n");
-  fprintf(filerms, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma, vnu, vlambda);
-  fprintf(filerms, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
-  fprintf(filerms, "                      DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = %.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
-  if (cfg_read("AHO") != NULL) fprintf(filerms, "      Unit of length: aho = %.6le m\n", aho);
-  fprintf(filerms, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
-  fprintf(filerms, "                     DT = %.6le, mt = %.2le\n\n",  dt, mt);
+    std::fprintf(filerms, "QF = 1: h2 = %.6le,        q5 = %.6le\n\n", h2, q5);
+  } else  std::fprintf(filerms, "QF = 0\n\n");
+  std::fprintf(filerms, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma, vnu, vlambda);
+  std::fprintf(filerms, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
+  std::fprintf(filerms, "                      DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = %.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
+  if (cfg_read("AHO") != NULL) std::fprintf(filerms, "      Unit of length: aho = %.6le m\n", aho);
+  std::fprintf(filerms, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
+  std::fprintf(filerms, "                     DT = %.6le, mt = %.2le\n\n",  dt, mt);
   if (input != NULL) {
-    fprintf(filerms, "file %s\n", input);
+    std::fprintf(filerms, "file %s\n", input);
   } else {
-    fprintf(filerms, "Gaussian\n               SX = %.6le, SY = %.6le, SZ = %.6le\n", sx, sy, sz);
+    std::fprintf(filerms, "Gaussian\n               SX = %.6le, SY = %.6le, SZ = %.6le\n", sx, sy, sz);
   }
-  fprintf(filerms, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
-  fprintf(filerms, "-------------------------------------------------------------------\n");
-  fprintf(filerms, "Snap      <r>            <x>            <y>            <z>\n");
-  fprintf(filerms, "-------------------------------------------------------------------\n");
+  std::fprintf(filerms, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
+  std::fprintf(filerms, "-------------------------------------------------------------------\n");
+  std::fprintf(filerms, "Snap      <r>            <x>            <y>            <z>\n");
+  std::fprintf(filerms, "-------------------------------------------------------------------\n");
   fflush(filerms);
   
   
@@ -1704,41 +1704,41 @@ void rms_output(FILE *filerms){
  * @param filemu: File pointer to the chemical potential output file
  */
 void mu_output(FILE *filemu){
-  fprintf(filemu, "\n**********************************************\n");
+  std::fprintf(filemu, "\n**********************************************\n");
   if (cfg_read("G") != NULL) {
-    fprintf(filemu, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
+    std::fprintf(filemu, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
   } else {
-    fprintf(filemu, "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad, as, g / par, g);
+    std::fprintf(filemu, "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad, as, g / par, g);
   }
   if(optms == 0) {
-    fprintf(filemu, "Regular ");
+    std::fprintf(filemu, "Regular ");
   } else {
-    fprintf(filemu, "Microwave-shielded ");
+    std::fprintf(filemu, "Microwave-shielded ");
   }
   if (cfg_read("GDD") != NULL) {
-    fprintf(filemu, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd, edd);
+    std::fprintf(filemu, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd, edd);
   } else {
-    fprintf(filemu, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);
+    std::fprintf(filemu, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);
   }
-  fprintf(filemu, "     Dipolar cutoff Scut = %.6le,\n\n",cutoff);
+  std::fprintf(filemu, "     Dipolar cutoff Scut = %.6le,\n\n",cutoff);
   if (QF == 1) {
-    fprintf(filemu, "QF = 1: h2 = %.6le,         q5 = %.6le\n\n", h2, q5);
-  } else  fprintf(filemu, "QF = 0\n\n");
-  fprintf(filemu, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma, vnu, vlambda);
-  fprintf(filemu, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
-  fprintf(filemu, "                      DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = %.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
-  if (cfg_read("AHO") != NULL) fprintf(filemu, "      Unit of length: aho = %.6le m\n", aho);
-  fprintf(filemu, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
-  fprintf(filemu, "                     DT = %.6le, mt = %.2le\n\n",  dt, mt);
+    std::fprintf(filemu, "QF = 1: h2 = %.6le,         q5 = %.6le\n\n", h2, q5);
+  } else  std::fprintf(filemu, "QF = 0\n\n");
+  std::fprintf(filemu, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma, vnu, vlambda);
+  std::fprintf(filemu, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
+  std::fprintf(filemu, "                      DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = %.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
+  if (cfg_read("AHO") != NULL) std::fprintf(filemu, "      Unit of length: aho = %.6le m\n", aho);
+  std::fprintf(filemu, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
+  std::fprintf(filemu, "                     DT = %.6le, mt = %.2le\n\n",  dt, mt);
   if (input != NULL) {
-    fprintf(filemu, "file %s\n", input);
+    std::fprintf(filemu, "file %s\n", input);
   } else {
-    fprintf(filemu, "Gaussian\n               SX = %.6le, SY = %.6le, SZ = %.6le\n", sx, sy, sz);
+    std::fprintf(filemu, "Gaussian\n               SX = %.6le, SY = %.6le, SZ = %.6le\n", sx, sy, sz);
   }
-  fprintf(filemu, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
-  fprintf(filemu, "-----------------------------------------------------------------------------------------------\n");
-  fprintf(filemu, "Snap      mu           Kin             Pot            Contact            DDI            QF\n");
-  fprintf(filemu, "-----------------------------------------------------------------------------------------------\n");
+  std::fprintf(filemu, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
+  std::fprintf(filemu, "-----------------------------------------------------------------------------------------------\n");
+  std::fprintf(filemu, "Snap      mu           Kin             Pot            Contact            DDI            QF\n");
+  std::fprintf(filemu, "-----------------------------------------------------------------------------------------------\n");
   fflush(filemu);
 
 }
@@ -1759,19 +1759,19 @@ void save_psi_from_gpu(cuDoubleComplex *psi, cuDoubleComplex *d_psi, const char 
   
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
-      fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
+      std::fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
       return;
   }
   
   FILE *file = fopen(filename, "wb");
   if (file == NULL) {
-      fprintf(stderr, "Failed to open file %s\n", filename);
+      std::fprintf(stderr, "Failed to open file %s\n", filename);
       return;
   }
   
   size_t written = fwrite(psi, sizeof(cuDoubleComplex), total_size, file);
   if (written != total_size) {
-      fprintf(stderr, "Failed to write all data: wrote %zu of %zu complex elements\n", 
+      std::fprintf(stderr, "Failed to write all data: wrote %zu of %zu complex elements\n", 
               written, total_size);
   }
   
@@ -1792,7 +1792,7 @@ void read_psi_from_file_complex(cuDoubleComplex *psi, const char *filename, long
   // Open file
   FILE *file = fopen(filename, "rb");
   if (file == NULL) {
-      fprintf(stderr, "Failed to open file %s\n", filename);
+      std::fprintf(stderr, "Failed to open file %s\n", filename);
       return;
   }
   
@@ -1800,7 +1800,7 @@ void read_psi_from_file_complex(cuDoubleComplex *psi, const char *filename, long
   double real_value;
   for (size_t i = 0; i < total_size; i++) {
       if (fread(&real_value, sizeof(double), 1, file) != 1) {
-          fprintf(stderr, "Failed to read element %zu\n", i);
+          std::fprintf(stderr, "Failed to read element %zu\n", i);
           fclose(file);
           return;
       }
