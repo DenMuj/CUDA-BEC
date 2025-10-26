@@ -18,7 +18,7 @@
 #  If 1, quantum fluctuation is considered.
 #  Required: yes
 #  Type: int
-   QF = 1
+   QF = 0
 
 #  Initial values for the wave function (for a Gaussian).
 #  Required: yes

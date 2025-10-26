@@ -18,8 +18,7 @@ class Simpson3DTiledIntegratorImpl {
 public:
     double *d_f;           // Device memory for current tile
     double *d_partial_sum; // Device memory for accumulating results
-    double *h_tile_sum_pinned; // Pinned host memory for async transfers
-    cudaStream_t stream;   // CUDA stream for async operations
+    double h_tile_sum;     // Host memory for tile sum
     long tile_size_z;      // Number of z-slices per tile
     long max_tile_points;  // Maximum points in a tile
     long cached_Nx;        // Cached grid dimensions
@@ -32,18 +31,12 @@ public:
      * @param tile_z Number of z-slices to process per tile (default: 32)
      */
     Simpson3DTiledIntegratorImpl(long Nx, long Ny, long tile_z) 
-        : tile_size_z(tile_z), cached_Nx(Nx), cached_Ny(Ny) {
+        : tile_size_z(tile_z), cached_Nx(Nx), cached_Ny(Ny), h_tile_sum(0.0) {
         
         // Allocate memory for one tile
         max_tile_points = Nx * Ny * tile_size_z;
         cudaMalloc(&d_f, max_tile_points * sizeof(double));
         cudaMalloc(&d_partial_sum, sizeof(double));
-        
-        // Allocate pinned host memory for async transfers
-        cudaHostAlloc(&h_tile_sum_pinned, sizeof(double), cudaHostAllocDefault);
-        
-        // Create CUDA stream for async operations
-        cudaStreamCreate(&stream);
         
         // Check for allocation errors
         cudaError_t err = cudaGetLastError();
@@ -59,8 +52,6 @@ public:
     ~Simpson3DTiledIntegratorImpl() {
         cudaFree(d_f);
         cudaFree(d_partial_sum);
-        cudaFreeHost(h_tile_sum_pinned);
-        cudaStreamDestroy(stream);
     }
     
     /**
@@ -91,29 +82,19 @@ public:
             launchSimpson3DKernel(d_f, d_partial_sum, Nx, Ny, Nz, 
                                  tile_size_z, z_start, current_tile_z);
             
-            // Check for kernel launch errors
-            cudaError_t err = cudaGetLastError();
-            if (err != cudaSuccess) {
-                std::cerr << "Kernel launch error: " << cudaGetErrorString(err) << std::endl;
-                return 0.0;
-            }
-            
-            // Check for kernel execution errors
-            err = cudaGetLastError();
+            // Synchronize to ensure kernel completion and check for errors
+            cudaError_t err = cudaDeviceSynchronize();
             if (err != cudaSuccess) {
                 std::cerr << "Kernel execution error: " << cudaGetErrorString(err) << std::endl;
                 return 0.0;
             }
             
-            // Use async transfer with pinned memory for better performance
-            cudaMemcpyAsync(h_tile_sum_pinned, d_partial_sum, sizeof(double), 
-                           cudaMemcpyDeviceToHost, stream);
-            
-            // Wait for the async transfer to complete
-            cudaStreamSynchronize(stream);
+            // Copy result back to host
+            cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), 
+                      cudaMemcpyDeviceToHost);
             
             // Accumulate the result
-            total_sum += *h_tile_sum_pinned;
+            total_sum += h_tile_sum;
         }
         
         // Apply Simpson's rule scaling factor
@@ -135,42 +116,27 @@ public:
         for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
             // Calculate the actual size of this tile (last tile might be smaller)
             long current_tile_z = std::min(tile_size_z, Nz - z_start);
-            long tile_points = Nx * Ny * current_tile_z;
-            
-            // Copy this tile's data from device to device (GPU to GPU copy)
-            cudaMemcpy(d_f, d_f_full + z_start * Nx * Ny, 
-                      tile_points * sizeof(double), cudaMemcpyDeviceToDevice);
             
             // Reset the partial sum for this tile
             cudaMemset(d_partial_sum, 0, sizeof(double));
             
-            // Launch kernel for this tile
-            launchSimpson3DKernel(d_f, d_partial_sum, Nx, Ny, Nz, 
+            // Launch kernel for this tile (pass pointer directly with offset - no D2D copy needed)
+            launchSimpson3DKernel(d_f_full + z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz, 
                                  tile_size_z, z_start, current_tile_z);
             
-            // Check for kernel launch errors
-            cudaError_t err = cudaGetLastError();
-            if (err != cudaSuccess) {
-                std::cerr << "Kernel launch error: " << cudaGetErrorString(err) << std::endl;
-                return 0.0;
-            }
-            
-            // Check for kernel execution errors
-            err = cudaGetLastError();
+            // Synchronize to ensure kernel completion and check for errors
+            cudaError_t err = cudaDeviceSynchronize();
             if (err != cudaSuccess) {
                 std::cerr << "Kernel execution error: " << cudaGetErrorString(err) << std::endl;
                 return 0.0;
             }
             
-            // Use async transfer with pinned memory for better performance
-            cudaMemcpyAsync(h_tile_sum_pinned, d_partial_sum, sizeof(double), 
-                           cudaMemcpyDeviceToHost, stream);
-            
-            // Wait for the async transfer to complete
-            cudaStreamSynchronize(stream);
+            // Copy result back to host
+            cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), 
+                      cudaMemcpyDeviceToHost);
             
             // Accumulate the result
-            total_sum += *h_tile_sum_pinned;
+            total_sum += h_tile_sum;
         }
         
         // Apply Simpson's rule scaling factor
