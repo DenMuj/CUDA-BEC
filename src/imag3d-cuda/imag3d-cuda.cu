@@ -396,7 +396,7 @@ int main(int argc, char **argv) {
       std::fprintf(filerms, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
       fflush(filerms);
     }
-  calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_work_array.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+    calcmuen(muen.raw(),d_psi.data(),d_work_array.data(), d_pot.data(), d_work_array.data(), d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
     if(muoutput != NULL) {
       std::fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3]+muen[4], muen[3], muen[1], muen[0], muen[2], muen[4]);
       fflush(filemu);
@@ -525,6 +525,23 @@ int main(int argc, char **argv) {
   if (finalpsi != NULL) {
     sprintf(filename, "%s.bin", finalpsi);
     save_psi_from_gpu(psi, d_psi.raw(), filename, Nx, Ny, Nz);
+
+    // // Save z,y,x psi arrays to .txt files
+    // sprintf(filename, "%s_zryy.txt", finalpsi);
+    // file = fopen(filename, "w");
+    // if(file == NULL) {
+    //   std::fprintf(stderr, "Failed to open file %s\n", filename);
+    //   exit(EXIT_FAILURE);
+    // }
+    // for(long cntk = 0; cntk < Nz; cntk++){
+    //   for(long cntj = 0; cntj < Ny; cntj++){
+    //     //for(long cnti = 0; cnti < Nx; cnti++){
+    //       double ro= sqrt(x[cntj]*x[cntj] + y[cntj]*y[cntj]);
+    //       fprintf(file, "%.16le %.16le %.16le\n", z[cntk], ro, psi[cntk * Ny * Nx + cntj * Nx + cntj]);
+    //     //}
+    //   }
+    // }
+    // fclose(file);
   }
 
   // Cleanup pinned memory
@@ -1246,7 +1263,10 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi,
     double ratio_gd = gd/((double)(d_Nx * d_Ny * d_Nz));
     double psi2dd = __ldg(&d_psi2[linear_idx])*ratio_gd; 
     double pot_val = __ldg(&d_pot[linear_idx]);
-    double tmp = d_dt * ( fma(psi_val2, g, psi2dd) + fma(psi_val3, h2, pot_val) );
+    double temp1 = fma(psi_val2, g, psi2dd);
+    double temp2 = fma(psi_val3, h2, pot_val);
+    double sum = temp1 + temp2;
+    double tmp = fma(d_dt, sum, 0.0); 
     //double tmp = d_dt * (psi_val3*h2);
     d_psi[linear_idx] *= exp(-tmp);
 }
@@ -1914,7 +1934,7 @@ void outdenxy(double *psi, MultiArray<double> &x, MultiArray<double> &y, MultiAr
   for(long cnti =0; cnti < Nx; cnti++){
     for(long cntj =0; cntj < Ny; cntj++){
       for(long cntk =0; cntk < Nz; cntk++){
-        tmpz[cntk] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+        tmpz[cntk] = fma(psi[cntk * Ny * Nx + cntj * Nx + cnti], psi[cntk * Ny * Nx + cntj * Nx + cnti], 0.0);
       }
       double n_xy = simpint(dz, tmpz.raw(), Nz);
       // Write x,y, n(x,y) to file
@@ -1937,7 +1957,7 @@ void outdenxz(double *psi, MultiArray<double> &x, MultiArray<double> &z, MultiAr
   for(long cnti= 0; cnti < Nx; cnti++){
     for(long cntk = 0; cntk < Nz; cntk++){
       for(long cntj = 0; cntj < Ny; cntj++){
-        tmpx[cntj] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+        tmpx[cntj] = fma(psi[cntk * Ny * Nx + cntj * Nx + cnti], psi[cntk * Ny * Nx + cntj * Nx + cnti], 0.0);
       }
       double n_xz = simpint(dy, tmpx.raw(), Ny);
       // Write x,z, n(x,z) to file
@@ -1960,7 +1980,7 @@ void outdenyz(double *psi, MultiArray<double> &y, MultiArray<double> &z, MultiAr
   for(long cntj = 0; cntj < Ny; cntj++){
     for(long cntk = 0; cntk < Nz; cntk++){
       for(long cnti = 0; cnti < Nx; cnti++){
-        tmpx[cnti] = psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
+        tmpx[cnti] = fma(psi[cntk * Ny * Nx + cntj * Nx + cnti], psi[cntk * Ny * Nx + cntj * Nx + cnti], 0.0);
       }
       double n_yz = simpint(dx, tmpx.raw(), Nx);
       // Write y,z, n(y,z) to file
@@ -1981,7 +2001,7 @@ void outdenyz(double *psi, MultiArray<double> &y, MultiArray<double> &z, MultiAr
 void outpsi2xy(double *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *file){
   for (long cnti = 0; cnti < Nx; cnti++){
     for (long cntj = 0; cntj < Ny; cntj++){
-      double psi2_xy = psi[Nz2 * Ny * Nx + cntj * Nx + cnti] * psi[Nz2 * Ny * Nx + cntj * Nx + cnti];
+      double psi2_xy = fma(psi[Nz2 * Ny * Nx + cntj * Nx + cnti], psi[Nz2 * Ny * Nx + cntj * Nx + cnti], 0.0);
       fwrite(&x[cnti], sizeof(double), 1, file);
       fwrite(&y[cntj], sizeof(double), 1, file);
       fwrite(&psi2_xy, sizeof(double), 1, file);
@@ -1999,7 +2019,7 @@ void outpsi2xy(double *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *
 void outpsi2xz(double *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *file){
   for (long cnti = 0; cnti < Nx; cnti++){
     for (long cntk = 0; cntk < Nz; cntk++){
-      double psi2_xz = psi[cntk * Ny * Nx + Ny2 * Nx + cnti] * psi[cntk * Ny * Nx + Ny2 * Nx + cnti];
+      double psi2_xz = fma(psi[cntk * Ny * Nx + Ny2 * Nx + cnti], psi[cntk * Ny * Nx + Ny2 * Nx + cnti], 0.0);
       fwrite(&x[cnti], sizeof(double), 1, file);
       fwrite(&z[cntk], sizeof(double), 1, file);
       fwrite(&psi2_xz, sizeof(double), 1, file);
@@ -2017,7 +2037,7 @@ void outpsi2xz(double *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *
 void outpsi2yz(double *psi, MultiArray<double> &y, MultiArray<double> &z, FILE *file){
   for (long cntj = 0; cntj < Ny; cntj++){
     for (long cntk = 0; cntk < Nz; cntk++){
-      double psi2_yz = psi[cntk * Ny * Nx + cntj * Nx + Nx2] * psi[cntk * Ny * Nx + cntj * Nx + Nx2];
+      double psi2_yz = fma(psi[cntk * Ny * Nx + cntj * Nx + Nx2], psi[cntk * Ny * Nx + cntj * Nx + Nx2], 0.0);
       fwrite(&y[cntj], sizeof(double), 1, file);
       fwrite(&z[cntk], sizeof(double), 1, file);
       fwrite(&psi2_yz, sizeof(double), 1, file);

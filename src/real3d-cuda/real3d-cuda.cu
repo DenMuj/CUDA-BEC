@@ -1242,18 +1242,29 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi,
   if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
     return;
 
-  int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-  double pot_val = __ldg(&d_pot[linear_idx]);
-  cuDoubleComplex psi_val = d_psi[linear_idx];
-  double ratio_gd = gd/((double)(d_Nx * d_Ny * d_Nz));
-  double psi2dd = __ldg(&d_psi2[linear_idx])*ratio_gd;
-  double psi_val2=psi_val.x * psi_val.x + psi_val.y * psi_val.y;
-  double psi_val3=psi_val2 * sqrt(psi_val.x * psi_val.x + psi_val.y * psi_val.y);
-  double tmp = -d_dt * (psi_val2 * g + pot_val +  psi2dd + psi_val3*h2);
-  //double tmp = -d_dt * (psi_val3*h2);
-  double s, c;
-  sincos(tmp, &s, &c);
-  d_psi[linear_idx] = cuCmul(psi_val, make_cuDoubleComplex(c, s)); 
+    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
+    double pot_val = __ldg(&d_pot[linear_idx]);
+    cuDoubleComplex psi_val = d_psi[linear_idx];
+    double ratio_gd = gd / ((double)(d_Nx * d_Ny * d_Nz));
+    double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
+    
+    // I'm using cuCabs() for |psi|
+    double psi_abs = cuCabs(psi_val);                     // sqrt(x^2 + y^2)
+    double psi_val2 = psi_abs * psi_abs;                  // |psi|^2
+    double psi_val3 = psi_val2 * psi_abs;                 // |psi|^3
+    
+    // all coefficients
+    double temp1 = fma(psi_val2, g, pot_val);
+    double temp2 = fma(psi_val3, h2, psi2dd);
+    double sum = temp1 + temp2;
+    double tmp = fma(-d_dt, sum, 0.0); 
+    
+    // compute e^{-i*tmp} = cos(tmp) - i sin(tmp)
+    double s, c;
+    sincos(tmp, &s, &c);
+    
+    // multiply psi by e^{-i tmp} using cuCmul (complex * complex)
+    d_psi[linear_idx] = cuCmul(psi_val, make_cuDoubleComplex(c, s)); 
 }
 
 /**
@@ -1596,7 +1607,7 @@ __global__ void calcmuen_fused_potential(const cuDoubleComplex *__restrict__ d_p
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-  double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+  double psi2_val = cuCabs(psi_val) * cuCabs(psi_val);
   d_result[linear_idx] = 0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
 }
 
@@ -1617,7 +1628,7 @@ __global__ void calcmuen_fused_dipolar(const cuDoubleComplex *__restrict__ d_psi
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-  double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+  double psi2_val = cuCabs(psi_val) * cuCabs(psi_val);
   double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
   d_result[linear_idx] = 0.5 * psi2_val * psidd2_val * gd;
 }
@@ -1638,8 +1649,8 @@ __global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi, dou
 
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-  double psi_val2=psi_val.x * psi_val.x + psi_val.y * psi_val.y;
-  double psi_val3=psi_val2 * sqrt(psi_val.x * psi_val.x + psi_val.y * psi_val.y);
+  double psi_val2=cuCabs(psi_val) * cuCabs(psi_val);
+  double psi_val3=psi_val2 * cuCabs(psi_val);
   double psi5_val = psi_val3 * psi_val2;
   d_result[linear_idx] = 0.5 * psi5_val * h2;
 }
@@ -1826,7 +1837,7 @@ void outdenx(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &tm
     for(long cntj = 0; cntj < Ny; cntj++){
       // Compute |psi|^2
       for(long cntk = 0; cntk < Nz; cntk++){
-        tmpz[cntk] = psi[cntk * Ny * Nx + cntj * Nx + cnti].x * psi[cntk * Ny * Nx + cntj * Nx + cnti].x + psi[cntk * Ny * Nx + cntj * Nx + cnti].y * psi[cntk * Ny * Nx + cntj * Nx + cnti].y;
+        tmpz[cntk] = fma(cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), 0.0);
       }
       // Integrate over z -> store in tmpy[cntj]
       tmpy[cntj] = simpint(dz, tmpz.raw(), Nz);
@@ -1854,7 +1865,7 @@ void outdeny(cuDoubleComplex *psi, MultiArray<double> &y, MultiArray<double> &tm
     for(long cnti =0; cnti < Nx; cnti++){
       // Compute |psi|^2
       for(long cntk =0; cntk < Nz; cntk++){
-        tmpz[cntk] = psi[cntk * Ny * Nx + cntj * Nx + cnti].x * psi[cntk * Ny * Nx + cntj * Nx + cnti].x + psi[cntk * Ny * Nx + cntj * Nx + cnti].y * psi[cntk * Ny * Nx + cntj * Nx + cnti].y;
+        tmpz[cntk] = fma(cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), 0.0);
       }
       // Integrate over z -> store in tmpx[cnti]
       tmpx[cnti] = simpint(dz, tmpz.raw(), Nz);
@@ -1881,7 +1892,7 @@ void outdenz(cuDoubleComplex *psi, MultiArray<double> &z, MultiArray<double> &tm
     for(long cntj =0; cntj < Ny; cntj++){
       // Compute |psi|^2
       for(long cnti =0; cnti < Nx; cnti++){
-        tmpy[cntj] = psi[cntk * Ny * Nx + cntj * Nx + cnti].x * psi[cntk * Ny * Nx + cntj * Nx + cnti].x + psi[cntk * Ny * Nx + cntj * Nx + cnti].y * psi[cntk * Ny * Nx + cntj * Nx + cnti].y;
+        tmpy[cntj] = fma(cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), 0.0);
       }
       // Integrate over x -> store in tmpy[cntj]
       tmpy[cntj] = simpint(dx, tmpy.raw(), Nx);
@@ -1907,7 +1918,7 @@ void outdenxy(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &y
   for(long cnti =0; cnti < Nx; cnti++){
     for(long cntj =0; cntj < Ny; cntj++){
       for(long cntk =0; cntk < Nz; cntk++){
-        tmpz[cntk] = psi[cntk * Ny * Nx + cntj * Nx + cnti].x * psi[cntk * Ny * Nx + cntj * Nx + cnti].x + psi[cntk * Ny * Nx + cntj * Nx + cnti].y * psi[cntk * Ny * Nx + cntj * Nx + cnti].y;
+        tmpz[cntk] = fma(cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), 0.0);
       }
       double n_xy = simpint(dz, tmpz.raw(), Nz);
       // Write x,y, n(x,y) to file
@@ -1930,7 +1941,7 @@ void outdenxz(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &z
   for(long cnti= 0; cnti < Nx; cnti++){
     for(long cntk = 0; cntk < Nz; cntk++){
       for(long cntj = 0; cntj < Ny; cntj++){
-        tmpx[cntj] = psi[cntk * Ny * Nx + cntj * Nx + cnti].x * psi[cntk * Ny * Nx + cntj * Nx + cnti].x + psi[cntk * Ny * Nx + cntj * Nx + cnti].y * psi[cntk * Ny * Nx + cntj * Nx + cnti].y;
+        tmpx[cntj] = fma(cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), 0.0);
       }
       double n_xz = simpint(dy, tmpx.raw(), Ny);
       // Write x,z, n(x,z) to file
@@ -1953,7 +1964,7 @@ void outdenyz(cuDoubleComplex *psi, MultiArray<double> &y, MultiArray<double> &z
   for(long cntj = 0; cntj < Ny; cntj++){
     for(long cntk = 0; cntk < Nz; cntk++){
       for(long cnti = 0; cnti < Nx; cnti++){
-        tmpx[cnti] = psi[cntk * Ny * Nx + cntj * Nx + cnti].x * psi[cntk * Ny * Nx + cntj * Nx + cnti].x + psi[cntk * Ny * Nx + cntj * Nx + cnti].y * psi[cntk * Ny * Nx + cntj * Nx + cnti].y;
+        tmpx[cnti] = fma(cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), cuCabs(psi[cntk * Ny * Nx + cntj * Nx + cnti]), 0.0);
       }
       double n_yz = simpint(dx, tmpx.raw(), Nx);
       // Write y,z, n(y,z) to file
@@ -1974,7 +1985,7 @@ void outdenyz(cuDoubleComplex *psi, MultiArray<double> &y, MultiArray<double> &z
 void outpsi2xy(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *file){
   for (long cnti = 0; cnti < Nx; cnti++){
     for (long cntj = 0; cntj < Ny; cntj++){
-      double psi2_xy = psi[Nz2 * Ny * Nx + cntj * Nx + cnti].x * psi[Nz2 * Ny * Nx + cntj * Nx + cnti].x + psi[Nz2 * Ny * Nx + cntj * Nx + cnti].y * psi[Nz2 * Ny * Nx + cntj * Nx + cnti].y;
+      double psi2_xy = fma(cuCabs(psi[Nz2 * Ny * Nx + cntj * Nx + cnti]), cuCabs(psi[Nz2 * Ny * Nx + cntj * Nx + cnti]), 0.0);
       fwrite(&x[cnti], sizeof(double), 1, file);
       fwrite(&y[cntj], sizeof(double), 1, file);
       fwrite(&psi2_xy, sizeof(double), 1, file);
@@ -1992,7 +2003,7 @@ void outpsi2xy(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &
 void outpsi2xz(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *file){
   for (long cnti = 0; cnti < Nx; cnti++){
     for (long cntk = 0; cntk < Nz; cntk++){
-      double psi2_xz = psi[cntk * Ny * Nx + Ny2 * Nx + cnti].x * psi[cntk * Ny * Nx + Ny2 * Nx + cnti].x + psi[cntk * Ny * Nx + Ny2 * Nx + cnti].y * psi[cntk * Ny * Nx + Ny2 * Nx + cnti].y;
+      double psi2_xz = fma(cuCabs(psi[cntk * Ny * Nx + Ny2 * Nx + cnti]), cuCabs(psi[cntk * Ny * Nx + Ny2 * Nx + cnti]), 0.0);
       fwrite(&x[cnti], sizeof(double), 1, file);
       fwrite(&z[cntk], sizeof(double), 1, file);
       fwrite(&psi2_xz, sizeof(double), 1, file);
@@ -2010,7 +2021,7 @@ void outpsi2xz(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &
 void outpsi2yz(cuDoubleComplex *psi, MultiArray<double> &y, MultiArray<double> &z, FILE *file){
   for (long cntj = 0; cntj < Ny; cntj++){
     for (long cntk = 0; cntk < Nz; cntk++){
-      double psi2_yz = psi[cntk * Ny * Nx + cntj * Nx + Nx2].x * psi[cntk * Ny * Nx + cntj * Nx + Nx2].x + psi[cntk * Ny * Nx + cntj * Nx + Nx2].y * psi[cntk * Ny * Nx + cntj * Nx + Nx2].y;
+      double psi2_yz = fma(cuCabs(psi[cntk * Ny * Nx + cntj * Nx + Nx2]), cuCabs(psi[cntk * Ny * Nx + cntj * Nx + Nx2]), 0.0);
       fwrite(&y[cntj], sizeof(double), 1, file);
       fwrite(&z[cntk], sizeof(double), 1, file);
       fwrite(&psi2_yz, sizeof(double), 1, file);
