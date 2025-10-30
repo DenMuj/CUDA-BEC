@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 
   g = par * g;
   gd = par * gd;
-  // gd *= MS;
+  gd *= MS;
   edd = (4. * pi / 3.) * gd / g;
   Nad = Na;
 
@@ -572,16 +572,16 @@ void readpar(void) {
     exit(EXIT_FAILURE);
   }
   opt = atol(cfg_tmp);
-  // if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
-  //   std::fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
-  //   exit(EXIT_FAILURE);
-  // }
-  // optms = atol(cfg_tmp);
-  // if (optms == 0) {
-  //   MS = 1;
-  // } else {
-  //   MS = - 1;
-  // }
+  if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
+    std::fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
+    exit(EXIT_FAILURE);
+  }
+  optms = atol(cfg_tmp);
+  if (optms == 0) {
+    MS = 1;
+  } else {
+    MS = - 1;
+  }
    
   if ((cfg_tmp = cfg_read("NATOMS")) == NULL) {
     std::fprintf(stderr, "NATOMS is not defined in the configuration file.\n");

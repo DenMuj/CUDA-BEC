@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
   g = par * g;
   gd = par * gd;
 
-  // gd *= MS;
+  gd *= MS;
   edd = (4. * pi / 3.) * gd / g;
   Nad = Na;
   if (fabs(edd) < 1e-10) {
@@ -528,16 +528,16 @@ void readpar(void) {
     exit(EXIT_FAILURE);
   }
   opt = atol(cfg_tmp);
-  // if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
-  //   std::fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
-  //   exit(EXIT_FAILURE);
-  // }
-  // optms = atol(cfg_tmp);
-  // if (optms == 0) {
-  //   MS = 1;
-  // } else {
-  //   MS = - 1;
-  // }
+  if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
+    std::fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
+    exit(EXIT_FAILURE);
+  }
+  optms = atol(cfg_tmp);
+  if (optms == 0) {
+    MS = 1;
+  } else {
+    MS = - 1;
+  }
    
   if ((cfg_tmp = cfg_read("NATOMS")) == NULL) {
     std::fprintf(stderr, "NATOMS is not defined in the configuration file.\n");
@@ -1251,7 +1251,7 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi,
   double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
   
   // I'm using cuCabs() for |psi|
-  double psi_abs = cuCabs(psi_val);                     // sqrt(x^2 + y^2)
+  double psi_abs = cuCabs(psi_val); // |psi|
   double psi_val2 = fma(psi_abs, psi_abs, 0.0);                  // |psi|^2
   double psi_val3 = fma(psi_val2, psi_abs, 0.0);                 // |psi|^3
   

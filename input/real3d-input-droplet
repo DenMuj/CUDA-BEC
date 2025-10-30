@@ -4,6 +4,10 @@
 #  Type: int
    OPTION = 2
 
+#  Regular DDI: 0
+#  Microwave shielding: 1
+   OPTION_MICROWAVE_SHIELDING = 0
+
 #  Number of atoms in condensate.
 #  Required: yes
 #  Type: long
