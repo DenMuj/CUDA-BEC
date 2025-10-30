@@ -20,6 +20,9 @@
     // Get raw pointers and size from MultiArray
    double* f_ptr = f;
    double* f_res_ptr = f_res;
+   
+   // Precompute kinetic energy factor
+   const double kin_energy_factor = 1.0 / (2.0 * (3.0 - par));
     
    dim3 blockSize(8, 8, 8);
     dim3 gridSize((nx + blockSize.x - 1) / blockSize.x,
@@ -27,7 +30,7 @@
                   (nz + blockSize.z - 1) / blockSize.z);
     
     // Kernel still uses raw pointers
-   diff_kernel<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, par);
+   diff_kernel<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, kin_energy_factor);
 }
 
 /**
@@ -42,7 +45,7 @@ __global__ void diff_kernel(
    double hx, double hy, double hz,
    double* __restrict__ psi,
    double* __restrict__ f_res,
-   long nx, long ny, long nz, int par) {
+   long nx, long ny, long nz, double kin_energy_factor) {
    
    int i = threadIdx.x + blockDim.x * blockIdx.x;
    int j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -120,8 +123,7 @@ __global__ void diff_kernel(
    }
    
    // Compute kinetic energy density: |∇Ψ|²
-   double con = 1/(2.0 * (3-par));
-   f_res[idx] = (dpsidx * dpsidx + dpsidy * dpsidy + dpsidz * dpsidz)*con;
+   f_res[idx] = (dpsidx * dpsidx + dpsidy * dpsidy + dpsidz * dpsidz) * kin_energy_factor;
 }
 
 /**
@@ -136,6 +138,9 @@ void diff_complex(double hx, double hy, double hz, cuDoubleComplex* f, double* _
     // Get raw pointers and size from MultiArray
    cuDoubleComplex* f_ptr = f;
    double* f_res_ptr = f_res;
+   
+   // Precompute kinetic energy factor
+   const double kin_energy_factor = 1.0 / (2.0 * (3.0 - par));
     
    dim3 blockSize(8, 8, 8);
     dim3 gridSize((nx + blockSize.x - 1) / blockSize.x,
@@ -143,7 +148,7 @@ void diff_complex(double hx, double hy, double hz, cuDoubleComplex* f, double* _
                   (nz + blockSize.z - 1) / blockSize.z);
     
     // Kernel still uses raw pointers
-   diff_kernel_complex<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, par);
+   diff_kernel_complex<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, kin_energy_factor);
 }
 
 /**
@@ -158,7 +163,7 @@ __global__ void diff_kernel_complex(
     double hx, double hy, double hz,
     cuDoubleComplex* __restrict__ psi,
     double* __restrict__ f_res,
-    long nx, long ny, long nz, int par) {
+    long nx, long ny, long nz, double kin_energy_factor) {
     
     int i = threadIdx.x + blockDim.x * blockIdx.x;
     int j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -271,9 +276,8 @@ __global__ void diff_kernel_complex(
                              cuCabs(dpsidy) * cuCabs(dpsidy) + 
                              cuCabs(dpsidz) * cuCabs(dpsidz);
     
-    double con = 1.0 / (2.0 * (3 - par));
-    f_res[idx] = grad_mag_squared * con;
- }
+    f_res[idx] = grad_mag_squared * kin_energy_factor;
+}
  
  /**
  *    Gauss-Legendre N-point quadrature formula.

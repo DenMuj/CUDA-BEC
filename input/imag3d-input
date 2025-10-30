@@ -4,10 +4,6 @@
 #  Type: int
    OPTION = 2
 
-#  Regular DDI: 0
-#  Microwave shielding: 1
-   OPTION_MICROWAVE_SHIELDING = 0
-
 #  Number of atoms in condensate.
 #  Required: yes
 #  Type: long
@@ -25,7 +21,7 @@
 #  Type: double
    SX = 0.8
    SY = 0.8
-   SZ = 1.4
+   SZ = 14.
 
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
@@ -146,7 +142,7 @@
 #  If not defined, density profiles will not be written.
 #  Required: no
 #  Type: string
-   NITEROUT = imag3d-den-niter
+#   NITEROUT = imag3d-den-niter
 
 #  Output file with the final wave function obtained at program end that can
 #  subsequently be used as an input wave function. If not defined, the wave

@@ -85,7 +85,7 @@ void calcnorm(double *d_psi, double *d_psi2, double& norm, Simpson3DTiledIntegra
 __global__ void multiply_by_norm(double* __restrict__ d_psi, const double norm);
 
 void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, double h2);
-__global__ void calcnu_kernel(double* __restrict__ d_psi, double* __restrict__ d_psi2, const double* __restrict__ pot, const double g, const double gd, const double h2);
+__global__ void calcnu_kernel(double* __restrict__ d_psi, double* __restrict__ d_psi2, const double* __restrict__ pot, const double g, const double ratio_gd, const double h2);
 
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgammax, double d_Ax0r, double d_Ax);
 __global__ void calclux_kernel(
@@ -126,10 +126,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2);
 void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd, double *d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2);
 
 
-__global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double *__restrict__ d_result, double g);
+__global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double *__restrict__ d_result, double half_g);
 __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_pot);
-__global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double gd);
-__global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result, const double h2);
+__global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double half_gd);
+__global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result, const double half_h2);
 
 void calcmuen_kin(double *d_psi, double *d_work_array, int par);
 

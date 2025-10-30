@@ -4,10 +4,6 @@
 #  Type: int
    OPTION = 2
 
-#  Regular DDI: 0
-#  Microwave shielding: 1
-   OPTION_MICROWAVE_SHIELDING = 0
-
 #  Number of atoms in condensate.
 #  Required: yes
 #  Type: long
@@ -25,7 +21,7 @@
 #  Type: double
    SX = 0.8
    SY = 0.8
-   SZ = 1.4
+   SZ = 14.
 
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
@@ -121,12 +117,12 @@
 #  Number of iterations with.
 #  Required: yes
 #  Type: long
-   NITER = 100
+   NITER = 1000000
 
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
 #  density profiles and write them to specified output files.
-   NSNAP = 100
+   NSNAP = 1000000
 
 #  Input file with the wave function, obtained from previous executions.
 #  Required: no

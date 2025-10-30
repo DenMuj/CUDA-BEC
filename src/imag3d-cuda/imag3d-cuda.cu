@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 
   g = par * g;
   gd = par * gd;
-  gd *= MS;
+  // gd *= MS;
   edd = (4. * pi / 3.) * gd / g;
   Nad = Na;
 
@@ -572,16 +572,16 @@ void readpar(void) {
     exit(EXIT_FAILURE);
   }
   opt = atol(cfg_tmp);
-  if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
-    std::fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
-    exit(EXIT_FAILURE);
-  }
-  optms = atol(cfg_tmp);
-  if (optms == 0) {
-    MS = 1;
-  } else {
-    MS = - 1;
-  }
+  // if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
+  //   std::fprintf(stderr, "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
+  //   exit(EXIT_FAILURE);
+  // }
+  // optms = atol(cfg_tmp);
+  // if (optms == 0) {
+  //   MS = 1;
+  // } else {
+  //   MS = - 1;
+  // }
    
   if ((cfg_tmp = cfg_read("NATOMS")) == NULL) {
     std::fprintf(stderr, "NATOMS is not defined in the configuration file.\n");
@@ -1040,7 +1040,7 @@ void calcnorm(double *d_psi, double *d_psi2, double &norm,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
 
   multiply_by_norm<<<numBlocks, threadsPerBlock>>>(d_psi, norm);
-  //cudaDeviceSynchronize(); // Ensure completion
+
 }
 
 /**
@@ -1228,14 +1228,16 @@ void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArra
  */
 void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g,
             double gd, double h2) {
-  //calc_d_psi2(d_psi, d_psi2);
+
+  // Precompute ratio_gd on host (constant for all threads)
+  double ratio_gd = gd / ((double)(Nx * Ny * Nz));
 
   dim3 threadsPerBlock(8, 8, 8);
   dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
   calcnu_kernel<<<numBlocks, threadsPerBlock>>>(
-      d_psi, d_psi2, d_pot, g, gd, h2);
+      d_psi, d_psi2, d_pot, g, ratio_gd, h2);
   //cudaDeviceSynchronize();
   return;
 }
@@ -1247,12 +1249,12 @@ void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g,
  * @param d_psi2: Device: 3D psi2 array
  * @param d_pot: Device: 3D trap potential array
  * @param g: Host: g coefficient for contact interaction term
- * @param gd: Host: gd coefficient for dipolar interaction term
+ * @param ratio_gd: Precomputed ratio gd/(Nx*Ny*Nz) for dipolar interaction term
  * @param h2: Host: h2 coefficient for quantum fluctuation term
  */
 __global__ void calcnu_kernel(double *__restrict__ d_psi,
                               double *__restrict__ d_psi2,
-                              const double *__restrict__ d_pot, const double g, const double gd, const double h2) {
+                              const double *__restrict__ d_pot, const double g, const double ratio_gd, const double h2) {
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
   int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1260,19 +1262,18 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi,
   if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
     return;
 
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double psi_val = d_psi[linear_idx];
-    double psi_val2 = __dmul_rn(psi_val, psi_val); // psi^2
-    double psi_val3 = __dmul_rn(psi_val2, fabs(psi_val)); // psi^3
-    double ratio_gd = gd/((double)(d_Nx * d_Ny * d_Nz));
-    double psi2dd = __ldg(&d_psi2[linear_idx])*ratio_gd; 
-    double pot_val = __ldg(&d_pot[linear_idx]);
-    double temp1 = fma(psi_val2, g, psi2dd);
-    double temp2 = fma(psi_val3, h2, pot_val);
-    double sum = temp1 + temp2;
-    double tmp = fma(d_dt, sum, 0.0); 
-    //double tmp = d_dt * (psi_val3*h2);
-    d_psi[linear_idx] *= exp(-tmp);
+  int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
+  double psi_val = d_psi[linear_idx];
+  double psi_val2 = fma(psi_val, psi_val, 0.0); // psi^2
+  double psi_val3 = fma(psi_val2, fabs(psi_val), 0.0); // psi^3
+  double psi2dd = __ldg(&d_psi2[linear_idx])*ratio_gd; 
+  double pot_val = __ldg(&d_pot[linear_idx]);
+  double temp1 = fma(psi_val2, g, psi2dd);
+  double temp2 = fma(psi_val3, h2, pot_val);
+  double sum = temp1 + temp2;
+  double tmp = fma(d_dt, sum, 0.0); 
+  //double tmp = d_dt * (psi_val3*h2);
+  d_psi[linear_idx] *= exp(-tmp);
 }
 
 /**
@@ -1287,7 +1288,7 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi,
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax,
              double *d_cgammax, double Ax0r, double Ax) {
 
-  // Map threadIdx.x to y (smaller stride between neighboring lines than z)
+  
   dim3 threadsPerBlock(32, 8); // 256 threads per block
   dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Nz + threadsPerBlock.y - 1) / threadsPerBlock.y);
@@ -1564,13 +1565,19 @@ __global__ void calcluz_kernel(double *__restrict__ psi,
  */
 void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd, double *d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan, Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2){
   
+  // Precompute constants
+  const double inv_NxNyNz = 1.0 / ((double)Nx * Ny * Nz);
+  const double half_g = 0.5 * g;
+  const double half_gd = 0.5 * gd;
+  const double half_h2 = 0.5 * h2;
+
   dim3 threadsPerBlock(8, 8, 8);
   dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                  (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
 
   // Step 1: Contact energy - Calculate 0.5 * g * ψ⁴
-  calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, g);
+  calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, half_g);
   muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
   // Step 2: Potential energy - Calculate 0.5 * ψ² * V
@@ -1579,15 +1586,15 @@ void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double 
   
   // Step 3: Dipolar energy - requires FFT computation first
   calc_psid2_potdd(forward_plan, backward_plan, d_psi, d_psi2dd, d_psi2_fft, d_potdd);
-  calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_psi2dd, gd);
-  muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz)/((double)Nx * Ny * Nz);
+  calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_psi2dd, half_gd);
+  muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz) * inv_NxNyNz;
 
   // Step 4: Kinetic energy - calculate gradients and kinetic energy density directly
   calcmuen_kin(d_psi, d_psi2, par);
   muen[3] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
   // Step 5: H2 energy - calculate quantum fluctuation energy density
-  calcmuen_fused_h2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, h2);
+  calcmuen_fused_h2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, half_h2);
   muen[4] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
   return;
@@ -1596,9 +1603,9 @@ void calcmuen(double *muen,double *d_psi, double *d_psi2, double *d_pot, double 
  * @brief Kernel to calculate contact energy term
  * @param d_psi: Device: 3D psi array
  * @param d_result: Device: 3D result array
- * @param g: Host to Device: g coefficient for contact interaction term
+ * @param half_g: Precomputed 0.5 * g coefficient for contact interaction term
  */
-__global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double *__restrict__ d_result, double g){
+__global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double *__restrict__ d_result, double half_g){
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
   int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1610,7 +1617,7 @@ __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi, double 
   double psi_val = d_psi[linear_idx];
   double psi2_val = psi_val * psi_val;
   double psi4_val = psi2_val * psi2_val;
-  d_result[linear_idx] = 0.5 * psi4_val * g;
+  d_result[linear_idx] = psi4_val * half_g;
 }
 
 /**
@@ -1638,9 +1645,9 @@ __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi, doubl
  * @param d_psi: Device: 3D psi array
  * @param d_result: Device: 3D result array
  * @param d_psidd2: Device: 3D dipolar psi squared array
- * @param gd: Host to Device: gd coefficient for dipolar interaction term
+ * @param half_gd: Precomputed 0.5 * gd coefficient for dipolar interaction term
  */
-__global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double gd){
+__global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double half_gd){
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
   int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1652,16 +1659,16 @@ __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi, double 
   double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
   double psi2_val = psi_val * psi_val;
   double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
-  d_result[linear_idx] = 0.5 * psi2_val * psidd2_val * gd;
+  d_result[linear_idx] = psi2_val * psidd2_val * half_gd;
 }
 
 /**
  * @brief Kernel to calculate quantum fluctuation energy term
  * @param d_psi: Device: 3D psi array
  * @param d_result: Device: 3D result array
- * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
+ * @param half_h2: Precomputed 0.5 * h2 coefficient for quantum fluctuation term
  */
-__global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result, const double h2){
+__global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result, const double half_h2){
   int idx = blockIdx.x * blockDim.x + threadIdx.x;
   int idy = blockIdx.y * blockDim.y + threadIdx.y;
   int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1672,7 +1679,7 @@ __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__re
   int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
   double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
   double psi5_val = psi_val * psi_val * psi_val * psi_val * psi_val;
-  d_result[linear_idx] = 0.5 *psi5_val * h2;
+  d_result[linear_idx] = psi5_val * half_h2;
 }
 
 /**
@@ -1830,7 +1837,7 @@ void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, lon
   FILE *file = fopen(filename, "rb");  // Note: "rb" for binary read
   if (file == NULL) {
       fprintf(stderr, "Failed to open file %s\n", filename);
-      free(psi);     
+      return;
   }
   
   // Read data

@@ -15,11 +15,12 @@
  * @param hz Space step
  * @param psi Function values
  * @param f_res Array with the first derivatives of the function
+ * @param kin_energy_factor Precomputed kinetic energy factor 1/(2*(3-par))
  */
 __global__ void diff_kernel(double hx, double hy, double hz,
     double* __restrict__ psi,
     double* __restrict__ f_res,
-    long nx, long ny, long nz, int par);
+    long nx, long ny, long nz, double kin_energy_factor);
 
 /**
  * @brief Richardson extrapolation formula for calculation of space derivatives.
@@ -39,7 +40,7 @@ void diff(double h, double *f, double* __restrict__ f_res, long nx, long ny, lon
  * @param f Function values for complex functions
  * @param f_res Array with the first derivatives of the function
  */
-__global__ void diff_kernel_complex(double hx, double hy, double hz, cuDoubleComplex* __restrict__ f, double* __restrict__ f_res, long nx, long ny, long nz, int par);
+__global__ void diff_kernel_complex(double hx, double hy, double hz, cuDoubleComplex* __restrict__ f, double* __restrict__ f_res, long nx, long ny, long nz, double kin_energy_factor);
 
 
 /**

@@ -82,14 +82,14 @@ __global__ void compute_d_psi2(
 void gencoef(MultiArray<cuDoubleComplex>& calphax, MultiArray<cuDoubleComplex>& cgammax, MultiArray<cuDoubleComplex>& calphay, MultiArray<cuDoubleComplex>& cgammay, MultiArray<cuDoubleComplex>& calphaz, MultiArray<cuDoubleComplex>& cgammaz, cuDoubleComplex& Ax0, cuDoubleComplex& Ay0, cuDoubleComplex& Az0, cuDoubleComplex& Ax0r, cuDoubleComplex& Ay0r, cuDoubleComplex& Az0r, cuDoubleComplex& Ax, cuDoubleComplex& Ay, cuDoubleComplex& Az);
 void diff(double hx, double hy, double hz, double* f, double* __restrict__ f_res, long nx, long ny, long nz, int par);
 void diff_complex(double hx, double hy, double hz, cuDoubleComplex* f, double* __restrict__ f_res, long nx, long ny, long nz, int par);
-extern __global__ void diff_kernel(double hx, double hy, double hz, double* __restrict__ f, double* __restrict__ f_res, long nx, long ny, long nz, int par);
-extern __global__ void diff_kernel_complex(double hx, double hy, double hz, cuDoubleComplex* __restrict__ f, double* __restrict__ f_res, long nx, long ny, long nz, int par);
+extern __global__ void diff_kernel(double hx, double hy, double hz, double* __restrict__ f, double* __restrict__ f_res, long nx, long ny, long nz, double kin_energy_factor);
+extern __global__ void diff_kernel_complex(double hx, double hy, double hz, cuDoubleComplex* __restrict__ f, double* __restrict__ f_res, long nx, long ny, long nz, double kin_energy_factor);
 
 void calcnorm(CudaArray3D<cuDoubleComplex>& d_psi, CudaArray3D<double>& d_psi2, double& norm, Simpson3DTiledIntegrator& integ);
 __global__ void multiply_by_norm(cuDoubleComplex* __restrict__ d_psi, const double norm);
 
 void calcnu(CudaArray3D<cuDoubleComplex>& d_psi, CudaArray3D<double>& d_psi2, CudaArray3D<double>& d_pot, double g, double gd, double h2);
-__global__ void calcnu_kernel(cuDoubleComplex* __restrict__ d_psi, double* __restrict__ d_psi2, const double* __restrict__ pot, const double g, const double gd, const double h2);
+__global__ void calcnu_kernel(cuDoubleComplex* __restrict__ d_psi, double* __restrict__ d_psi2, const double* __restrict__ pot, const double g, const double ratio_gd, const double h2);
 
 void calclux(CudaArray3D<cuDoubleComplex>& d_psi, cuDoubleComplex* d_cbeta, CudaArray3D<cuDoubleComplex>& d_calphax, CudaArray3D<cuDoubleComplex>& d_cgammax, cuDoubleComplex d_Ax0r, cuDoubleComplex d_Ax);
 __global__ void calclux_kernel(
@@ -130,10 +130,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2);
 void calcmuen(MultiArray<double>& muen,CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, CudaArray3D<double> &d_pot, CudaArray3D<double> &d_psi2dd, CudaArray3D<double> &d_potdd, cufftDoubleComplex * d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2);
 
 
-__global__ void calcmuen_fused_contact(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, double g);
+__global__ void calcmuen_fused_contact(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, double half_g);
 __global__ void calcmuen_fused_potential(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_pot);
-__global__ void calcmuen_fused_dipolar(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double gd);
-__global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double h2);
+__global__ void calcmuen_fused_dipolar(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double *__restrict__ d_psidd2, const double half_gd);
+__global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_result, const double half_h2);
 void calcmuen_kin(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_work_array, int par);
 
 void save_psi_from_gpu(cuDoubleComplex *psi, cuDoubleComplex *d_psi, const char *filename, long Nx, long Ny, long Nz);
