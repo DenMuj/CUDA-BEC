@@ -1,5 +1,6 @@
 # Compiler settings
-NVCC = nvcc
+CUDA_HOME ?= /usr/local/cuda
+NVCC = $(CUDA_HOME)/bin/nvcc
 CXX = g++
 
 # Automatically detect GPU compute capability
@@ -12,10 +13,10 @@ ARCH = -arch=sm_$(GPU_COMPUTE_CAPABILITY)
 
 # Compiler flags
 NVCCFLAGS = -std=c++20 -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,-fopenmp -lcufft
-CXXFLAGS = -std=c++20 -O1 -fPIC -fopenmp -O3
+CXXFLAGS = -std=c++20 -fPIC -fopenmp -O3
 
 # Include directories
-INCLUDES = -I. -Isrc/utils
+INCLUDES = -I. -Isrc/utils -I$(CUDA_HOME)/include
 
 # Source directories
 UTILS_DIR = src/utils
@@ -51,7 +52,7 @@ IMAG3D_TARGET = imag3d-cuda
 REAL3D_TARGET = real3d-cuda
 
 # Libraries
-LIBS = -lcudart -lcufft -Xcompiler -fopenmp 
+LIBS = -L$(CUDA_HOME)/lib64 -lcudart -lcufft -Xcompiler -fopenmp 
 
 # Default target - build both programs
 all: $(IMAG3D_TARGET) $(REAL3D_TARGET)

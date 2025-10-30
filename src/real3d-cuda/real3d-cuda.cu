@@ -379,13 +379,13 @@ int main(int argc, char **argv) {
     if(rmsout != NULL) {
       double rms_r = sqrt(h_rms_pinned[0]*h_rms_pinned[0] + h_rms_pinned[1]*h_rms_pinned[1] + h_rms_pinned[2]*h_rms_pinned[2]);
       std::fprintf(filerms, "%-9li %-19.10le %-19.16le %-19.16le %-19.16le\n", snap, rms_r, h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
-      //fflush(filerms);
+      fflush(filerms);
     }
   
     calcmuen(muen,d_psi,d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
     if(muoutput != NULL) {
         std::fprintf(filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, muen[0]+muen[1]+muen[2]+muen[3], muen[3], muen[1], muen[0], muen[2],muen[4]);
-        //fflush(filemu);
+        fflush(filemu);
       }
       if(Niterout != NULL) {
         //Move d_psi to host, host is pinned memory
@@ -1242,7 +1242,7 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi,
   if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
     return;
 
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
+  int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
     double pot_val = __ldg(&d_pot[linear_idx]);
     cuDoubleComplex psi_val = d_psi[linear_idx];
     double ratio_gd = gd / ((double)(d_Nx * d_Ny * d_Nz));
@@ -1279,9 +1279,10 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi,
 void calclux(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta, CudaArray3D<cuDoubleComplex> &d_calphax,
              CudaArray3D<cuDoubleComplex> &d_cgammax, cuDoubleComplex Ax0r, cuDoubleComplex Ax) {
 
-  dim3 threadsPerBlock(32, 16); // 2D blocks for y-z planes
-  dim3 numBlocks((Nz + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                 (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+  // Match mapping used in imag3d: threadIdx.x -> y, threadIdx.y -> z
+  dim3 threadsPerBlock(32, 8);
+  dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                 (Nz + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   calclux_kernel<<<numBlocks, threadsPerBlock>>>(
       d_psi.raw(), d_cbeta, d_calphax.raw(), d_cgammax.raw(), Ax0r, Ax);
@@ -1306,8 +1307,9 @@ __global__ void calclux_kernel(cuDoubleComplex *__restrict__ psi,
                                const cuDoubleComplex Ax0r, const cuDoubleComplex Ax
                                ) {
 
-  int cntj = blockIdx.y * blockDim.y + threadIdx.y;
-  int cntk = blockIdx.x * blockDim.x + threadIdx.x;
+  // Map y to threadIdx.x, z to threadIdx.y (as in imag3d)
+  int cntj = blockIdx.x * blockDim.x + threadIdx.x;
+  int cntk = blockIdx.y * blockDim.y + threadIdx.y;
 
   if (cntj >= d_Ny || cntk >= d_Nz)
     return;
@@ -1315,24 +1317,34 @@ __global__ void calclux_kernel(cuDoubleComplex *__restrict__ psi,
   // Base offset for this (j,k) y-z position
   const long base_offset = cntk * d_Ny * d_Nx + cntj * d_Nx;
 
-  // Forward elimination: fill cbeta array
+  // Forward elimination: fill cbeta array using a rolling window in x
   // Boundary condition: cbeta[nx-2] = psi[nx-1]
-  cbeta[base_offset + d_Nx - 2] = psi[base_offset + d_Nx - 1];
+  long idx_i   = base_offset + (d_Nx - 2);
+  long idx_ip1 = base_offset + (d_Nx - 1);
+  cbeta[idx_i] = psi[idx_ip1];
 
-  // Algorithm forward sweep
+  cuDoubleComplex psi_ip1 = __ldg(&psi[idx_ip1]);
+  cuDoubleComplex psi_i   = __ldg(&psi[idx_i]);
   for (int cnti = d_Nx - 2; cnti > 0; cnti--) {
-    
+    long idx_im1 = idx_i - 1;
+    cuDoubleComplex psi_im1 = __ldg(&psi[idx_im1]);
+
     cuDoubleComplex c = cuCadd(
       cuCadd(
-          cuCmul(d_minusAx, psi[base_offset + cnti + 1]),
-          cuCmul(Ax0r, psi[base_offset + cnti])
+          cuCmul(d_minusAx, psi_ip1),
+          cuCmul(Ax0r, psi_i)
       ),
-      cuCmul(d_minusAx, psi[base_offset + cnti - 1])
-  );
-  cbeta[base_offset + cnti - 1] = cuCmul(
-    __ldg(&cgammax[cnti]), 
-    cuCsub(cuCmul(Ax, cbeta[base_offset + cnti]), c)
-  );
+      cuCmul(d_minusAx, psi_im1)
+    );
+    cbeta[idx_im1] = cuCmul(
+      __ldg(&cgammax[cnti]),
+      cuCsub(cuCmul(Ax, cbeta[idx_i]), c)
+    );
+
+    // Roll window down in x
+    psi_ip1 = psi_i;
+    psi_i   = psi_im1;
+    idx_i   = idx_im1;
   }
 
   // Boundary condition
@@ -1364,9 +1376,10 @@ __global__ void calclux_kernel(cuDoubleComplex *__restrict__ psi,
 void calcluy(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta, CudaArray3D<cuDoubleComplex> &d_calphay,
              CudaArray3D<cuDoubleComplex> &d_cgammay, cuDoubleComplex Ay0r, cuDoubleComplex Ay) {
 
-  dim3 threadsPerBlock(16, 32); // 2D blocks for x-z planes
-  dim3 numBlocks((Nz + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                 (Nx + threadsPerBlock.y - 1) / threadsPerBlock.y);
+  // Match imag3d layout: x as fastest varying index in blocks
+  dim3 threadsPerBlock(32, 8);
+  dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                 (Nz + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   calcluy_kernel<<<numBlocks, threadsPerBlock>>>(
       d_psi.raw(), d_cbeta, d_calphay.raw(), d_cgammay.raw(), Ay0r, Ay);
@@ -1391,8 +1404,9 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
                                const cuDoubleComplex Ay0r, const cuDoubleComplex Ay
                                ) {
 
-  int cnti = blockIdx.y * blockDim.y + threadIdx.y;
-  int cntk = blockIdx.x * blockDim.x + threadIdx.x;
+  // Map x to threadIdx.x, z to threadIdx.y (as in imag3d)
+  int cnti = blockIdx.x * blockDim.x + threadIdx.x;
+  int cntk = blockIdx.y * blockDim.y + threadIdx.y;
 
   if (cnti >= d_Nx || cntk >= d_Nz)
     return;
@@ -1400,24 +1414,34 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
   // Base offset for this (i,k) x-z position
   const long base_offset = cntk * d_Ny * d_Nx + cnti;
 
-  // Forward elimination: fill cbeta array
+  // Forward elimination: fill cbeta array using a rolling window in y
   // Boundary condition: cbeta[ny-2] = psi[ny-1]
-  cbeta[base_offset + (d_Ny - 2) * d_Nx] = psi[base_offset + (d_Ny - 1) * d_Nx];
+  long idx_j   = base_offset + (d_Ny - 2) * d_Nx;
+  long idx_jp1 = base_offset + (d_Ny - 1) * d_Nx;
+  cbeta[idx_j] = psi[idx_jp1];
 
-  // Algorithm forward sweep (working in y-direction)
+  cuDoubleComplex psi_jp1 = __ldg(&psi[idx_jp1]);
+  cuDoubleComplex psi_j   = __ldg(&psi[idx_j]);
   for (int cntj = d_Ny - 2; cntj > 0; cntj--) {
-    
+    long idx_jm1 = idx_j - d_Nx;
+    cuDoubleComplex psi_jm1 = __ldg(&psi[idx_jm1]);
+
     cuDoubleComplex c = cuCadd(
       cuCadd(
-          cuCmul(d_minusAy, psi[base_offset + (cntj + 1) * d_Nx]),
-          cuCmul(Ay0r, psi[base_offset + cntj * d_Nx])
+          cuCmul(d_minusAy, psi_jp1),
+          cuCmul(Ay0r, psi_j)
       ),
-      cuCmul(d_minusAy, psi[base_offset + (cntj - 1) * d_Nx])
-  );
-  cbeta[base_offset + (cntj - 1) * d_Nx] = cuCmul(
-    __ldg(&cgammay[cntj]), 
-    cuCsub(cuCmul(Ay, cbeta[base_offset + cntj * d_Nx]), c)
-  );
+      cuCmul(d_minusAy, psi_jm1)
+    );
+    cbeta[idx_jm1] = cuCmul(
+      __ldg(&cgammay[cntj]),
+      cuCsub(cuCmul(Ay, cbeta[idx_j]), c)
+    );
+
+    // Roll window down in y
+    psi_jp1 = psi_j;
+    psi_j   = psi_jm1;
+    idx_j   = idx_jm1;
   }
 
   // Boundary condition
@@ -1449,9 +1473,10 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
 void calcluz(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta, CudaArray3D<cuDoubleComplex> &d_calphaz,
              CudaArray3D<cuDoubleComplex> &d_cgammaz, cuDoubleComplex Az0r, cuDoubleComplex Az) {
 
-  dim3 threadsPerBlock(16, 32); // 2D blocks for x-y planes
-  dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                 (Nx + threadsPerBlock.y - 1) / threadsPerBlock.y);
+  // Match imag3d layout: x as fastest varying in blocks over x-y plane
+  dim3 threadsPerBlock(32, 8);
+  dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+                 (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
 
   calcluz_kernel<<<numBlocks, threadsPerBlock>>>(
       d_psi.raw(), d_cbeta, d_calphaz.raw(), d_cgammaz.raw(), Az0r, Az);
@@ -1476,8 +1501,9 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
                                const cuDoubleComplex Az0r, const cuDoubleComplex Az
                                ) {
 
-  int cntj = blockIdx.x * blockDim.x + threadIdx.x;
-  int cnti = blockIdx.y * blockDim.y + threadIdx.y;
+  // Map x to threadIdx.x, y to threadIdx.y (as in imag3d)
+  int cnti = blockIdx.x * blockDim.x + threadIdx.x;
+  int cntj = blockIdx.y * blockDim.y + threadIdx.y;
 
   if (cnti >= d_Nx || cntj >= d_Ny)
     return;
@@ -1486,24 +1512,34 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
   const long base_offset = cntj * d_Nx + cnti;
   const long stride = d_Ny * d_Nx; // stride to move in z-direction
 
-  // Forward elimination: fill cbeta array
+  // Forward elimination: fill cbeta array using a rolling window in z
   // Boundary condition: cbeta[nz-2] = psi[nz-1]
-  cbeta[base_offset + (d_Nz - 2) * stride] = psi[base_offset + (d_Nz - 1) * stride];
+  long idx_k   = base_offset + (d_Nz - 2) * stride;
+  long idx_kp1 = base_offset + (d_Nz - 1) * stride;
+  cbeta[idx_k] = psi[idx_kp1];
 
-  // Algorithm forward sweep (working in z-direction)
+  cuDoubleComplex psi_kp1 = __ldg(&psi[idx_kp1]);
+  cuDoubleComplex psi_k   = __ldg(&psi[idx_k]);
   for (int cntk = d_Nz - 2; cntk > 0; cntk--) {
-    
+    long idx_km1 = idx_k - stride;
+    cuDoubleComplex psi_km1 = __ldg(&psi[idx_km1]);
+
     cuDoubleComplex c = cuCadd(
       cuCadd(
-          cuCmul(d_minusAz, psi[base_offset + (cntk + 1) * stride]),
-          cuCmul(Az0r, psi[base_offset + cntk * stride])
+          cuCmul(d_minusAz, psi_kp1),
+          cuCmul(Az0r, psi_k)
       ),
-      cuCmul(d_minusAz, psi[base_offset + (cntk - 1) * stride])
-  );
-  cbeta[base_offset + (cntk - 1) * stride] = cuCmul(
-    __ldg(&cgammaz[cntk]), 
-    cuCsub(cuCmul(Az, cbeta[base_offset + cntk * stride]), c)
-  );
+      cuCmul(d_minusAz, psi_km1)
+    );
+    cbeta[idx_km1] = cuCmul(
+      __ldg(&cgammaz[cntk]),
+      cuCsub(cuCmul(Az, cbeta[idx_k]), c)
+    );
+
+    // Roll window down in z
+    psi_kp1 = psi_k;
+    psi_k   = psi_km1;
+    idx_k   = idx_km1;
   }
 
   // Boundary condition

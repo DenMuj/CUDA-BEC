@@ -324,20 +324,30 @@ void gauleg(double x1, double x2, MultiArray<double>& x, MultiArray<double>& w) 
  * @param N Number of integration points
  * @return Integrated value
  */
+
+__host__ inline double neumaier_sum(double sum, double x, double *c) {
+    double t = sum + x;
+    if (fabs(sum) >= fabs(x))
+        *c += (sum - t) + x;
+    else
+        *c += (x - t) + sum;
+    return t;
+}
+
 __host__ double simpint(double h, double *f, long N) {
     long cnti;
-    double sum, sumi, sumj, sumk;
- 
-    sumi = 0.; sumj = 0.; sumk = 0.;
- 
-    for(cnti = 1; cnti < N - 1; cnti += 2) {
-       sumi += f[cnti];
-       sumj += f[cnti - 1];
-       sumk += f[cnti + 1];
+    double sumi = 0., sumj = 0., sumk = 0.;
+    double ci = 0., cj = 0., ck = 0.;  // compensation terms
+
+    for (cnti = 1; cnti < N - 1; cnti += 2) {
+        sumi = neumaier_sum(sumi, f[cnti], &ci);
+        sumj = neumaier_sum(sumj, f[cnti - 1], &cj);
+        sumk = neumaier_sum(sumk, f[cnti + 1], &ck);
     }
- 
-    sum = sumj + 4. * sumi + sumk;
-    if(N % 2 == 0) sum += (5. * f[N - 1] + 8. * f[N - 2] - f[N - 3]) / 4.;
- 
-    return sum * h / 3.;
- }
+
+    double sum = (sumj + cj) + 4.0 * (sumi + ci) + (sumk + ck);
+    if (N % 2 == 0)
+        sum += (5.0 * f[N - 1] + 8.0 * f[N - 2] - f[N - 3]) / 4.0;
+
+    return sum * h / 3.0;
+}

@@ -211,6 +211,7 @@ int main(int argc, char **argv) {
   // Initialize psi function
   initpsi(psi, x2, y2, z2, x, y, z);
 
+
   // Initialize trap potential (pot) and dipole potential (potdd)
   initpot(pot, x2, y2, z2);
   initpotdd(potdd,kx,ky,kz,kx2,ky2,kz2);
@@ -254,6 +255,9 @@ int main(int argc, char **argv) {
   if(muoutput != NULL) {
     mu_output(filemu);
   }
+
+  // Compute wave function norm
+  calcnorm(d_psi.raw(), d_work_array.raw(), norm, integ);
 
   // Compute RMS values
   compute_rms_values(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
@@ -510,8 +514,8 @@ int main(int argc, char **argv) {
   cudaEventElapsedTime(&gpu_time_ms, start, stop);
   double gpu_time_seconds = gpu_time_ms / 1000.0;
   if (rmsout != NULL) {
-    std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
-    std::fprintf(filerms, "Total time on GPU: %f seconds\n", gpu_time_seconds);
+    //std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
+    //std::fprintf(filerms, "Total time on GPU: %f seconds\n", gpu_time_seconds);
     std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
     fclose(filerms);
   }  
@@ -792,7 +796,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       0, // 0 for x direction
       dx);
 
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   // Integrate x^2 * psi^2
   double x2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -802,7 +806,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       d_psi, d_work_array,
       1, // 1 for y direction
       dy);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   // Integrate y^2 * psi^2
   double y2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -812,7 +816,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
       d_psi, d_work_array,
       2, // 2 for z direction
       dz);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   // Integrate z^2 * psi^2
   double z2_integral =
       integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -1036,7 +1040,7 @@ void calcnorm(double *d_psi, double *d_psi2, double &norm,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
 
   multiply_by_norm<<<numBlocks, threadsPerBlock>>>(d_psi, norm);
-  cudaDeviceSynchronize(); // Ensure completion
+  //cudaDeviceSynchronize(); // Ensure completion
 }
 
 /**
@@ -1232,7 +1236,7 @@ void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g,
                  (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
   calcnu_kernel<<<numBlocks, threadsPerBlock>>>(
       d_psi, d_psi2, d_pot, g, gd, h2);
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
   return;
 }
 

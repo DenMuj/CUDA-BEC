@@ -10,6 +10,7 @@
 #include <cuda_runtime.h>
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 /**
  * @brief Implementation class (hidden from public interface)
@@ -111,6 +112,7 @@ public:
     double integrateDevice(double hx, double hy, double hz, double *d_f_full, 
                           long Nx, long Ny, long Nz) {
         double total_sum = 0.0;
+        double compensation = 0.0;
         
         // Process the volume in tiles along the Z direction
         for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
@@ -136,11 +138,17 @@ public:
                       cudaMemcpyDeviceToHost);
             
             // Accumulate the result
-            total_sum += h_tile_sum;
+            double temp = total_sum + h_tile_sum;
+            if (std::abs(total_sum) >= std::abs(h_tile_sum)) {
+                compensation += (total_sum - temp) + h_tile_sum;
+            } else {
+                compensation += (h_tile_sum - temp) + total_sum;
+            }
+            total_sum = temp;
         }
         
         // Apply Simpson's rule scaling factor
-        return total_sum * hx * hy * hz / 27.0;
+        return (total_sum + compensation) * hx * hy * hz / 27.0;
     }
     
     /**

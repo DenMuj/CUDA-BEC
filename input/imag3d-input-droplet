@@ -15,18 +15,14 @@
 
    QF = 1
 
-   
-   # SX = 3.6759769907807593e-01
-   # SY = 3.6759769907807593e-01
-   # SZ = 5.2311761899786928e+00
 
-   SX = 0.3
-   SY = 0.3
-   SZ = 2.0
+   # SX = 0.3
+   # SY = 0.3
+   # SZ = 2.0
 
-   # SX = 8.41691017614e-01
-   # SY = 8.41691017614e-01
-   # SZ = 1.46676003497e+01
+   SX = 2.8746146374551451e-01
+   SY = 2.8746146374551451e-01
+   SZ = 1.9857570907649451e+00
 
    MUREL = 1.000000e-10
    MUEND = 10000.0
@@ -161,7 +157,7 @@
 #  function will not be saved.
 #  Required: no
 #  Type: string
-#   FINALPSI = imag3d-finalpsi
+   FINALPSI = imag3d-finalpsi
 
 #  Discretization step in the x-direction used to save wave functions.
 #  It's required if any of wave function outputs (INITOUT, NSTPOUT, NPASOUT,
