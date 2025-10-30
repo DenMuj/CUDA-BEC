@@ -785,7 +785,7 @@ void compute_rms_values(const double *d_psi, // Device: 3D psi array
   }
 
   // Configure kernel launch parameters
-  dim3 blockSize(8, 8, 4); // Adjust based on your GPU
+  dim3 blockSize(8, 8, 4); 
   dim3 gridSize((Nx + blockSize.x - 1) / blockSize.x,
                 (Ny + blockSize.y - 1) / blockSize.y,
                 (Nz + blockSize.z - 1) / blockSize.z);

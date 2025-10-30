@@ -3,6 +3,17 @@ CUDA_HOME ?= /usr/local/cuda
 NVCC = $(CUDA_HOME)/bin/nvcc
 CXX = g++
 
+# Auto-detect highest supported C++ standard
+# Detect for host compiler first
+CXX_STD_CANDIDATES := c++26 c++23 c++20 c++17 c++14 c++11
+CXXSTD := $(firstword $(foreach s,$(CXX_STD_CANDIDATES),$(if $(shell $(CXX) -std=$(s) -x c++ -E - </dev/null >/dev/null 2>&1 && echo ok),-std=$(s),)))
+
+# For NVCC, cap at C++20 (newer standards may not be supported by NVCC yet)
+NVCCSTD := $(CXXSTD)
+ifneq ($(filter -std=c++26 -std=c++23,$(CXXSTD)),)
+NVCCSTD := -std=c++20
+endif
+
 # Automatically detect GPU compute capability
 GPU_COMPUTE_CAPABILITY := $(shell nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -n 1 | tr -d '.')
 ifeq ($(GPU_COMPUTE_CAPABILITY),)
@@ -12,8 +23,8 @@ endif
 ARCH = -arch=sm_$(GPU_COMPUTE_CAPABILITY)
 
 # Compiler flags
-NVCCFLAGS = -std=c++20 -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,-fopenmp -lcufft
-CXXFLAGS = -std=c++20 -fPIC -fopenmp -O3
+NVCCFLAGS = $(NVCCSTD) -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,-fopenmp -lcufft
+CXXFLAGS = $(CXXSTD) -fPIC -fopenmp -O3
 
 # Include directories
 INCLUDES = -I. -Isrc/utils -I$(CUDA_HOME)/include
