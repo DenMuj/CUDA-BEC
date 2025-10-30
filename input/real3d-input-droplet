@@ -23,14 +23,10 @@
 #  Initial values for the wave function (for a Gaussian).
 #  Required: yes in order to calculate discretization parameters DX, DY and DZ
 #  Type: double
-   # SX = 0.3
-   # SY = 0.3
-   # SZ = 2.0
+   SX = 0.3
+   SY = 0.3
+   SZ = 2.0
    
-   SX = 2.8746146374551401e-01
-   SY = 2.8746146374551401e-01
-   SZ = 1.9857570907649453e+00
-
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
 #  Type: double
@@ -42,24 +38,22 @@
    MUEND = 1000.0
 
 #  Dipolar potential cutoff.
-#  Required: yes
+#  Required: no, will be calculated from grid size
 #  Type: double
 #  CUTOFF = 13.
 
 #  Unit of length in m (defined by a chosen referent frequency omega_ref).
 #  Required: yes
 #  Type: double
-   #AHO = 6.123800e-07
    AHO = 5.55238e-7
 
 #  Contact interaction strength in units of Bohr radius.
-#  defined.
-#  Required: conditionally
+#  Required: yes
 #  Type: double
-   AS = 70.1
+   AS = 70.
 
 #  Dipole-dipole interaction strength in units of Bohr radius.
-#  Required: conditionally
+#  Required: yes
 #  Type: double
    ADD = 132.607
    
@@ -87,7 +81,6 @@
    MZ = 10
    MT = 5
 
-
 #  Spatial discretization step in the x-direction.
 #  Required: no (if commented, will be calculated from MX, NX and SX)
 #  Type: double
@@ -111,19 +104,19 @@
 #  Gamma coefficient of anisotropy of the trap.
 #  Required: yes
 #  Type: double
-   GAMMA = 0.0
+   GAMMA = 0.
 
 #  Nu coefficient of anisotropy of the trap (omega_y / omega_x).
 #  Required: yes
 #  Type: double
-   NU = 0.0
+   NU = 0.
 
 #  Lambda coefficient of anisotropy of the trap (omega_z / omega_x).
 #  Required: yes
 #  Type: double
-   LAMBDA = 0.0
+   LAMBDA = 0.
 
-#  Number of iterations with.
+#  Number of iterations
 #  Required: yes
 #  Type: long
    NITER = 1000000
@@ -175,4 +168,4 @@
 #  is defined.
 #  Required: conditionally
 #  Type: int
-OUTFLAGS = 56
+   OUTFLAGS = 56
