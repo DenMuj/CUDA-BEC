@@ -1,0 +1,24 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+
+  "C_Cpp.formatting": "clangFormat",
+  "C_Cpp.clang_format_style": "file",
+  "C_Cpp.clang_format_fallbackStyle": "none",
+
+  "files.associations": {
+    "*.cu": "cuda-cpp",
+    "*.cuh": "cuda-cpp"
+  },
+
+  "[cuda-cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "[c]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  }
+}
+

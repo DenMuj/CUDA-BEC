@@ -1,25 +1,24 @@
 /**
  * @file CudaArray.cpp
  * @brief Implementation of CudaArray3D class for CUDA 3D device memory management
- * 
+ *
  * This file contains the implementation of all CudaArray3D member functions,
  * including constructors, memory transfer operations, and utility functions.
  * The implementation handles both pitched and linear memory layouts
  */
 
 #include "CudaArray.h"
-#include <stdexcept>
 #include <cstring>
+#include <stdexcept>
 
 /**
  * @brief Reset all member variables to default/empty state
- * 
+ *
  * This function is used internally by move operations and destructor
  * to ensure objects are left in a valid but empty state. It resets
  * all pointers to nullptr and counters to zero.
  */
-template<typename T>
-void CudaArray3D<T>::reset() {
+template <typename T> void CudaArray3D<T>::reset() {
     pitched_ptr = make_cudaPitchedPtr(nullptr, 0, 0, 0);
     d_data_linear = nullptr;
     nx = ny = nz = 0;
@@ -32,33 +31,33 @@ void CudaArray3D<T>::reset() {
 
 /**
  * @brief Construct a 3D CUDA array with automatic memory optimization
- * 
+ *
  * This constructor attempts to allocate the most efficient memory layout:
  * - For true 3D arrays (nz > 1, ny > 1): Uses cudaMalloc3D for pitched memory
- * - For 2D arrays (nz = 1, ny > 1): Uses cudaMallocPitch for pitched memory  
+ * - For 2D arrays (nz = 1, ny > 1): Uses cudaMallocPitch for pitched memory
  * - For 1D arrays or when pitched fails: Falls back to linear cudaMalloc
  */
-template<typename T>
-CudaArray3D<T>::CudaArray3D(size_t nx_, size_t ny_, size_t nz_, bool use_pitched_memory) 
-    : nx(nx_), ny(ny_), nz(nz_), total_elements(nx_ * ny_ * nz_), 
-      use_pitched(use_pitched_memory), d_data_linear(nullptr) {
-    
+template <typename T>
+CudaArray3D<T>::CudaArray3D(size_t nx_, size_t ny_, size_t nz_, bool use_pitched_memory)
+    : nx(nx_), ny(ny_), nz(nz_), total_elements(nx_ * ny_ * nz_), use_pitched(use_pitched_memory),
+      d_data_linear(nullptr) {
+
     pitched_ptr = make_cudaPitchedPtr(nullptr, 0, 0, 0);
-    
+
     if (total_elements > 0) {
         if (use_pitched && nz > 1 && ny > 1) {
             // ===== TRUE 3D ALLOCATION (nz > 1, ny > 1) =====
             // Use cudaMalloc3D for optimal 3D memory layout with hardware alignment
             cudaExtent extent = make_cudaExtent(nx * sizeof(T), ny, nz);
             cudaError_t error = cudaMalloc3D(&pitched_ptr, extent);
-            
+
             if (error != cudaSuccess) {
                 // 3D pitched allocation failed - fallback to linear memory
                 use_pitched = false;
                 size_t bytes = total_elements * sizeof(T);
-                error = cudaMalloc((void**)&d_data_linear, bytes);
+                error = cudaMalloc((void **)&d_data_linear, bytes);
                 checkCudaError(error, "Failed to allocate device memory");
-                pitch = nx * sizeof(T);  // No actual pitch in linear memory
+                pitch = nx * sizeof(T); // No actual pitch in linear memory
             } else {
                 // 3D pitched allocation succeeded
                 pitch = pitched_ptr.pitch;
@@ -67,18 +66,18 @@ CudaArray3D<T>::CudaArray3D(size_t nx_, size_t ny_, size_t nz_, bool use_pitched
             // ===== 2D ALLOCATION (nz = 1, ny > 1) =====
             // Use cudaMallocPitch for optimal 2D memory layout
             size_t width = nx * sizeof(T);
-            size_t height = ny * nz;  // For 2D: nz=1, so height = ny
-            
-            T* ptr2d;
-            cudaError_t error = cudaMallocPitch((void**)&ptr2d, &pitch, width, height);
-            
+            size_t height = ny * nz; // For 2D: nz=1, so height = ny
+
+            T *ptr2d;
+            cudaError_t error = cudaMallocPitch((void **)&ptr2d, &pitch, width, height);
+
             if (error != cudaSuccess) {
                 // 2D pitched allocation failed - fallback to linear memory
                 use_pitched = false;
                 size_t bytes = total_elements * sizeof(T);
-                error = cudaMalloc((void**)&d_data_linear, bytes);
+                error = cudaMalloc((void **)&d_data_linear, bytes);
                 checkCudaError(error, "Failed to allocate device memory");
-                pitch = nx * sizeof(T);  // No actual pitch in linear memory
+                pitch = nx * sizeof(T); // No actual pitch in linear memory
             } else {
                 // 2D pitched allocation succeeded - wrap in 3D structure for consistency
                 pitched_ptr = make_cudaPitchedPtr(ptr2d, pitch, nx * sizeof(T), ny);
@@ -88,77 +87,71 @@ CudaArray3D<T>::CudaArray3D(size_t nx_, size_t ny_, size_t nz_, bool use_pitched
             // For 1D arrays, when pitched memory is not requested, or as fallback
             use_pitched = false;
             size_t bytes = total_elements * sizeof(T);
-            cudaError_t error = cudaMalloc((void**)&d_data_linear, bytes);
+            cudaError_t error = cudaMalloc((void **)&d_data_linear, bytes);
             checkCudaError(error, "Failed to allocate device memory");
-            pitch = nx * sizeof(T);  // Conceptual pitch for consistency
+            pitch = nx * sizeof(T); // Conceptual pitch for consistency
         }
     }
 }
 
 /**
  * @brief Construct a 1D CUDA array (special case)
- * 
+ *
  * This constructor creates a 1D array by delegating to the 3D constructor
  * with ny=1, nz=1, and pitched memory disabled.
  */
-template<typename T>
-CudaArray3D<T>::CudaArray3D(size_t n) : CudaArray3D(n, 1, 1, false) {
+template <typename T> CudaArray3D<T>::CudaArray3D(size_t n) : CudaArray3D(n, 1, 1, false) {
     // Delegates to 3D constructor with ny=1, nz=1, and no pitched memory
 }
 
 /**
  * @brief Destructor - automatically frees all allocated GPU memory
- * 
+ *
  * The destructor ensures proper cleanup of both pitched and linear memory
  * allocations. It uses the appropriate cudaFree call based on the memory
  * type and resets all member variables.
  */
-template<typename T>
-CudaArray3D<T>::~CudaArray3D() {
+template <typename T> CudaArray3D<T>::~CudaArray3D() {
     if (use_pitched && pitched_ptr.ptr != nullptr) {
-        cudaFree(pitched_ptr.ptr);  // Free pitched memory
+        cudaFree(pitched_ptr.ptr); // Free pitched memory
     } else if (d_data_linear != nullptr) {
-        cudaFree(d_data_linear);    // Free linear memory
+        cudaFree(d_data_linear); // Free linear memory
     }
-    reset();  // Reset all member variables
+    reset(); // Reset all member variables
 }
 
 // ========== MOVE SEMANTICS ==========
 
 /**
  * @brief Move constructor - transfers ownership of GPU memory
- * 
+ *
  * Transfers ownership of GPU memory from another object
  * without copying data. The source object is left in a valid but
  * empty state (all pointers set to nullptr, sizes to zero).
  */
-template<typename T>
-CudaArray3D<T>::CudaArray3D(CudaArray3D&& other) noexcept 
-    : pitched_ptr(other.pitched_ptr), 
-      nx(other.nx), ny(other.ny), nz(other.nz),
-      total_elements(other.total_elements),
-      pitch(other.pitch),
-      use_pitched(other.use_pitched),
+template <typename T>
+CudaArray3D<T>::CudaArray3D(CudaArray3D &&other) noexcept
+    : pitched_ptr(other.pitched_ptr), nx(other.nx), ny(other.ny), nz(other.nz),
+      total_elements(other.total_elements), pitch(other.pitch), use_pitched(other.use_pitched),
       d_data_linear(other.d_data_linear) {
-    other.reset();  // Leave source object in valid but empty state
+    other.reset(); // Leave source object in valid but empty state
 }
 
 /**
  * @brief Move assignment operator - transfers ownership of GPU memory
- * 
+ *
  * Frees any existing GPU memory held by this object, then transfers
  * ownership from the source object.
  */
-template<typename T>
-CudaArray3D<T>& CudaArray3D<T>::operator=(CudaArray3D&& other) noexcept {
-    if (this != &other) {  // Prevent self-assignment
+template <typename T> CudaArray3D<T> &CudaArray3D<T>::operator=(CudaArray3D &&other) noexcept {
+    if (this != &other) { // Prevent self-assignment
         // Free existing resources before taking ownership of new ones
         if (use_pitched && pitched_ptr.ptr != nullptr) {
             cudaFree(pitched_ptr.ptr);
         } else if (d_data_linear != nullptr) {
             cudaFree(d_data_linear);
         }
-        
+
         // Transfer ownership of resources from source object
         pitched_ptr = other.pitched_ptr;
         nx = other.nx;
@@ -168,7 +161,7 @@ CudaArray3D<T>& CudaArray3D<T>::operator=(CudaArray3D&& other) noexcept {
         pitch = other.pitch;
         use_pitched = other.use_pitched;
         d_data_linear = other.d_data_linear;
-        
+
         // Leave source object in valid but empty state
         other.reset();
     }
@@ -179,35 +172,35 @@ CudaArray3D<T>& CudaArray3D<T>::operator=(CudaArray3D&& other) noexcept {
 
 /**
  * @brief Synchronously copy data from host to device
- * 
+ *
  * Copies data from host memory to GPU memory. For pitched memory, uses
  * cudaMemcpy3D to properly handle padding. For linear memory, uses
  * simple cudaMemcpy.
  */
-template<typename T>
-void CudaArray3D<T>::copyFromHost(const T* h_data) {
-    if (h_data == nullptr || total_elements == 0) return;  // Safety checks
-    
+template <typename T> void CudaArray3D<T>::copyFromHost(const T *h_data) {
+    if (h_data == nullptr || total_elements == 0)
+        return; // Safety checks
+
     if (use_pitched) {
         // ===== PITCHED MEMORY COPY =====
         // Use cudaMemcpy3D to handle padding and memory layout automatically
-        cudaMemcpy3DParms params = {0};  // Initialize all fields to zero
-        
+        cudaMemcpy3DParms params = {0}; // Initialize all fields to zero
+
         // Configure source (host) - treat as linear memory
-        params.srcPtr = make_cudaPitchedPtr((void*)h_data, 
-                                           nx * sizeof(T),  // pitch = width (no padding)
-                                           nx * sizeof(T),  // width in bytes
-                                           ny);                  // height
-        params.srcPos = make_cudaPos(0, 0, 0);  // Start from origin
-        
+        params.srcPtr = make_cudaPitchedPtr((void *)h_data,
+                                            nx * sizeof(T), // pitch = width (no padding)
+                                            nx * sizeof(T), // width in bytes
+                                            ny);            // height
+        params.srcPos = make_cudaPos(0, 0, 0);              // Start from origin
+
         // Configure destination (device) - use pitched memory layout
-        params.dstPtr = pitched_ptr;            // Our pitched memory allocation
-        params.dstPos = make_cudaPos(0, 0, 0);  // Start from origin
-        
+        params.dstPtr = pitched_ptr;           // Our pitched memory allocation
+        params.dstPos = make_cudaPos(0, 0, 0); // Start from origin
+
         // Configure copy extent and direction
-        params.extent = make_cudaExtent(nx * sizeof(T), ny, nz);  // Full array size
+        params.extent = make_cudaExtent(nx * sizeof(T), ny, nz); // Full array size
         params.kind = cudaMemcpyHostToDevice;
-        
+
         // Execute the 3D copy operation
         cudaError_t error = cudaMemcpy3D(&params);
         checkCudaError(error, "Failed to copy data from host to device (pitched)");
@@ -222,34 +215,34 @@ void CudaArray3D<T>::copyFromHost(const T* h_data) {
 
 /**
  * @brief Synchronously copy data from device to host
- * 
+ *
  * Copies data from GPU memory to host memory. The host data will be in row-major order
  * regardless of the device memory layout.
  */
-template<typename T>
-void CudaArray3D<T>::copyToHost(T* h_data) const {
-    if (h_data == nullptr || total_elements == 0) return;  // Safety checks
-    
+template <typename T> void CudaArray3D<T>::copyToHost(T *h_data) const {
+    if (h_data == nullptr || total_elements == 0)
+        return; // Safety checks
+
     if (use_pitched) {
         // ===== PITCHED MEMORY COPY =====
         // Use cudaMemcpy3D to properly handle padding removal
-        cudaMemcpy3DParms params = {0};  // Initialize all fields to zero
-        
+        cudaMemcpy3DParms params = {0}; // Initialize all fields to zero
+
         // Configure source (device) - use pitched memory layout
-        params.srcPtr = pitched_ptr;            // Our pitched memory allocation
-        params.srcPos = make_cudaPos(0, 0, 0);  // Start from origin
-        
+        params.srcPtr = pitched_ptr;           // Our pitched memory allocation
+        params.srcPos = make_cudaPos(0, 0, 0); // Start from origin
+
         // Configure destination (host) - treat as linear memory
-        params.dstPtr = make_cudaPitchedPtr((void*)h_data,
-                                           nx * sizeof(T),  // pitch = width (no padding)
-                                           nx * sizeof(T),  // width in bytes
-                                           ny);                  // height
-        params.dstPos = make_cudaPos(0, 0, 0);  // Start from origin
-        
+        params.dstPtr = make_cudaPitchedPtr((void *)h_data,
+                                            nx * sizeof(T), // pitch = width (no padding)
+                                            nx * sizeof(T), // width in bytes
+                                            ny);            // height
+        params.dstPos = make_cudaPos(0, 0, 0);              // Start from origin
+
         // Configure copy extent and direction
-        params.extent = make_cudaExtent(nx * sizeof(T), ny, nz);  // Full array size
+        params.extent = make_cudaExtent(nx * sizeof(T), ny, nz); // Full array size
         params.kind = cudaMemcpyDeviceToHost;
-        
+
         // Execute the 3D copy operation (removes padding automatically)
         cudaError_t error = cudaMemcpy3D(&params);
         checkCudaError(error, "Failed to copy data from device to host (pitched)");
@@ -262,14 +255,13 @@ void CudaArray3D<T>::copyToHost(T* h_data) const {
     }
 }
 
-
 /**
  * @brief Check CUDA error codes and throw exceptions on failure
- * 
+ *
  * Centralized error checking. Throws std::runtime_error for any CUDA error.
  */
-template<typename T>
-void CudaArray3D<T>::checkCudaError(cudaError_t error, const char* msg) const {
+template <typename T>
+void CudaArray3D<T>::checkCudaError(cudaError_t error, const char *msg) const {
     if (error != cudaSuccess) {
         // Combine user message with CUDA error description for better debugging
         std::string errorMsg = std::string(msg) + ": " + cudaGetErrorString(error);
@@ -291,4 +283,3 @@ template class CudaArray3D<float>;
 // Complex number types for CUDA/cuFFT
 template class CudaArray3D<cuDoubleComplex>;
 template class CudaArray3D<cuFloatComplex>;
-
