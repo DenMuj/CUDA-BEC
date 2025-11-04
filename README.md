@@ -34,4 +34,8 @@ which compiles both imag3d-cuda and real3d-cuda.
 If cuda is installed somwhere else, you can use that path with ```make CUDA_HOME = /your-path/cuda```. If OpenMP is not in standard path, use ```make OMP_HOME= /your-path/to-omp```.
 
 ***Running the programs***
-Once the programs have been compiled we can run them. Input files necessary for the programs to run are located in 
+
+Once the programs have been compiled we can run them. Input files necessary for the programs to run are located in ```./input/``` and they are ```imag3d-input-bec``` (for imaginary time propagation), ```real3d-input-bec``` (for real time propagation) for BEC and ```imag3d-input-droplet``` (for imaginary time propagation) and ```real3d-input-droplet``` (for real time propagation) for a droplet. The programs are then run as:  
+```./imag3d-cuda -i input/imag3d-cuda-bec``` for imaginary time propagation (of a BEC for example) and  
+```./real3d-cuda -i input/real3d-cuda-bec``` for real time propagation (of a BEC for example).  
+While the program is running it can write to files ```imag3d-rms.txt```, ```imag3d-mu.txt``` for imaginary and ```real3d-rms.txt``` and ```real3d-mu.txt``` for real time propagation. Whether or not to write those file is determined by corresponding variables in input files. Also optionally is to write final wave function during imaginary time propagation (```imag3d-final.bin```) or density profiles (```imag3d-den-nitter*```).
