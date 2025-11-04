@@ -624,11 +624,6 @@ void readpar(void) {
   } else
     QF = atol(cfg_tmp);
 
-  if ((cfg_tmp = cfg_read("QDEPL")) == NULL) {
-    QDEPL = 0;
-  } else
-    QDEPL = atol(cfg_tmp);
-
   if ((cfg_tmp = cfg_read("SX")) == NULL)
     sx = 0.;
   else

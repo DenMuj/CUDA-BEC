@@ -30,12 +30,12 @@
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
 #  Type: double
-   MUREL = 1.000000e-20
+   MUREL = 1.000000e-10
 
 #  Absolute chemical potential for the end of the simulation.
 #  Required: yes
 #  Type: double
-   MUEND = 1000.0
+   MUEND = 10.0
 
 #  Dipolar potential cutoff.
 #  Required: no, will be calculated from grid size
@@ -119,12 +119,12 @@
 #  Number of iterations
 #  Required: yes
 #  Type: long
-   NITER = 1000000
+   NITER = 100
 
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
 #  density profiles and write them to specified output files.
-   NSNAP = 1000000
+   NSNAP = 100
 
 #  Input file with the wave function, obtained from previous executions.
 #  Required: no

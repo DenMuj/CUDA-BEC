@@ -491,8 +491,8 @@ int main(int argc, char **argv) {
   auto end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> duration = end - start;
   if (rmsout != NULL) {
-    std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
-    std::fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
+    //std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
+    //std::fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
     std::fprintf(filerms, "-------------------------------------------------------------------\n\n");
     fclose(filerms);
   }  

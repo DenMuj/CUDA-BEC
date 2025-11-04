@@ -22,8 +22,10 @@ endif
 ARCH = -arch=sm_$(GPU_COMPUTE_CAPABILITY)
 
 # Compiler flags
-NVCCFLAGS = $(NVCCSTD) -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,-fopenmp -lcufft
-CXXFLAGS = $(CXXSTD) -fPIC -fopenmp -O3
+OMPFLAGS ?= -fopenmp
+OMPLIBS ?= -lgomp
+NVCCFLAGS = $(NVCCSTD) -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,$(OMPFLAGS) -lcufft
+CXXFLAGS = $(CXXSTD) -march=native -fPIC $(OMPFLAGS) -O3
 
 # Include directories
 INCLUDES = -I. -Isrc/utils -I$(CUDA_HOME)/include
@@ -62,7 +64,7 @@ IMAG3D_TARGET = imag3d-cuda
 REAL3D_TARGET = real3d-cuda
 
 # Libraries
-LIBS = -L$(CUDA_HOME)/lib64 -lcudart -lcufft -Xcompiler -fopenmp 
+LIBS = -L$(CUDA_HOME)/lib64 -lcudart -lcufft $(OMPLIBS)
 
 # Default target - build both programs
 all: $(IMAG3D_TARGET) $(REAL3D_TARGET)
