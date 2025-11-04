@@ -10,7 +10,7 @@ Programs for solving the time-dependent nonlinear Gross-Pitaevskii equation (GPE
 - Optional writing of RMS, chemical potential and energies (kinetic, trap potential, contact, dipolar, quantum fluctuations), density profiles, and final wavefunction
 
 ### Requirements
-- CUDA Toolkit (e.g., 12.x). Default path expected: `/usr/local/cuda` (compiler at `/usr/local/cuda/bin/nvcc`, headers in `/usr/local/cuda/include`, libs in `/usr/local/cuda/lib64`).
+- CUDA Toolkit (e.g., 12.x, minimum required is 8.0) and any modern Nvidia GPU with Compute Capability 6.0 or higher. Default path expected: `/usr/local/cuda` (compiler at `/usr/local/cuda/bin/nvcc`, headers in `/usr/local/cuda/include`, libs in `/usr/local/cuda/lib64`).
 - A C++ compiler with OpenMP support (e.g., `gcc` + `-fopenmp`).
 
 Optional:
