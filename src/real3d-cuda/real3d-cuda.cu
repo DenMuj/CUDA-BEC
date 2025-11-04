@@ -1757,7 +1757,7 @@ void rms_output(FILE *filerms) {
                  vnu, vlambda);
     std::fprintf(filerms, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
     std::fprintf(filerms,
-                 "                      DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
+                 "\t\t DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
                  "%.2le, mz = %.2le\n",
                  dx, dy, dz, mx, my, mz);
     if (cfg_read("AHO") != NULL)
@@ -1810,7 +1810,7 @@ void mu_output(FILE *filemu) {
                  vnu, vlambda);
     std::fprintf(filemu, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
     std::fprintf(filemu,
-                 "                      DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
+                 "\t\t DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
                  "%.2le, mz = %.2le\n",
                  dx, dy, dz, mx, my, mz);
     if (cfg_read("AHO") != NULL)
