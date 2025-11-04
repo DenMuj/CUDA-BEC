@@ -7,7 +7,7 @@ Programs for solving the time-dependent nonlinear Gross-Pitaevskii equation (GPE
 - Real-time propagation (`real3d-cuda`) for dynamics, with optional LHY term
 - CUDA acceleration with cuFFT; OpenMP on the host side
 - Configurable input files for BEC or droplet scenarios
-- Optional writing of RMS, chemical potential, density profiles, and final wavefunction
+- Optional writing of RMS, chemical potential and energies (kinetic, trap potential, contact, dipolar, quantum fluctuations), density profiles, and final wavefunction
 
 ### Requirements
 - CUDA Toolkit (e.g., 12.x). Default path expected: `/usr/local/cuda` (compiler at `/usr/local/cuda/bin/nvcc`, headers in `/usr/local/cuda/include`, libs in `/usr/local/cuda/lib64`).
