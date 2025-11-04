@@ -66,7 +66,8 @@ IMAG3D_TARGET = imag3d-cuda
 REAL3D_TARGET = real3d-cuda
 
 # Libraries
-OMP_LIB := $(if $(OMP_HOME),-L$(OMP_HOME)/lib -Wl,-rpath,$(OMP_HOME)/lib,)
+# Pass rpath to the host linker via nvcc; avoid commas inside $(if ...)
+OMP_LIB := $(if $(OMP_HOME),-L$(OMP_HOME)/lib -Xlinker -rpath -Xlinker $(OMP_HOME)/lib,)
 LIBS = -L$(CUDA_HOME)/lib64 $(OMP_LIB) -lcudart -lcufft $(OMPLIBS)
 
 # Default target - build both programs
