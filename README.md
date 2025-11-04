@@ -1,41 +1,77 @@
-Programs designed to solve the time-dependent nonlinear partial differential Gross-Pitaevskii equation (GPE) with with contact and dipolar interactions in 3 spatial dimensions with a harmonic anisotropic trap. With the discovery of quantum dipolar droplets it was shown that the GPE can be used to describe them, but only if an additional term, quantum fluctuation term, is added which we have done.
+## CUDA-BEC: 3D Gross-Pitaevskii (GPE) solver with contact and dipolar interactions
 
-***Structure of the DBEC-GP-CUDA directory:***
+Programs for solving the time-dependent nonlinear Gross-Pitaevskii equation (GPE) with contact and dipolar interactions in 3D, in an anisotropic harmonic trap. The code supports both imaginary-time (ground-state) and real-time (dynamics) propagation. Quantum droplets are supported via an additional quantum fluctuation (LHY) term.
 
-The directory consists of several folders and files.  
-Folders:  
-*src* - main folder that holds all the codes. Has main codes for imaginary time propagation (imag3d-cuda folder), real time propagation (real3d-cuda folder) and utils folder
-which has class definitions for cuda arrays, vector arrays, simpson's integration, functions for spatial derivatives and functions for reading input parameters.  
-*input* - folder that holds input files for programs. Has one input file for BEC in imaginary and real time propagation (imag3d-input-bec and real3d-input-bec respectively)
-and one for a droplet in imaginary and real time propagation (imag3d-input-droplet and real3d-input-droplet respectively)  
-*output* - folder that holdes output files as an example for the provided input files. Has 2 folders, one for BEC output and one for droplet output. Inside of each folders
-are root mean square values for imaginary (imag3d-rms.txt) and real (real3d-rms.txt) time propagation with corresponding files for energies (imag3d-mu.txt and real3d-mu.txt)
-and a binary file for the final wave function that is written from imaginary time propagation.  
-*docs* - generated file using Doxygen that showes structure of codes.  
-Files:  
-*Makefile* - file used for compiling imag3d-cuda and real3d-cuda programs.  
+### Features
+- Imaginary-time propagation (`imag3d-cuda`) for ground-state, with optional LHY term
+- Real-time propagation (`real3d-cuda`) for dynamics, with optional LHY term
+- CUDA acceleration with cuFFT; OpenMP on the host side
+- Configurable input files for BEC or droplet scenarios
+- Optional writing of RMS, chemical potential, density profiles, and final wavefunction
 
-***Compiling the programs***
+### Requirements
+- CUDA Toolkit (e.g., 12.x). Default path expected: `/usr/local/cuda` (compiler at `/usr/local/cuda/bin/nvcc`, headers in `/usr/local/cuda/include`, libs in `/usr/local/cuda/lib64`).
+- A C++ compiler with OpenMP support (e.g., `gcc` + `-fopenmp`).
 
-We have provided a Makefile for compiling programs in LINUX. In order for the programs to compile, the following libraries need to be installed:  
-1) CUDA Toolkit (for example CUDA Toolkit 12.0). The default path the program expect is ```/usr/local/cuda``` with compiler ```/usr/local/cuda/bin/nvcc```, headers
-```/usr/local/cuda/include``` and libraries ```/usr/local/cuda/lib64```.  
-2) OpenMP library (for example OpenMP 4.5). In our programs we have have used ```gcc``` compiler and Makefile assumes that OpenMP libraries and headers are in standard
-system path.
+Optional:
+- Doxygen (to regenerate `docs/`).
 
-Commands for compiling the program are (make sure you use these commands in the main directorium 
-where both src, utils and Makefile are located):
+### Build
+Use the provided `Makefile` on Linux.
 
-```make```
-which compiles both imag3d-cuda and real3d-cuda.  
+Basic builds (from the repository root):
 
-```make imag3d-cuda``` or ```make real3d-cuda```  to compile just code for imaginary or real time propagation respectively.
+```bash
+make            # builds both imag3d-cuda and real3d-cuda
+make imag3d-cuda
+make real3d-cuda
+```
 
-If cuda is installed somwhere else, you can use that path with ```make CUDA_HOME = /your-path/cuda```. If OpenMP is not in standard path, use ```make OMP_HOME= /your-path/to-omp```.
+Override paths if needed (no spaces around `=`):
 
-***Running the programs***
+```bash
+make CUDA_HOME=/your/path/to/cuda
+make OMP_HOME=/your/path/to/openmp
+```
 
-Once the programs have been compiled we can run them. Input files necessary for the programs to run are located in ```./input/``` and they are ```imag3d-input-bec``` (for imaginary time propagation), ```real3d-input-bec``` (for real time propagation) for BEC and ```imag3d-input-droplet``` (for imaginary time propagation) and ```real3d-input-droplet``` (for real time propagation) for a droplet. The programs are then run as:  
-```./imag3d-cuda -i input/imag3d-cuda-bec``` for imaginary time propagation (of a BEC for example) and  
-```./real3d-cuda -i input/real3d-cuda-bec``` for real time propagation (of a BEC for example).  
-While the program is running it can write to files ```imag3d-rms.txt```, ```imag3d-mu.txt``` for imaginary and ```real3d-rms.txt``` and ```real3d-mu.txt``` for real time propagation. Whether or not to write those file is determined by corresponding variables in input files. Also optionally is to write final wave function during imaginary time propagation (```imag3d-final.bin```) or density profiles (```imag3d-den-nitter*```).
+### Run
+Input files live in `input/` and include BEC and droplet presets for both imaginary and real time:
+- `input/imag3d-input-bec`, `input/imag3d-input-droplet`
+- `input/real3d-input-bec`, `input/real3d-input-droplet`
+
+Examples:
+
+```bash
+./imag3d-cuda -i input/imag3d-input-bec
+./real3d-cuda  -i input/real3d-input-bec
+```
+
+Output files and their names are controlled by keys in the input files, e.g.:
+- `MUOUTPUT` (e.g., `imag3d-mu` or `real3d-mu`)
+- `RMSOUT` (e.g., `imag3d-rms` or `real3d-rms`)
+- `NITEROUT` for density snapshots during iterations (e.g., `*-den-niter`)
+- `FINALPSI` for the final wavefunction (e.g., `imag3d-finalpsi`), which can be reused as input in real-time runs (`INPUT`, `INPUT_TYPE`)
+
+Whether a given file is written depends on whether its corresponding key is set in the input file and, for density profiles, which `OUTFLAGS` you enable.
+
+### Repository structure
+- `src/`
+  - `imag3d-cuda/` – imaginary-time solver and headers
+  - `real3d-cuda/` – real-time solver and headers
+  - `utils/` – CUDA arrays, vector arrays, Simpson integration, spatial derivatives, config reader
+- `input/` – example input files for BEC and droplet (imaginary and real time)
+- `output/` – example outputs for the provided inputs (RMS, MU, density profiles, final wavefunction)
+- `docs/` – Doxygen-generated documentation
+- `Makefile` – builds `imag3d-cuda` and `real3d-cuda`
+
+### Documentation
+Generated API/structure docs live in `docs/` (built with Doxygen). Regenerate with your local Doxygen setup if you modify headers.
+
+### Tips & troubleshooting
+- If CUDA is not in `/usr/local/cuda`, pass `CUDA_HOME=/path/to/cuda` to `make`.
+- If OpenMP headers/libs are not in standard paths, pass `OMP_HOME=/path/to/openmp`.
+- The Makefile auto-detects your GPU architecture via `nvidia-smi`; if detection fails, it defaults to `sm_75`.
+- Make sure to run `make` from the repository root (where `src/` and `Makefile` reside).
+
+### Citation and license
+If you use this code in academic work, please cite the appropriate publications. Add license information here if applicable (e.g., MIT, BSD, GPL).
