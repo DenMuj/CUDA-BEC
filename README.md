@@ -74,4 +74,4 @@ Generated API/structure docs live in `docs/` (built with Doxygen). Regenerate wi
 - Make sure to run `make` from the repository root (where `src/` and `Makefile` reside).
 
 ### Citation and license
-If you use this code in academic work, please cite the appropriate publications. Add license information here if applicable (e.g., MIT, BSD, GPL).
+????????
