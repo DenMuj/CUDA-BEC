@@ -28,7 +28,9 @@ NVCCFLAGS = $(NVCCSTD) -O3 --fmad=true $(ARCH) -Xcompiler -fPIC,$(OMPFLAGS) -lcu
 CXXFLAGS = $(CXXSTD) -march=native -fPIC $(OMPFLAGS) -O3
 
 # Include directories
-INCLUDES = -I. -Isrc/utils -I$(CUDA_HOME)/include
+OMP_HOME ?=
+OMP_INC := $(if $(OMP_HOME),-I$(OMP_HOME)/include,)
+INCLUDES = -I. -Isrc/utils -I$(CUDA_HOME)/include $(OMP_INC)
 
 # Source directories
 UTILS_DIR = src/utils
@@ -64,7 +66,8 @@ IMAG3D_TARGET = imag3d-cuda
 REAL3D_TARGET = real3d-cuda
 
 # Libraries
-LIBS = -L$(CUDA_HOME)/lib64 -lcudart -lcufft $(OMPLIBS)
+OMP_LIB := $(if $(OMP_HOME),-L$(OMP_HOME)/lib -Wl,-rpath,$(OMP_HOME)/lib,)
+LIBS = -L$(CUDA_HOME)/lib64 $(OMP_LIB) -lcudart -lcufft $(OMPLIBS)
 
 # Default target - build both programs
 all: $(IMAG3D_TARGET) $(REAL3D_TARGET)
