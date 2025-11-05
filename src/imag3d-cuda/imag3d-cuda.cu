@@ -9,8 +9,10 @@ __constant__ double calphay_c[CGALPHA_MAX];
 __constant__ double cgammaz_c[CGALPHA_MAX];
 __constant__ double calphaz_c[CGALPHA_MAX];
 
-int main(int argc, char **argv) {
-    if ((argc != 3) || (strcmp(*(argv + 1), "-i") != 0)) {
+int main(int argc, char **argv) 
+{
+    if ((argc != 3) || (strcmp(*(argv + 1), "-i") != 0)) 
+    {
         std::fprintf(stderr, "Usage: %s -i <input parameter file> \n", *argv);
         exit(EXIT_FAILURE);
     }
@@ -23,8 +25,8 @@ int main(int argc, char **argv) {
     FILE *filerms;
     FILE *filemu;
     FILE *file;
-
     char filename[MAX_FILENAME_SIZE];
+    
     readpar();
 
     if (opt == 2)
@@ -38,13 +40,16 @@ int main(int argc, char **argv) {
     edd = (4. * pi / 3.) * gd / g;
     Nad = Na;
 
-    if (fabs(edd) < 1e-10) {
+    if (fabs(edd) < 1e-10) 
+    {
         q5 = 1.;
-    } else {
-        if (fabs(edd - 1.) < 1e-10) {
+    } else 
+    {
+        if (fabs(edd - 1.) < 1e-10) 
+        {
             q5 = 3. * sqrt(3.) / 2.;
-        } else {
-
+        } else 
+        {
             std::complex<double> sqrt_edd = std::sqrt(std::complex<double>(edd, 0.0));
             std::complex<double> sqrt_1_plus_2edd =
                 std::sqrt(std::complex<double>(1.0 + 2.0 * edd, 0.0));
@@ -59,10 +64,10 @@ int main(int argc, char **argv) {
                 (5.0 * sqrt_3 * std::pow(std::complex<double>(-1.0 + edd, 0.0), 3.0) *
                  (log_term1 - 2.0 * log_term2)) /
                 sqrt_edd;
-
             q5 = (term1 - term2).real() / 96.0;
         }
     }
+
     q5 *= QF;
     h2 = 32. * sqrt(pi) * pow(as * BOHR_RADIUS / aho, 2.5) * pow(Nad, 1.5) * (4. * q5) / 3.;
     h2 = par * h2;
@@ -100,6 +105,7 @@ int main(int argc, char **argv) {
     MultiArray<double> kx(Nx), ky(Ny), kz(Nz);
     MultiArray<double> kx2(Nx), ky2(Ny), kz2(Nz);
 
+    // Allocate memory that will hold all chemical potential contributions
     MultiArray<double> muen(5);
 
     // Initialize total chemical potential of the current and next time step
@@ -149,13 +155,15 @@ int main(int argc, char **argv) {
 
     // Create forward plan
     cufftResult res = cufftCreate(&forward_plan);
-    if (res != CUFFT_SUCCESS) {
+    if (res != CUFFT_SUCCESS) 
+    {
         std::cerr << "CUFFT error: Forward plan creation failed" << std::endl;
         return -1;
     }
 
     res = cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize);
-    if (res != CUFFT_SUCCESS) {
+    if (res != CUFFT_SUCCESS) 
+    {
         std::cerr << "CUFFT error: Forward plan setup failed" << std::endl;
         cufftDestroy(forward_plan);
         return -1;
@@ -165,7 +173,8 @@ int main(int argc, char **argv) {
 
     // Create backward plan
     res = cufftCreate(&backward_plan);
-    if (res != CUFFT_SUCCESS) {
+    if (res != CUFFT_SUCCESS) 
+    {
         std::cerr << "CUFFT error: Backward plan creation failed" << std::endl;
         if (forward_work)
             cudaFree(forward_work);
@@ -174,7 +183,8 @@ int main(int argc, char **argv) {
     }
 
     res = cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize);
-    if (res != CUFFT_SUCCESS) {
+    if (res != CUFFT_SUCCESS) 
+    {
         std::cerr << "CUFFT error: Backward plan setup failed" << std::endl;
         if (forward_work)
             cudaFree(forward_work);
@@ -187,7 +197,8 @@ int main(int argc, char **argv) {
     {
         size_t shared_worksize =
             (forward_worksize > backward_worksize) ? forward_worksize : backward_worksize;
-        if (shared_worksize > 0) {
+        if (shared_worksize > 0) 
+        {
             cudaMalloc(&forward_work, shared_worksize);
             cufftSetWorkArea(forward_plan, forward_work);
             cufftSetWorkArea(backward_plan, forward_work);
@@ -199,19 +210,25 @@ int main(int argc, char **argv) {
     cudaHostAlloc(&h_rms_pinned, 3 * sizeof(double), cudaHostAllocDefault);
 
     // Initialize RMS output file that will store root mean square values <r>, <x>, <y>, <z>
-    if (rmsout != NULL) {
+    if (rmsout != NULL) 
+    {
         sprintf(filename, "%s.txt", rmsout);
         filerms = fopen(filename, "w");
     } else
+    {
         filerms = NULL;
+    }
 
     // Initialize chemical potential output file that will store chemical potential values, total
     // chemical pot., kinetic, trap, contact, dipole and quantum fluctuation terms
-    if (muoutput != NULL) {
+    if (muoutput != NULL) 
+    {
         sprintf(filename, "%s.txt", muoutput);
         filemu = fopen(filename, "w");
     } else
+    {
         filemu = NULL;
+    }
 
     // Initialize psi function
     initpsi(psi, x2, y2, z2, x, y, z);
@@ -233,15 +250,18 @@ int main(int argc, char **argv) {
     d_cgammaz.copyFromHost(cgammaz.raw());
 
     // Also copy coefficients to constant memory for warp-broadcast
-    if (Nx - 1 <= CGALPHA_MAX) {
+    if (Nx - 1 <= CGALPHA_MAX) 
+    {
         cudaMemcpyToSymbol(calphax_c, calphax.raw(), (Nx - 1) * sizeof(double));
         cudaMemcpyToSymbol(cgammax_c, cgammax.raw(), (Nx - 1) * sizeof(double));
     }
-    if (Ny - 1 <= CGALPHA_MAX) {
+    if (Ny - 1 <= CGALPHA_MAX) 
+    {
         cudaMemcpyToSymbol(calphay_c, calphay.raw(), (Ny - 1) * sizeof(double));
         cudaMemcpyToSymbol(cgammay_c, cgammay.raw(), (Ny - 1) * sizeof(double));
     }
-    if (Nz - 1 <= CGALPHA_MAX) {
+    if (Nz - 1 <= CGALPHA_MAX) 
+    {
         cudaMemcpyToSymbol(calphaz_c, calphaz.raw(), (Nz - 1) * sizeof(double));
         cudaMemcpyToSymbol(cgammaz_c, cgammaz.raw(), (Nz - 1) * sizeof(double));
     }
@@ -253,10 +273,12 @@ int main(int argc, char **argv) {
     d_pot.copyFromHost(pot.raw());
     d_potdd.copyFromHost(potdd.raw());
 
-    if (rmsout != NULL) {
+    if (rmsout != NULL) 
+    {
         rms_output(filerms);
     }
-    if (muoutput != NULL) {
+    if (muoutput != NULL) 
+    {
         mu_output(filemu);
     }
 
@@ -265,7 +287,8 @@ int main(int argc, char **argv) {
 
     // Compute RMS values
     compute_rms_values(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
-    if (rmsout != NULL) {
+    if (rmsout != NULL) 
+    {
         double rms_r = sqrt(h_rms_pinned[0] * h_rms_pinned[0] + h_rms_pinned[1] * h_rms_pinned[1] +
                             h_rms_pinned[2] * h_rms_pinned[2]);
         std::fprintf(filerms, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, rms_r,
@@ -274,107 +297,132 @@ int main(int argc, char **argv) {
     }
 
     // Compute chemical potential terms
-    if (muoutput != NULL) {
+    if (muoutput != NULL) 
+    {
         calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
                  d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
         std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
-                     0, muen[0] + muen[1] + muen[2] + muen[3] + muen[4], muen[3], muen[1], muen[0],
-                     muen[2], muen[4]);
+                    0, muen[0] + muen[1] + muen[2] + muen[3] + muen[4], muen[3], muen[1], muen[0],
+                    muen[2], muen[4]);
+                    
         fflush(filemu);
         mutotold = muen[0] + muen[1] + muen[2] + muen[3];
     }
 
-    if (Niterout != NULL) {
+    if (Niterout != NULL) 
+    {
         char itername[10];
         sprintf(itername, "-%06d-", 0);
-        if (outflags & DEN_X) {
+        if (outflags & DEN_X) 
+        {
             // Open binary file for writing
             sprintf(filename, "%s%s1d_x.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outdenx(psi, x, tmpy, tmpz, file);
             fclose(file);
         }
-        if (outflags & DEN_Y) {
+        if (outflags & DEN_Y) 
+        {
+            // Open binary file for writing
             sprintf(filename, "%s%s1d_y.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outdeny(psi, y, tmpx, tmpz, file);
             fclose(file);
         }
-        if (outflags & DEN_Z) {
+        if (outflags & DEN_Z) 
+        {
+            // Open binary file for writing
             sprintf(filename, "%s%s1d_z.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outdenz(psi, z, tmpx, tmpy, file);
             fclose(file);
         }
-        if (outflags & DEN_XY) {
+        if (outflags & DEN_XY) 
+        {
             // Open binary file for writing
             sprintf(filename, "%s%s2d_xy.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outdenxy(psi, x, y, tmpz, file);
             fclose(file);
         }
-        if (outflags & DEN_XZ) {
+        if (outflags & DEN_XZ) 
+        {
             // Open binary file for writing
             sprintf(filename, "%s%s2d_xz.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outdenxz(psi, x, z, tmpy, file);
             fclose(file);
         }
-        if (outflags & DEN_YZ) {
+        if (outflags & DEN_YZ) 
+        {
             // Open binary file for writing
             sprintf(filename, "%s%s2d_yz.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outdenyz(psi, y, z, tmpx, file);
             fclose(file);
         }
-        if (outflags & DEN_XY0) {
+        if (outflags & DEN_XY0) 
+        {
             sprintf(filename, "%s%s3d_xy0.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outpsi2xy(psi, x, y, file);
             fclose(file);
         }
-        if (outflags & DEN_X0Z) {
+        if (outflags & DEN_X0Z) 
+        {
+            // Open binary file for writing
             sprintf(filename, "%s%s3d_x0z.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
             outpsi2xz(psi, x, z, file);
             fclose(file);
         }
-        if (outflags & DEN_0YZ) {
+        if (outflags & DEN_0YZ) 
+        {
+            // Open binary file for writing
             sprintf(filename, "%s%s3d_0yz.bin", Niterout, itername);
             file = fopen(filename, "wb");
-            if (file == NULL) {
+            if (file == NULL) 
+            {
                 std::fprintf(stderr, "Failed to open file %s\n", filename);
                 exit(EXIT_FAILURE);
             }
@@ -391,8 +439,10 @@ int main(int argc, char **argv) {
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start);
-    for (long snap = 1; snap <= Nsnap; snap++) {
-        for (long j = 0; j < nsteps; j++) {
+    for (long snap = 1; snap <= Nsnap; snap++) 
+    {
+        for (long j = 0; j < nsteps; j++) 
+        {
             calc_psid2_potdd(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(),
                              d_psi2_fft, d_potdd.raw());
             calcnu(d_psi.raw(), d_work_array.raw(), d_pot.raw(), g, gd, h2);
@@ -404,7 +454,9 @@ int main(int argc, char **argv) {
 
         compute_rms_values(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
 
-        if (rmsout != NULL) {
+        if (rmsout != NULL) 
+        {
+            // Compute RMS values
             double rms_r =
                 sqrt(h_rms_pinned[0] * h_rms_pinned[0] + h_rms_pinned[1] * h_rms_pinned[1] +
                      h_rms_pinned[2] * h_rms_pinned[2]);
@@ -412,104 +464,134 @@ int main(int argc, char **argv) {
                          h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
             fflush(filerms);
         }
+        // Compute chemical potential terms
         calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
                  d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
-        if (muoutput != NULL) {
+        if (muoutput != NULL) 
+        {
             std::fprintf(filemu,
                          "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
                          snap, muen[0] + muen[1] + muen[2] + muen[3] + muen[4], muen[3], muen[1],
                          muen[0], muen[2], muen[4]);
             fflush(filemu);
         }
-        if (Niterout != NULL) {
+        if (Niterout != NULL) 
+        {
             // Move d_psi to host, host is pinned memory
             cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(double), cudaMemcpyDeviceToHost);
             char itername[32]; // Increased buffer size to prevent overflow
             sprintf(itername, "-%06li-", snap);
-            if (outflags & DEN_X) {
+            if (outflags & DEN_X) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s1d_x.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outdenx(psi, x, tmpy, tmpz, file);
                 fclose(file);
             }
-            if (outflags & DEN_Y) {
+            if (outflags & DEN_Y) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s1d_y.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outdeny(psi, y, tmpx, tmpz, file);
                 fclose(file);
             }
-            if (outflags & DEN_Z) {
+            if (outflags & DEN_Z) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s1d_z.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outdenz(psi, z, tmpx, tmpy, file);
                 fclose(file);
             }
-            if (outflags & DEN_XY) {
+            if (outflags & DEN_XY) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s2d_xy.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outdenxy(psi, x, y, tmpz, file);
                 fclose(file);
             }
-            if (outflags & DEN_XZ) {
+            if (outflags & DEN_XZ) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s2d_xz.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outdenxz(psi, x, z, tmpy, file);
                 fclose(file);
             }
-            if (outflags & DEN_YZ) {
+            if (outflags & DEN_YZ) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s2d_yz.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outdenyz(psi, y, z, tmpx, file);
                 fclose(file);
             }
-            if (outflags & DEN_XY0) {
+            if (outflags & DEN_XY0) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s3d_xy0.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outpsi2xy(psi, x, y, file);
                 fclose(file);
             }
-            if (outflags & DEN_X0Z) {
+            if (outflags & DEN_X0Z) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s3d_x0z.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
                 outpsi2xz(psi, x, z, file);
                 fclose(file);
             }
-            if (outflags & DEN_0YZ) {
+            if (outflags & DEN_0YZ) 
+            {
+                // Open binary file for writing
                 sprintf(filename, "%s%s3d_0yz.bin", Niterout, itername);
                 file = fopen(filename, "wb");
-                if (file == NULL) {
+                if (file == NULL) 
+                {
                     std::fprintf(stderr, "Failed to open file %s\n", filename);
                     exit(EXIT_FAILURE);
                 }
@@ -530,7 +612,8 @@ int main(int argc, char **argv) {
     float gpu_time_ms = 0.0f;
     cudaEventElapsedTime(&gpu_time_ms, start, stop);
     double gpu_time_seconds = gpu_time_ms / 1000.0;
-    if (rmsout != NULL) {
+    if (rmsout != NULL) 
+    {
         // std::fprintf(filerms,
         // "-------------------------------------------------------------------\n\n");
         // std::fprintf(filerms, "Total time on GPU: %f seconds\n", gpu_time_seconds);
@@ -538,7 +621,8 @@ int main(int argc, char **argv) {
                      "-------------------------------------------------------------------\n\n");
         fclose(filerms);
     }
-    if (muoutput != NULL) {
+    if (muoutput != NULL) 
+    {
         std::fprintf(filemu, "---------------------------------------------------------------------"
                              "------------\n\n");
         std::fprintf(filemu, "Total time on GPU: %f seconds\n", gpu_time_seconds);
@@ -547,7 +631,9 @@ int main(int argc, char **argv) {
         fclose(filemu);
     }
     // Save FINALPSI
-    if (finalpsi != NULL) {
+    if (finalpsi != NULL) 
+    {
+        // Open binary file for writing
         sprintf(filename, "%s.bin", finalpsi);
         save_psi_from_gpu(psi, d_psi.raw(), filename, Nx, Ny, Nz);
 
@@ -588,183 +674,247 @@ int main(int argc, char **argv) {
 /**
  * @brief Reading input parameters from the configuration file.
  */
-void readpar(void) {
+void readpar(void) 
+{
     const char *cfg_tmp;
 
-    if ((cfg_tmp = cfg_read("OPTION")) == NULL) {
+    if ((cfg_tmp = cfg_read("OPTION")) == NULL) 
+    {
         std::fprintf(stderr, "OPTION is not defined in the configuration file\n");
         exit(EXIT_FAILURE);
     }
     opt = atol(cfg_tmp);
-    if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) {
+    if ((cfg_tmp = cfg_read("OPTION_MICROWAVE_SHIELDING")) == NULL) 
+    {
         std::fprintf(stderr,
-                     "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
+                    "OPTION_MICROWAVE_SHIELDING is not defined in the configuration file\n");
         exit(EXIT_FAILURE);
     }
     optms = atol(cfg_tmp);
-    if (optms == 0) {
+    if (optms == 0) 
+    {
         MS = 1;
-    } else {
+    } else 
+    {
         MS = -1;
     }
 
-    if ((cfg_tmp = cfg_read("NATOMS")) == NULL) {
+    if ((cfg_tmp = cfg_read("NATOMS")) == NULL) 
+    {
         std::fprintf(stderr, "NATOMS is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     Na = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("AHO")) == NULL) {
+    if ((cfg_tmp = cfg_read("AHO")) == NULL) 
+    {
         std::fprintf(stderr, "AHO is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     aho = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("G")) == NULL) {
-        if ((cfg_tmp = cfg_read("AS")) == NULL) {
+    if ((cfg_tmp = cfg_read("G")) == NULL) 
+    {
+        if ((cfg_tmp = cfg_read("AS")) == NULL) 
+        {
             std::fprintf(stderr, "AS is not defined in the configuration file.\n");
             exit(EXIT_FAILURE);
         }
         as = atof(cfg_tmp);
-
         g = 4. * pi * as * Na * BOHR_RADIUS / aho;
-    } else {
+    } else 
+    {
         g = atof(cfg_tmp);
     }
 
-    if ((cfg_tmp = cfg_read("GDD")) == NULL) {
-        if ((cfg_tmp = cfg_read("ADD")) == NULL) {
+    if ((cfg_tmp = cfg_read("GDD")) == NULL) 
+    {
+        if ((cfg_tmp = cfg_read("ADD")) == NULL) 
+        {
             std::fprintf(stderr, "ADD is not defined in the configuration file.\n");
             exit(EXIT_FAILURE);
         }
         add = atof(cfg_tmp);
-
         gd = 3. * add * Na * BOHR_RADIUS / aho;
-    } else {
+    } else 
+    {
         gd = atof(cfg_tmp);
     }
 
-    if ((cfg_tmp = cfg_read("QF")) == NULL) {
+    if ((cfg_tmp = cfg_read("QF")) == NULL) 
+    {
         QF = 0;
     } else
+    {
         QF = atol(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("SX")) == NULL)
+    {
         sx = 0.;
-    else
+    } else
+    {
         sx = atof(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("SY")) == NULL)
+    {
         sy = 0.;
-    else
+    } else
+    {
         sy = atof(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("SZ")) == NULL)
+    {
         sz = 0.;
-    else
+    } else
+    {
         sz = atof(cfg_tmp);
+    }
 
-    if ((cfg_tmp = cfg_read("NX")) == NULL) {
+    if ((cfg_tmp = cfg_read("NX")) == NULL) 
+    {
         std::fprintf(stderr, "NX is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     Nx = atol(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("NY")) == NULL) {
+    if ((cfg_tmp = cfg_read("NY")) == NULL) 
+    {
         std::fprintf(stderr, "NY is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     Ny = atol(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("NZ")) == NULL) {
+    if ((cfg_tmp = cfg_read("NZ")) == NULL) 
+    {
         std::fprintf(stderr, "Nz is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     Nz = atol(cfg_tmp);
 
     if ((cfg_tmp = cfg_read("MX")) == NULL)
+    {
         mx = 10;
-    else
+    } else
+    {
         mx = atoi(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("MY")) == NULL)
+    {
         my = 10;
-    else
+    } else
+    {
         my = atoi(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("MZ")) == NULL)
+    {
         mz = 10;
-    else
+    } else
+    {
         mz = atoi(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("MT")) == NULL)
+    {
         mt = 10;
-    else
+    } else
+    {
         mt = atoi(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("DX")) == NULL)
+    {
         dx = sx * mx * 2 / Nx;
-    else
+    } else
+    {
         dx = atof(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("DY")) == NULL)
+    {
         dy = sy * my * 2 / Ny;
-    else
+    } else
+    {
         dy = atof(cfg_tmp);
-    if ((cfg_tmp = cfg_read("DZ")) == NULL)
-        dz = sz * mz * 2 / Nz;
-    else
-        dz = atof(cfg_tmp);
+    }
 
-    if ((cfg_tmp = cfg_read("DT")) == NULL) {
+    if ((cfg_tmp = cfg_read("DZ")) == NULL)
+    {
+        dz = sz * mz * 2 / Nz;
+    } else
+    {
+        dz = atof(cfg_tmp);
+    }
+
+    if ((cfg_tmp = cfg_read("DT")) == NULL) 
+    {
         dt = dy * dy / mt;
     } else
+    {
         dt = atof(cfg_tmp);
+    }
 
-    if ((cfg_tmp = cfg_read("MUREL")) == NULL) {
+    if ((cfg_tmp = cfg_read("MUREL")) == NULL) 
+    {
         std::fprintf(stderr, "MUREL is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     murel = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("MUEND")) == NULL) {
+    if ((cfg_tmp = cfg_read("MUEND")) == NULL) 
+    {
         std::fprintf(stderr, "MUEND is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     muend = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("GAMMA")) == NULL) {
+    if ((cfg_tmp = cfg_read("GAMMA")) == NULL) 
+    {
         std::fprintf(stderr, "GAMMA is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     vgamma = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("NU")) == NULL) {
+    if ((cfg_tmp = cfg_read("NU")) == NULL) 
+    {
         std::fprintf(stderr, "NU is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     vnu = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("LAMBDA")) == NULL) {
+    if ((cfg_tmp = cfg_read("LAMBDA")) == NULL) 
+    {
         std::fprintf(stderr, "LAMBDA is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     vlambda = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("NITER")) == NULL) {
+    if ((cfg_tmp = cfg_read("NITER")) == NULL) 
+    {
         std::fprintf(stderr, "NITER is not defined in the configuration file.\n");
         exit(EXIT_FAILURE);
     }
     Niter = atol(cfg_tmp);
     if ((cfg_tmp = cfg_read("NSNAP")) == NULL)
+    {
         Nsnap = 1;
+    }
     else
+    {
         Nsnap = atol(cfg_tmp);
+    }
 
     if ((cfg_tmp = cfg_read("CUTOFF")) == NULL)
+    {
         cutoff = Ny * dy / 2;
-    else
+    } else
+    {
         cutoff = atof(cfg_tmp);
+    }
 
     input = cfg_read("INPUT");
     input_type = cfg_read("INPUT_TYPE");
@@ -775,13 +925,16 @@ void readpar(void) {
     finalpsi = cfg_read("FINALPSI");
 
     if (Niterout != NULL) {
-        if ((cfg_tmp = cfg_read("OUTFLAGS")) == NULL) {
+        if ((cfg_tmp = cfg_read("OUTFLAGS")) == NULL) 
+        {
             std::fprintf(stderr, "OUTFLAGS is not defined in the configuration file.\n");
             exit(EXIT_FAILURE);
         }
         outflags = atoi(cfg_tmp);
     } else
+    {
         outflags = 0;
+    }
 
     return;
 }
@@ -800,7 +953,8 @@ void compute_rms_values(
 {
     // Check for CUDA errors
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    if (err != cudaSuccess) 
+    {
         std::printf("CUDA error after memcpy: %s\n", cudaGetErrorString(err));
     }
 
@@ -849,7 +1003,8 @@ void compute_rms_values(
  */
 __global__ void compute_single_weighted_psi_squared(const double *__restrict__ psi, double *result,
                                                     int direction, // 0=x, 1=y, 2=z
-                                                    const double scale) {
+                                                    const double scale) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -862,13 +1017,16 @@ __global__ void compute_single_weighted_psi_squared(const double *__restrict__ p
     double psi_squared = psi_val * psi_val;
 
     double weight = 0.0;
-    if (direction == 0) {
+    if (direction == 0) 
+    {
         double x = (static_cast<double>(idx) - static_cast<double>(d_Nx) * 0.5) * scale;
         weight = x * x;
-    } else if (direction == 1) {
+    } else if (direction == 1) 
+    {
         double y = (static_cast<double>(idy) - static_cast<double>(d_Ny) * 0.5) * scale;
         weight = y * y;
-    } else if (direction == 2) {
+    } else if (direction == 2) 
+    {
         double z = (static_cast<double>(idz) - static_cast<double>(d_Nz) * 0.5) * scale;
         weight = z * z;
     }
@@ -881,7 +1039,8 @@ __global__ void compute_single_weighted_psi_squared(const double *__restrict__ p
  * @param d_psi: Device: 3D psi array
  * @param d_psi2: Device: 3D psi2 array
  */
-void calc_d_psi2(const double *d_psi, double *d_psi2) {
+void calc_d_psi2(const double *d_psi, double *d_psi2) 
+{
     dim3 threadsPerBlock(8, 8, 8);
     dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
                    (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
@@ -895,7 +1054,8 @@ void calc_d_psi2(const double *d_psi, double *d_psi2) {
  * @param d_psi: Device: 3D psi array
  * @param d_psi2: Device: 3D psi2 array
  */
-__global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restrict__ d_psi2) {
+__global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restrict__ d_psi2) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -920,35 +1080,41 @@ __global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restr
  * @param z: z array
  */
 void initpsi(double *psi, MultiArray<double> &x2, MultiArray<double> &y2, MultiArray<double> &z2,
-             MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &z) {
+             MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &z) 
+{
     long cnti, cntj, cntk;
     double cpsi;
     double tmp;
     cpsi = sqrt(2. * pi * sqrt(2. * pi) * sx * sy * sz);
 
-#pragma omp parallel for private(cnti)
-    for (cnti = 0; cnti < Nx; cnti++) {
+    #pragma omp parallel for private(cnti)
+    for (cnti = 0; cnti < Nx; cnti++) 
+    {
         x[cnti] = (cnti - Nx2) * dx;
         x2[cnti] = x[cnti] * x[cnti];
     }
 
-#pragma omp parallel for private(cntj)
-    for (cntj = 0; cntj < Ny; cntj++) {
+    #pragma omp parallel for private(cntj)
+    for (cntj = 0; cntj < Ny; cntj++) 
+    {
         y[cntj] = (cntj - Ny2) * dy;
         y2[cntj] = y[cntj] * y[cntj];
     }
 
-#pragma omp parallel for private(cntk)
-    for (cntk = 0; cntk < Nz; cntk++) {
-
+    #pragma omp parallel for private(cntk)
+    for (cntk = 0; cntk < Nz; cntk++) 
+    {
         z[cntk] = (cntk - Nz2) * dz;
         z2[cntk] = z[cntk] * z[cntk];
     }
 
-#pragma omp parallel for private(cnti, cntj, cntk, tmp)
-    for (cntk = 0; cntk < Nz; cntk++) {
-        for (cntj = 0; cntj < Ny; cntj++) {
-            for (cnti = 0; cnti < Nx; cnti++) {
+    #pragma omp parallel for private(cnti, cntj, cntk, tmp)
+    for (cntk = 0; cntk < Nz; cntk++) 
+    {
+        for (cntj = 0; cntj < Ny; cntj++) 
+        {
+            for (cnti = 0; cnti < Nx; cnti++) 
+            {
                 tmp = exp(-0.25 *
                           (x2[cnti] / (sx * sx) + y2[cntj] / (sy * sy) + z2[cntk] / (sz * sz)));
                 psi[cntk * Ny * Nx + cntj * Nx + cnti] = tmp / cpsi;
@@ -966,19 +1132,22 @@ void initpsi(double *psi, MultiArray<double> &x2, MultiArray<double> &y2, MultiA
  * @param z2: z2 array
  */
 void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double> &y2,
-             MultiArray<double> &z2) {
+             MultiArray<double> &z2) 
+{
     long cnti, cntj, cntk;
     double vgamma2 = vgamma * vgamma;
     double vnu2 = vnu * vnu;
     double vlambda2 = vlambda * vlambda;
 
-#pragma omp parallel for private(cnti, cntj, cntk)
-    for (cntk = 0; cntk < Nz; cntk++) {
-        for (cntj = 0; cntj < Ny; cntj++) {
-            for (cnti = 0; cnti < Nx; cnti++) {
+    #pragma omp parallel for private(cnti, cntj, cntk)
+    for (cntk = 0; cntk < Nz; cntk++) 
+    {
+        for (cntj = 0; cntj < Ny; cntj++) 
+        {
+            for (cnti = 0; cnti < Nx; cnti++) 
+            {
                 pot(cntk, cntj, cnti) =
                     0.5 * par * (vgamma2 * x2[cnti] + vnu2 * y2[cntj] + vlambda2 * z2[cntk]);
-                ;
             }
         }
     }
@@ -997,7 +1166,8 @@ void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double>
  */
 void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<double> &ky,
                MultiArray<double> &kz, MultiArray<double> &kx2, MultiArray<double> &ky2,
-               MultiArray<double> &kz2) {
+               MultiArray<double> &kz2) 
+{
     long cnti, cntj, cntk;
     double dkx, dky, dkz, xk, tmp;
 
@@ -1025,10 +1195,13 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
     for (cntk = 0; cntk < Nz; cntk++)
         kz2[cntk] = kz[cntk] * kz[cntk];
 
-#pragma omp parallel for private(cnti, cntj, cntk, tmp, xk)
-    for (cntk = 0; cntk < Nz; cntk++) {
-        for (cntj = 0; cntj < Ny; cntj++) {
-            for (cnti = 0; cnti < Nx; cnti++) {
+    #pragma omp parallel for private(cnti, cntj, cntk, tmp, xk)
+    for (cntk = 0; cntk < Nz; cntk++) 
+    {
+        for (cntj = 0; cntj < Ny; cntj++) 
+        {
+            for (cnti = 0; cnti < Nx; cnti++) 
+            {
                 xk = sqrt(kz2[cntk] + kx2[cnti] + ky2[cntj]);
                 tmp = 1. + 3. * cos(xk * cutoff) / (xk * xk * cutoff * cutoff) -
                       3. * sin(xk * cutoff) / (xk * xk * xk * cutoff * cutoff * cutoff);
@@ -1050,7 +1223,8 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
  * @param norm: Wave function norm
  * @param integ: Simpson3DTiledIntegrator
  */
-void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegrator &integ) {
+void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegrator &integ) 
+{
     calc_d_psi2(d_psi, d_psi2);
     double raw_norm = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
     norm = 1.0 / sqrt(raw_norm);
@@ -1069,7 +1243,8 @@ void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegra
  * @param d_psi: Device: 3D psi array
  * @param norm: Wave function norm
  */
-__global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm) {
+__global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1087,7 +1262,8 @@ __global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm) 
  * @param potdd: Device: 3D dipolar potential array
  */
 __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
-                                    const double *__restrict__ potdd) {
+                                    const double *__restrict__ potdd) 
+{
     int grid_stride_z = gridDim.z * blockDim.z;
     int grid_stride_y = gridDim.y * blockDim.y;
     int grid_stride_x = gridDim.x * blockDim.x;
@@ -1096,9 +1272,12 @@ __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
     int tdx = blockIdx.x * blockDim.x + threadIdx.x;
 
     // Grid-stride loop implementation
-    for (int idz = tdz; idz < d_Nz; idz += grid_stride_z) {
-        for (int idy = tdy; idy < d_Ny; idy += grid_stride_y) {
-            for (int idx = tdx; idx < d_Nx / 2 + 1; idx += grid_stride_x) {
+    for (int idz = tdz; idz < d_Nz; idz += grid_stride_z) 
+    {
+        for (int idy = tdy; idy < d_Ny; idy += grid_stride_y) 
+        {
+            for (int idx = tdx; idx < d_Nx / 2 + 1; idx += grid_stride_x) 
+            {
 
                 // Calculate linear index for FFT array (R2C format)
                 int fft_idx = idz * d_Ny * (d_Nx / 2 + 1) + idy * (d_Nx / 2 + 1) + idx;
@@ -1116,7 +1295,8 @@ __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
  * @brief Kernel to compute the boundaries of the FFT psi2 array
  * @param psidd2: Device: 3D psi2 array multiplied by the dipolar potential
  */
-__global__ void calcpsidd2_boundaries(double *psidd2) {
+__global__ void calcpsidd2_boundaries(double *psidd2) 
+{
     long cnti, cntj, cntk;
 
     int grid_stride_y = gridDim.y * blockDim.y;
@@ -1125,8 +1305,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
     int tdy = blockIdx.y * blockDim.y + threadIdx.y;
     int tdx = blockIdx.x * blockDim.x + threadIdx.x;
 
-    for (cntj = tdy; cntj < d_Ny; cntj += grid_stride_y) {
-        for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) {
+    for (cntj = tdy; cntj < d_Ny; cntj += grid_stride_y) 
+    {
+        for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) 
+        {
             long first_idx = cntk * (d_Nx * d_Ny) + cntj * d_Nx + 0; // i=0 (first x-slice)
             long last_idx =
                 cntk * (d_Nx * d_Ny) + cntj * d_Nx + (d_Nx - 1); // i=d_Nx-1 (last x-slice)
@@ -1135,8 +1317,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
         }
     }
 
-    for (cnti = tdy; cnti < d_Nx; cnti += grid_stride_y) {
-        for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) {
+    for (cnti = tdy; cnti < d_Nx; cnti += grid_stride_y) 
+    {
+        for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) 
+        {
             long first_idx = cntk * (d_Nx * d_Ny) + 0 * d_Nx + cnti; // j=0 (first y-slice)
             long last_idx =
                 cntk * (d_Nx * d_Ny) + (d_Ny - 1) * d_Nx + cnti; // j=d_Ny-1 (last y-slice)
@@ -1145,8 +1329,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
         }
     }
 
-    for (cnti = tdy; cnti < d_Nx; cnti += grid_stride_y) {
-        for (cntj = tdx; cntj < d_Ny; cntj += grid_stride_x) {
+    for (cnti = tdy; cnti < d_Nx; cnti += grid_stride_y) 
+    {
+        for (cntj = tdx; cntj < d_Ny; cntj += grid_stride_x) 
+        {
             long first_idx = 0 * (d_Nx * d_Ny) + cntj * d_Nx + cnti; // k=0 (first z-slice)
             long last_idx =
                 (d_Nz - 1) * (d_Nx * d_Ny) + cntj * d_Nx + cnti; // k=d_Nz-1 (last z-slice)
@@ -1167,7 +1353,8 @@ __global__ void calcpsidd2_boundaries(double *psidd2) {
  * @param potdd: Device: 3D dipolar potential array
  */
 void calc_psid2_potdd(cufftHandle forward_plan, cufftHandle backward_plan, const double *d_psi,
-                      double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd) {
+                      double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd) 
+{
     calc_d_psi2(d_psi, d_psi2_real);
     cufftExecD2Z(forward_plan, (cufftDoubleReal *)d_psi2_real, d_psi2_fft);
 
@@ -1203,7 +1390,8 @@ void calc_psid2_potdd(cufftHandle forward_plan, cufftHandle backward_plan, const
 void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArray<double> &calphay,
              MultiArray<double> &cgammay, MultiArray<double> &calphaz, MultiArray<double> &cgammaz,
              double &Ax0, double &Ay0, double &Az0, double &Ax0r, double &Ay0r, double &Az0r,
-             double &Ax, double &Ay, double &Az) {
+             double &Ax, double &Ay, double &Az) 
+{
     long cnti;
 
     Ax0 = 1. + dt / dx2 / (3. - par);
@@ -1220,21 +1408,24 @@ void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArra
 
     calphax[Nx - 2] = 0.;
     cgammax[Nx - 2] = -1. / Ax0;
-    for (cnti = Nx - 2; cnti > 0; cnti--) {
+    for (cnti = Nx - 2; cnti > 0; cnti--) 
+    {
         calphax[cnti - 1] = Ax * cgammax[cnti];
         cgammax[cnti - 1] = -1. / (Ax0 + Ax * calphax[cnti - 1]);
     }
 
     calphay[Ny - 2] = 0.;
     cgammay[Ny - 2] = -1. / Ay0;
-    for (cnti = Ny - 2; cnti > 0; cnti--) {
+    for (cnti = Ny - 2; cnti > 0; cnti--) 
+    {
         calphay[cnti - 1] = Ay * cgammay[cnti];
         cgammay[cnti - 1] = -1. / (Ay0 + Ay * calphay[cnti - 1]);
     }
 
     calphaz[Nz - 2] = 0.;
     cgammaz[Nz - 2] = -1. / Az0;
-    for (cnti = Nz - 2; cnti > 0; cnti--) {
+    for (cnti = Nz - 2; cnti > 0; cnti--) 
+    {
         calphaz[cnti - 1] = Az * cgammaz[cnti];
         cgammaz[cnti - 1] = -1. / (Az0 + Az * calphaz[cnti - 1]);
     }
@@ -1252,7 +1443,8 @@ void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArra
  * @param gd: Host to Device: gd coefficient for dipolar interaction term
  * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
  */
-void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, double h2) {
+void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, double h2) 
+{
 
     // Precompute ratio_gd on host (constant for all threads)
     double ratio_gd = gd / ((double)(Nx * Ny * Nz));
@@ -1278,7 +1470,8 @@ void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, d
  */
 __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d_psi2,
                               const double *__restrict__ d_pot, const double g,
-                              const double ratio_gd, const double h2) {
+                              const double ratio_gd, const double h2) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1310,7 +1503,8 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d
  * @param Ax: Host to Device: Ax coefficient
  */
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgammax, double Ax0r,
-             double Ax) {
+             double Ax) 
+{
 
     dim3 threadsPerBlock(32, 8); // 256 threads per block
     dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
@@ -1334,7 +1528,8 @@ void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgamma
 __global__ void calclux_kernel(double *__restrict__ psi, double *__restrict__ cbeta,
                                const double *__restrict__ calphax,
                                const double *__restrict__ cgammax, const double Ax0r,
-                               const double Ax) {
+                               const double Ax) 
+{
 
     // Map y to threadIdx.x for better locality across warp; z to threadIdx.y
     int cntj = blockIdx.x * blockDim.x + threadIdx.x;
@@ -1355,7 +1550,8 @@ __global__ void calclux_kernel(double *__restrict__ psi, double *__restrict__ cb
     // Algorithm forward sweep with rolling window in x
     double psi_ip1 = __ldg(&psi[idx_ip1]);
     double psi_i = __ldg(&psi[idx_i]);
-    for (int cnti = d_Nx - 2; cnti > 0; cnti--) {
+    for (int cnti = d_Nx - 2; cnti > 0; cnti--) 
+    {
         long idx_im1 = idx_i - 1;
         double psi_im1 = __ldg(&psi[idx_im1]);
 
@@ -1375,7 +1571,8 @@ __global__ void calclux_kernel(double *__restrict__ psi, double *__restrict__ cb
 
     // Back substitution: update psi values
     long idx_i_bs = base_offset; // i = 0
-    for (int cnti = 0; cnti < d_Nx - 2; cnti++) {
+    for (int cnti = 0; cnti < d_Nx - 2; cnti++) 
+    {
         long idx_ip1_bs = idx_i_bs + 1; // i+1
         double alpha = (d_Nx - 1 <= CGALPHA_MAX) ? calphax_c[cnti] : __ldg(&calphax[cnti]);
         psi[idx_ip1_bs] = fma(alpha, psi[idx_i_bs], cbeta[idx_i_bs]);
@@ -1396,7 +1593,8 @@ __global__ void calclux_kernel(double *__restrict__ psi, double *__restrict__ cb
  * @param Ay: Host to Device: Ay coefficient
  */
 void calcluy(double *d_psi, double *d_cbeta, double *d_calphay, double *d_cgammay, double Ay0r,
-             double Ay) {
+             double Ay) 
+{
 
     // Map threadIdx.x to the fastest-varying axis (x) for coalesced access
     dim3 threadsPerBlock(32, 8); // 256 threads per block, x-major
@@ -1420,7 +1618,8 @@ void calcluy(double *d_psi, double *d_cbeta, double *d_calphay, double *d_cgamma
 __global__ void calcluy_kernel(double *__restrict__ psi, double *__restrict__ cbeta,
                                const double *__restrict__ calphay,
                                const double *__restrict__ cgammay, const double Ay0r,
-                               const double Ay) {
+                               const double Ay) 
+{
 
     // Map x to threadIdx.x for coalesced global memory access within a warp
     int cnti = blockIdx.x * blockDim.x + threadIdx.x; // x (fastest)
@@ -1439,7 +1638,8 @@ __global__ void calcluy_kernel(double *__restrict__ psi, double *__restrict__ cb
     // Algorithm forward sweep (y-direction) with rolling window
     double psi_jp1 = __ldg(&psi[idx_jp1]);
     double psi_j = __ldg(&psi[idx]);
-    for (int cntj = d_Ny - 2; cntj > 0; cntj--) {
+    for (int cntj = d_Ny - 2; cntj > 0; cntj--) 
+    {
         long idx_jm1 = idx - d_Nx; // j-1
         double psi_jm1 = __ldg(&psi[idx_jm1]);
 
@@ -1458,7 +1658,8 @@ __global__ void calcluy_kernel(double *__restrict__ psi, double *__restrict__ cb
 
     // Back substitution: update psi values
     long idx_j = base_offset; // j = 0
-    for (int cntj = 0; cntj < d_Ny - 2; cntj++) {
+    for (int cntj = 0; cntj < d_Ny - 2; cntj++) 
+    {
         long idx_jp1_bs = idx_j + d_Nx; // j+1
         double alpha = (d_Ny - 1 <= CGALPHA_MAX) ? calphay_c[cntj] : __ldg(&calphay[cntj]);
         psi[idx_jp1_bs] = fma(alpha, psi[idx_j], cbeta[idx_j]);
@@ -1479,7 +1680,8 @@ __global__ void calcluy_kernel(double *__restrict__ psi, double *__restrict__ cb
  * @param Az: Host to Device: Az coefficient
  */
 void calcluz(double *d_psi, double *d_cbeta, double *d_calphaz, double *d_cgammaz, double Az0r,
-             double Az) {
+             double Az) 
+{
 
     // Map threadIdx.x to the fastest-varying axis (x) for coalesced access
     dim3 threadsPerBlock(32, 8); // 256 threads per block, x-major
@@ -1503,7 +1705,8 @@ void calcluz(double *d_psi, double *d_cbeta, double *d_calphaz, double *d_cgamma
 __global__ void calcluz_kernel(double *__restrict__ psi, double *__restrict__ cbeta,
                                const double *__restrict__ calphaz,
                                const double *__restrict__ cgammaz, const double Az0r,
-                               const double Az) {
+                               const double Az) 
+{
 
     int cnti = blockIdx.x * blockDim.x + threadIdx.x; // x (fastest)
     int cntj = blockIdx.y * blockDim.y + threadIdx.y; // y
@@ -1524,7 +1727,8 @@ __global__ void calcluz_kernel(double *__restrict__ psi, double *__restrict__ cb
     long idx_k = base_offset + (d_Nz - 2) * stride;   // k
     double psi_kp1 = __ldg(&psi[idx_kp1]);
     double psi_k = __ldg(&psi[idx_k]);
-    for (int cntk = d_Nz - 2; cntk > 0; cntk--) {
+    for (int cntk = d_Nz - 2; cntk > 0; cntk--) 
+    {
         long idx_km1 = idx_k - stride; // k-1
         double psi_km1 = __ldg(&psi[idx_km1]);
 
@@ -1543,7 +1747,8 @@ __global__ void calcluz_kernel(double *__restrict__ psi, double *__restrict__ cb
 
     // Back substitution: update psi values
     long idx_k_bs = base_offset; // k = 0
-    for (int cntk = 0; cntk < d_Nz - 2; cntk++) {
+    for (int cntk = 0; cntk < d_Nz - 2; cntk++) 
+    {
         long idx_kp1_bs = idx_k_bs + stride; // k+1
         double alpha = (d_Nz - 1 <= CGALPHA_MAX) ? calphaz_c[cntk] : __ldg(&calphaz[cntk]);
         psi[idx_kp1_bs] = fma(alpha, psi[idx_k_bs], cbeta[idx_k_bs]);
@@ -1574,7 +1779,8 @@ __global__ void calcluz_kernel(double *__restrict__ psi, double *__restrict__ cb
 void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd,
               double *d_potdd, cufftDoubleComplex *d_psi2_fft, cufftHandle forward_plan,
               cufftHandle backward_plan, Simpson3DTiledIntegrator &integ, const double g,
-              const double gd, const double h2) {
+              const double gd, const double h2) 
+{
 
     // Precompute constants
     const double inv_NxNyNz = 1.0 / ((double)Nx * Ny * Nz);
@@ -1617,7 +1823,8 @@ void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double
  * @param half_g: Precomputed 0.5 * g coefficient for contact interaction term
  */
 __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi,
-                                       double *__restrict__ d_result, double half_g) {
+                                       double *__restrict__ d_result, double half_g) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1640,7 +1847,8 @@ __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi,
  */
 __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi,
                                          double *__restrict__ d_result,
-                                         const double *__restrict__ d_pot) {
+                                         const double *__restrict__ d_pot) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1664,7 +1872,8 @@ __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi,
  */
 __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi,
                                        double *__restrict__ d_result,
-                                       const double *__restrict__ d_psidd2, const double half_gd) {
+                                       const double *__restrict__ d_psidd2, const double half_gd) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1686,7 +1895,8 @@ __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi,
  * @param half_h2: Precomputed 0.5 * h2 coefficient for quantum fluctuation term
  */
 __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__restrict__ d_result,
-                                  const double half_h2) {
+                                  const double half_h2) 
+{
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
@@ -1706,7 +1916,8 @@ __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__re
  * @param d_work_array: Device: 3D work array
  * @param par: Host to Device: par coefficient either 1 or 2, defined in Input file
  */
-void calcmuen_kin(double *d_psi, double *d_work_array, int par) {
+void calcmuen_kin(double *d_psi, double *d_work_array, int par) 
+{
     diff(dx, dy, dz, d_psi, d_work_array, Nx, Ny, Nz, par);
 }
 
@@ -1716,51 +1927,72 @@ void calcmuen_kin(double *d_psi, double *d_work_array, int par) {
  */
 void rms_output(FILE *filerms) {
     std::fprintf(filerms, "\n**********************************************\n");
-    if (cfg_read("G") != NULL) {
+    
+    if (cfg_read("G") != NULL) 
+    {
         std::fprintf(filerms, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
-    } else {
+    } else 
+    {
         std::fprintf(filerms,
                      "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad,
                      as, g / par, g);
     }
-    if (optms == 0) {
+
+    if (optms == 0) 
+    {
         std::fprintf(filerms, "Regular ");
-    } else {
+    } else 
+    {
         std::fprintf(filerms, "Microwave-shielded ");
     }
-    if (cfg_read("GDD") != NULL) {
+
+    if (cfg_read("GDD") != NULL) 
+    {
         std::fprintf(filerms, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd,
                      edd);
     } else {
         std::fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n",
                      add, gd / par, gd, edd);
     }
-    std::fprintf(filerms, "     Dipolar cutoff Scut = %.6le,\n\n", cutoff);
-    if (QF == 1) {
-        std::fprintf(filerms, "QF = 1: h2 = %.16le       q5 = %.16le\n", h2, q5);
+    std::fprintf(filerms, "\t\tDipolar cutoff Scut = %.6le,\n\n", cutoff);
+
+    if (QF == 1) 
+    {
+        std::fprintf(filerms, "QF = 1: h2 = %.16le,\t\tq5 = %.16le\n", h2, q5);
     } else
+    {
         std::fprintf(filerms, "QF = 0\n\n");
+    }
+
     std::fprintf(filerms, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma,
                  vnu, vlambda);
     std::fprintf(filerms, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
     std::fprintf(filerms,
-                 "\t\t DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
+                 "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
                  "%.2le, mz = %.2le\n",
                  dx, dy, dz, mx, my, mz);
+
     if (cfg_read("AHO") != NULL)
-        std::fprintf(filerms, "      Unit of length: aho = %.6le m\n", aho);
+    {
+        std::fprintf(filerms, "\t\tUnit of length: aho = %.6le m\n", aho);
+    }
+
     std::fprintf(filerms, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
-    std::fprintf(filerms, "                     DT = %.6le, mt = %.2le\n\n", dt, mt);
-    if (input != NULL) {
+    std::fprintf(filerms, "\t\tDT = %.6le, mt = %.2le\n\n", dt, mt);
+    
+    if (input != NULL) 
+    {
         std::fprintf(filerms, "file %s\n", input);
-    } else {
-        std::fprintf(filerms, "Gaussian\n               SX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
+    } else 
+    {
+        std::fprintf(filerms, "Gaussian\n\t\tSX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
                      sy, sz);
     }
+
     std::fprintf(filerms, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
-    std::fprintf(filerms, "-------------------------------------------------------------------\n");
-    std::fprintf(filerms, "Snap      <r>            <x>            <y>            <z>\n");
-    std::fprintf(filerms, "-------------------------------------------------------------------\n");
+    std::fprintf(filerms, "---------------------------------------------------------------------------------\n");
+    std::fprintf(filerms, "Snap\t\t\t\t<r>\t\t\t\t<x>\t\t\t\t<y>\t\t\t\t<z>\n");
+    std::fprintf(filerms, "---------------------------------------------------------------------------------\n");
     fflush(filerms);
 }
 
@@ -1770,55 +2002,78 @@ void rms_output(FILE *filerms) {
  */
 void mu_output(FILE *filemu) {
     std::fprintf(filemu, "\n**********************************************\n");
-    if (cfg_read("G") != NULL) {
+    
+    if (cfg_read("G") != NULL) 
+    {
         std::fprintf(filemu, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
-    } else {
+    } else 
+    {
         std::fprintf(filemu,
                      "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad,
                      as, g / par, g);
     }
-    if (optms == 0) {
+    
+    if (optms == 0) 
+    {
         std::fprintf(filemu, "Regular ");
-    } else {
+    } else 
+    {
         std::fprintf(filemu, "Microwave-shielded ");
     }
-    if (cfg_read("GDD") != NULL) {
+    
+    if (cfg_read("GDD") != NULL) 
+    {
         std::fprintf(filemu, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd, edd);
-    } else {
+    } else 
+    {
         std::fprintf(filemu, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n",
                      add, gd / par, gd, edd);
     }
-    std::fprintf(filemu, "     Dipolar cutoff Scut = %.6le,\n\n", cutoff);
-    if (QF == 1) {
-        std::fprintf(filemu, "QF = 1: h2 = %.6le,       q5 = %.6le, \n\n", h2, q5);
+    
+    std::fprintf(filemu, "\t\tDipolar cutoff Scut = %.6le,\n\n", cutoff);
+    
+    if (QF == 1) 
+    {
+        std::fprintf(filemu, "QF = 1: h2 = %.6le,\t\tq5 = %.6le, \n\n", h2, q5);
     } else
+    {
         std::fprintf(filemu, "QF = 0\n\n");
+    }
+
     std::fprintf(filemu, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma,
                  vnu, vlambda);
     std::fprintf(filemu, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
     std::fprintf(filemu,
-                 "\t\t DX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
+                 "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
                  "%.2le, mz = %.2le\n",
                  dx, dy, dz, mx, my, mz);
+    
     if (cfg_read("AHO") != NULL)
-        std::fprintf(filemu, "      Unit of length: aho = %.6le m\n", aho);
+    {
+        std::fprintf(filemu, "\t\tUnit of length: aho = %.6le m\n", aho);
+    }
+    
     std::fprintf(filemu, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
-    std::fprintf(filemu, "                     DT = %.6le, mt = %.2le\n\n", dt, mt);
-    if (input != NULL) {
+    std::fprintf(filemu, "\t\tDT = %.6le, mt = %.2le\n\n", dt, mt);
+    
+    if (input != NULL) 
+    {
         std::fprintf(filemu, "file %s\n", input);
-    } else {
-        std::fprintf(filemu, "Gaussian\n               SX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
+    } else 
+    {
+        std::fprintf(filemu, "Gaussian\n\t\tSX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
                      sy, sz);
     }
+
     std::fprintf(filemu, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
     std::fprintf(
         filemu,
-        "---------------------------------------------------------------------------------\n");
-    std::fprintf(filemu, "Snap      mu           Kin             Pot            Contact            "
-                         "DDI            QF\n");
+        "---------------------------------------------------------------------------------------------------------------\n");
+    std::fprintf(filemu, "Snap\t\t\t\tmu\t\t\t\tKin\t\t\t\tPot\t\t\t\tContact\t\t\t\t"
+                         "DDI\t\t\t\tQF\n");
     std::fprintf(
         filemu,
-        "---------------------------------------------------------------------------------\n");
+        "---------------------------------------------------------------------------------------------------------------\n");
     fflush(filemu);
 }
 
@@ -1832,7 +2087,8 @@ void mu_output(FILE *filemu) {
  * @param Nz: Host: Nz number of grid points in z direction
  */
 void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx, long Ny,
-                       long Nz) {
+                       long Nz) 
+{
     // Allocate host memory
     size_t total_size = Nx * Ny * Nz;
 
@@ -1841,21 +2097,24 @@ void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx
 
     // Check for CUDA errors
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
+    if (err != cudaSuccess) 
+    {
         fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
         return;
     }
 
     // Write to binary file
     FILE *file = fopen(filename, "wb");
-    if (file == NULL) {
+    if (file == NULL) 
+    {
         fprintf(stderr, "Failed to open file %s\n", filename);
         return;
     }
 
     // Write the entire array
     size_t written = fwrite(psi, sizeof(double), total_size, file);
-    if (written != total_size) {
+    if (written != total_size) 
+    {
         fprintf(stderr, "Failed to write all data: wrote %zu of %zu elements\n", written,
                 total_size);
     }
@@ -1871,19 +2130,22 @@ void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx
  * @param Ny: Host: Ny number of grid points in y direction
  * @param Nz: Host: Nz number of grid points in z direction
  */
-void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, long Nz) {
+void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, long Nz) 
+{
     size_t total_size = Nx * Ny * Nz;
 
     // Open file
     FILE *file = fopen(filename, "rb"); // Note: "rb" for binary read
-    if (file == NULL) {
+    if (file == NULL) 
+    {
         fprintf(stderr, "Failed to open file %s\n", filename);
         return;
     }
 
     // Read data
     size_t read_count = fread(psi, sizeof(double), total_size, file);
-    if (read_count != total_size) {
+    if (read_count != total_size) 
+    {
         fprintf(stderr, "Failed to read all data: read %zu of %zu elements\n", read_count,
                 total_size);
         fclose(file);
@@ -1900,12 +2162,16 @@ void read_psi_from_file(double *psi, const char *filename, long Nx, long Ny, lon
  * @param file: File pointer to the output file
  */
 void outdenx(double *psi, MultiArray<double> &x, MultiArray<double> &tmpy, MultiArray<double> &tmpz,
-             FILE *file) {
-    for (long cnti = 0; cnti < Nx; cnti++) {
+             FILE *file) 
+{
+    for (long cnti = 0; cnti < Nx; cnti++) 
+    {
         // For each x position
-        for (long cntj = 0; cntj < Ny; cntj++) {
+        for (long cntj = 0; cntj < Ny; cntj++) 
+        {
             // Compute |psi|^2
-            for (long cntk = 0; cntk < Nz; cntk++) {
+            for (long cntk = 0; cntk < Nz; cntk++) 
+            {
                 tmpz[cntk] =
                     psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
             }
@@ -1930,12 +2196,16 @@ void outdenx(double *psi, MultiArray<double> &x, MultiArray<double> &tmpy, Multi
  * @param file: File pointer to the output file
  */
 void outdeny(double *psi, MultiArray<double> &y, MultiArray<double> &tmpx, MultiArray<double> &tmpz,
-             FILE *file) {
-    for (long cntj = 0; cntj < Ny; cntj++) {
+             FILE *file) 
+{
+    for (long cntj = 0; cntj < Ny; cntj++) 
+    {
         // For each y position
-        for (long cnti = 0; cnti < Nx; cnti++) {
+        for (long cnti = 0; cnti < Nx; cnti++) 
+        {
             // Compute |psi|^2
-            for (long cntk = 0; cntk < Nz; cntk++) {
+            for (long cntk = 0; cntk < Nz; cntk++) 
+            {
                 tmpz[cntk] =
                     psi[cntk * Ny * Nx + cntj * Nx + cnti] * psi[cntk * Ny * Nx + cntj * Nx + cnti];
             }
@@ -1959,12 +2229,16 @@ void outdeny(double *psi, MultiArray<double> &y, MultiArray<double> &tmpx, Multi
  * @param file: File pointer to the output file
  */
 void outdenz(double *psi, MultiArray<double> &z, MultiArray<double> &tmpx, MultiArray<double> &tmpy,
-             FILE *file) {
-    for (long cntk = 0; cntk < Nz; cntk++) {
+             FILE *file) 
+{
+    for (long cntk = 0; cntk < Nz; cntk++) 
+    {
         // For each z position
-        for (long cntj = 0; cntj < Ny; cntj++) {
+        for (long cntj = 0; cntj < Ny; cntj++) 
+        {
             // Compute |psi|^2
-            for (long cnti = 0; cnti < Nx; cnti++) {
+            for (long cnti = 0; cnti < Nx; cnti++) 
+            {
                 tmpy[cntj] =
                     fma(psi[cntk * Ny * Nx + cntj * Nx + cnti], psi[cntk * Ny * Nx + cntj * Nx + cnti], 0.0);
             }
@@ -1989,10 +2263,14 @@ void outdenz(double *psi, MultiArray<double> &z, MultiArray<double> &tmpx, Multi
  * @param file: File pointer to the output file
  */
 void outdenxy(double *psi, MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &tmpz,
-              FILE *file) {
-    for (long cnti = 0; cnti < Nx; cnti++) {
-        for (long cntj = 0; cntj < Ny; cntj++) {
-            for (long cntk = 0; cntk < Nz; cntk++) {
+              FILE *file) 
+{
+    for (long cnti = 0; cnti < Nx; cnti++) 
+    {
+        for (long cntj = 0; cntj < Ny; cntj++) 
+        {
+            for (long cntk = 0; cntk < Nz; cntk++) 
+            {
                 tmpz[cntk] = fma(psi[cntk * Ny * Nx + cntj * Nx + cnti],
                                  psi[cntk * Ny * Nx + cntj * Nx + cnti], 0.0);
             }
@@ -2014,10 +2292,14 @@ void outdenxy(double *psi, MultiArray<double> &x, MultiArray<double> &y, MultiAr
  * @param file: File pointer to the output file
  */
 void outdenxz(double *psi, MultiArray<double> &x, MultiArray<double> &z, MultiArray<double> &tmpx,
-              FILE *file) {
-    for (long cnti = 0; cnti < Nx; cnti++) {
-        for (long cntk = 0; cntk < Nz; cntk++) {
-            for (long cntj = 0; cntj < Ny; cntj++) {
+              FILE *file) 
+{
+    for (long cnti = 0; cnti < Nx; cnti++) 
+    {
+        for (long cntk = 0; cntk < Nz; cntk++) 
+        {
+            for (long cntj = 0; cntj < Ny; cntj++) 
+            {
                 tmpx[cntj] = fma(psi[cntk * Ny * Nx + cntj * Nx + cnti],
                                  psi[cntk * Ny * Nx + cntj * Nx + cnti], 0.0);
             }
@@ -2039,10 +2321,14 @@ void outdenxz(double *psi, MultiArray<double> &x, MultiArray<double> &z, MultiAr
  * @param file: File pointer to the output file
  */
 void outdenyz(double *psi, MultiArray<double> &y, MultiArray<double> &z, MultiArray<double> &tmpx,
-              FILE *file) {
-    for (long cntj = 0; cntj < Ny; cntj++) {
-        for (long cntk = 0; cntk < Nz; cntk++) {
-            for (long cnti = 0; cnti < Nx; cnti++) {
+              FILE *file) 
+{
+    for (long cntj = 0; cntj < Ny; cntj++) 
+    {
+        for (long cntk = 0; cntk < Nz; cntk++) 
+        {
+            for (long cnti = 0; cnti < Nx; cnti++) 
+            {
                 tmpx[cnti] = fma(psi[cntk * Ny * Nx + cntj * Nx + cnti],
                                  psi[cntk * Ny * Nx + cntj * Nx + cnti], 0.0);
             }
@@ -2062,9 +2348,12 @@ void outdenyz(double *psi, MultiArray<double> &y, MultiArray<double> &z, MultiAr
  * @param y: Host: y array
  * @param file: File pointer to the output file
  */
-void outpsi2xy(double *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *file) {
-    for (long cnti = 0; cnti < Nx; cnti++) {
-        for (long cntj = 0; cntj < Ny; cntj++) {
+void outpsi2xy(double *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *file) 
+{
+    for (long cnti = 0; cnti < Nx; cnti++) 
+    {
+        for (long cntj = 0; cntj < Ny; cntj++) 
+        {
             double psi2_xy = fma(psi[Nz2 * Ny * Nx + cntj * Nx + cnti],
                                  psi[Nz2 * Ny * Nx + cntj * Nx + cnti], 0.0);
             fwrite(&x[cnti], sizeof(double), 1, file);
@@ -2082,8 +2371,10 @@ void outpsi2xy(double *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *
  * @param file: File pointer to the output file
  */
 void outpsi2xz(double *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *file) {
-    for (long cnti = 0; cnti < Nx; cnti++) {
-        for (long cntk = 0; cntk < Nz; cntk++) {
+    for (long cnti = 0; cnti < Nx; cnti++) 
+    {
+        for (long cntk = 0; cntk < Nz; cntk++) 
+        {
             double psi2_xz = fma(psi[cntk * Ny * Nx + Ny2 * Nx + cnti],
                                  psi[cntk * Ny * Nx + Ny2 * Nx + cnti], 0.0);
             fwrite(&x[cnti], sizeof(double), 1, file);
@@ -2101,8 +2392,10 @@ void outpsi2xz(double *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *
  * @param file: File pointer to the output file
  */
 void outpsi2yz(double *psi, MultiArray<double> &y, MultiArray<double> &z, FILE *file) {
-    for (long cntj = 0; cntj < Ny; cntj++) {
-        for (long cntk = 0; cntk < Nz; cntk++) {
+    for (long cntj = 0; cntj < Ny; cntj++) 
+    {
+        for (long cntk = 0; cntk < Nz; cntk++) 
+        {
             double psi2_yz = fma(psi[cntk * Ny * Nx + cntj * Nx + Nx2],
                                  psi[cntk * Ny * Nx + cntj * Nx + Nx2], 0.0);
             fwrite(&y[cntj], sizeof(double), 1, file);
