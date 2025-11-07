@@ -173,4 +173,4 @@
 #  is defined.
 #  Required: conditionally
 #  Type: int
-OUTFLAGS = 1
+OUTFLAGS = 56

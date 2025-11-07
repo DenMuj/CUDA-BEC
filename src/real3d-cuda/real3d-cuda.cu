@@ -455,7 +455,7 @@ int main(int argc, char **argv)
         if (Niterout != NULL) 
         {
             // Move d_psi to host, host is pinned memory
-            cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(double), cudaMemcpyDeviceToHost);
+            cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
             char itername[32]; // Increased buffer size to prevent overflow
             sprintf(itername, "-%06li-", snap);
             if (outflags & DEN_X) 
@@ -1203,6 +1203,7 @@ void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, 
     g *= raw_norm;
     gd *= raw_norm;
     h2 *= pow(raw_norm, 1.5);
+    //std::cout<<"raw_norm: "<<raw_norm<<std::endl;
 
     // Apply normalization
     dim3 threadsPerBlock(8, 8, 8);
@@ -1645,7 +1646,7 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
     long idx_j = base_offset + (d_Ny - 2) * d_Nx;
     long idx_jp1 = base_offset + (d_Ny - 1) * d_Nx;
     cbeta[idx_j] = psi[idx_jp1];
-
+    
     cuDoubleComplex psi_jp1 = __ldg(&psi[idx_jp1]);
     cuDoubleComplex psi_j = __ldg(&psi[idx_j]);
     for (int cntj = d_Ny - 2; cntj > 0; cntj--) 

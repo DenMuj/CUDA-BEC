@@ -82,7 +82,6 @@
    MZ = 10
    MT = 5
 
-
 #  Spatial discretization step in the x-direction.
 #  Required: no (if commented, will be calculated from MX, NX and SX)
 #  Type: double
