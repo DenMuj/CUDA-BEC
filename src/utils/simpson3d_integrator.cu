@@ -1,7 +1,7 @@
 /**
  * @file simpson3d_integrator.cu
  * @brief Implementation of Simpson3DTiledIntegrator class for 3D integration using Simpson's rule
- * with a tiled approach for memory efficiency
+ * with a tiled approach
  *
  * This file contains the implementation of all Simpson3DTiledIntegrator member functions,
  * including constructors, memory management, and integration operations.

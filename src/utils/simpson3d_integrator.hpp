@@ -4,18 +4,17 @@
 
 #include <cstddef>
 
-// Forward declaration to avoid including CUDA headers in the interface
 class Simpson3DTiledIntegratorImpl;
 
 /**
- * @brief Simpson 3D Integration using tiled approach for memory efficiency
+ * @brief Simpson 3D Integration using tiled approach
  *
  * This class implements 3D numerical integration using Simpson's rule
  * with a tiled processing approach to decrease GPU memory usage.
  */
 class Simpson3DTiledIntegrator {
   private:
-    Simpson3DTiledIntegratorImpl *pImpl; // Pointer to implementation (PIMPL idiom)
+    Simpson3DTiledIntegratorImpl *pImpl; // Pointer to implementation
 
   public:
     /**
