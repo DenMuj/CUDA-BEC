@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 
     g = par * g;
     gd = par * gd;
-    gd *= MS;
+    //gd *= MS;
     edd = (4. * pi / 3.) * gd / g;
     Nad = Na;
 
@@ -39,7 +39,9 @@ int main(int argc, char **argv)
     if (fabs(edd) < 1e-10) 
     {
         q5 = 1.;
-    } else {
+    } 
+    else 
+    {
         if (fabs(edd - 1.) < 1e-10) 
         {
             q5 = 3. * sqrt(3.) / 2.;
