@@ -14,9 +14,13 @@ NVCCSTD := -std=c++20
 endif
 
 # Automatically detect GPU compute capability
-GPU_COMPUTE_CAPABILITY := $(shell nvidia-smi --query-gpu=compute_cap --format=csv,noheader | head -n 1 | tr -d '.')
+# Try to get compute capability, but filter out error messages
+GPU_COMPUTE_CAPABILITY_RAW := $(shell nvidia-smi --query-gpu=compute_cap --format=csv,noheader 2>&1 | head -n 1 | tr -d '.')
+# Check if the output looks like a valid compute capability (should be digits like "75", "86", "89", etc.)
+GPU_COMPUTE_CAPABILITY := $(shell echo "$(GPU_COMPUTE_CAPABILITY_RAW)" | grep -E '^[0-9]+$$' || echo "")
 ifeq ($(GPU_COMPUTE_CAPABILITY),)
-    $(warning Could not detect GPU compute capability, using sm_75 as default)
+    $(warning Could not detect GPU compute capability from nvidia-smi (got: "$(GPU_COMPUTE_CAPABILITY_RAW)"), using sm_75 as default)
+    $(warning Note: If you have a different GPU, set GPU_COMPUTE_CAPABILITY manually, e.g., make GPU_COMPUTE_CAPABILITY=86)
     GPU_COMPUTE_CAPABILITY := 75
 endif
 ARCH = -arch=sm_$(GPU_COMPUTE_CAPABILITY)
