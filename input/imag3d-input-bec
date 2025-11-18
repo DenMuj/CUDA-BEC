@@ -102,19 +102,16 @@
 #  Required: yes
 #  Type: double
    GAMMA = 1.0
-   
 
 #  Nu coefficient of anisotropy of the trap (omega_y / omega_x).
 #  Required: yes
 #  Type: double
    NU = 1.0
-   
 
 #  Lambda coefficient of anisotropy of the trap (omega_z / omega_x).
 #  Required: yes
 #  Type: double
    LAMBDA = 4.361370e-02
-   
 
 #  Number of iterations.
 #  Required: yes

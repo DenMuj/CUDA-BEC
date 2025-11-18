@@ -671,7 +671,8 @@ void readpar(void)
         }
         as = atof(cfg_tmp);
         g = 4. * pi * as * Na * BOHR_RADIUS / aho;
-    } else 
+    } 
+    else 
     {
         g = atof(cfg_tmp);
     }
@@ -685,7 +686,8 @@ void readpar(void)
         }
         add = atof(cfg_tmp);
         gd = 3. * add * Na * BOHR_RADIUS / aho;
-    } else 
+    } 
+    else 
     {
         gd = atof(cfg_tmp);
     }
@@ -693,7 +695,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("QF")) == NULL) 
     {
         QF = 0;
-    } else
+    } 
+    else
     {
         QF = atol(cfg_tmp);
     }
@@ -701,7 +704,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("QDEPL")) == NULL) 
     {
         QDEPL = 0;
-    } else
+    } 
+    else
     {
         QDEPL = atol(cfg_tmp);
     }
@@ -709,7 +713,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("SX")) == NULL)
     {
         sx = 0.;
-    } else
+    } 
+    else
     {
     sx = atof(cfg_tmp);
     }
@@ -717,7 +722,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("SY")) == NULL)
     {
         sy = 0.;
-    } else
+    } 
+    else
     {
         sy = atof(cfg_tmp);
     }
@@ -725,7 +731,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("SZ")) == NULL)
     {
         sz = 0.;
-    } else
+    } 
+    else
     {
         sz = atof(cfg_tmp);
     }
@@ -754,7 +761,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("MX")) == NULL)
     {
         mx = 10;
-    } else
+    } 
+    else
     {
         mx = atoi(cfg_tmp);
     }
@@ -762,7 +770,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("MY")) == NULL)
     {
         my = 10;
-    } else
+    } 
+    else
     {
         my = atoi(cfg_tmp);
     }
@@ -770,7 +779,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("MZ")) == NULL)
     {
         mz = 10;
-    } else
+    } 
+    else
     {    
         mz = atoi(cfg_tmp);
     }
@@ -778,7 +788,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("MT")) == NULL)
     {
         mt = 10;
-    } else
+    } 
+    else
     {
         mt = atoi(cfg_tmp);
     }
@@ -786,7 +797,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("DX")) == NULL)
     {
         dx = sx * mx * 2 / Nx;
-    } else
+    } 
+    else
     {
         dx = atof(cfg_tmp);
     }
@@ -794,7 +806,8 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("DY")) == NULL)
     {
         dy = sy * my * 2 / Ny;
-    } else
+    } 
+    else
     {
         dy = atof(cfg_tmp);
     }
@@ -802,15 +815,19 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("DZ")) == NULL)
     {
         dz = sz * mz * 2 / Nz;
-    } else
+    } 
+    else
     {
         dz = atof(cfg_tmp);
     }
 
+    double dmin = std::min({dx, dy, dz});
+
     if ((cfg_tmp = cfg_read("DT")) == NULL) 
     {
-        dt = dy * dy / mt;
-    } else
+        dt = dmin * dmin / mt;
+    } 
+    else
     {
         dt = atof(cfg_tmp);
     }
@@ -860,15 +877,28 @@ void readpar(void)
     if ((cfg_tmp = cfg_read("NSNAP")) == NULL)
     {
         Nsnap = 1;
-    } else
+    } 
+    else
     {
         Nsnap = atol(cfg_tmp);
     }
 
     if ((cfg_tmp = cfg_read("CUTOFF")) == NULL)
     {
-        cutoff = Ny * dy / 2;
-    } else
+        if(dmin == dx)
+        {
+            cutoff = Nx * dx / 2;
+        }
+        else if(dmin == dy)
+        {
+            cutoff = Ny * dy / 2;
+        }
+        else if(dmin == dz)
+        {
+            cutoff = Nz * dz / 2;
+        }
+    } 
+    else
     {
         cutoff = atof(cfg_tmp);
     }
@@ -889,7 +919,8 @@ void readpar(void)
             exit(EXIT_FAILURE);
         }
         outflags = atoi(cfg_tmp);
-    } else
+    } 
+    else
     {
         outflags = 0;
     }
@@ -983,13 +1014,15 @@ __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__res
         double offset = (-0.5 * static_cast<double>(d_Nx)) * discretiz;
         double x = fma(static_cast<double>(idx), discretiz, offset);
         weight = fma(x, x, 0.0);
-    } else if (direction == 1) 
+    } 
+    else if (direction == 1) 
     {
         // y = idy * scale + (-0.5 * d_Ny * scale)
         double offset = (-0.5 * static_cast<double>(d_Ny)) * discretiz;
         double y = fma(static_cast<double>(idy), discretiz, offset);
         weight = fma(y, y, 0.0);
-    } else if (direction == 2) 
+    } 
+    else if (direction == 2) 
     {
         // z = idz * scale + (-0.5 * d_Nz * scale)
         double offset = (-0.5 * static_cast<double>(d_Nz)) * discretiz;
@@ -1950,7 +1983,8 @@ void rms_output(FILE *filerms)
     if (cfg_read("G") != NULL) 
     {
         std::fprintf(filerms, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
-    } else 
+    } 
+    else 
     {
         std::fprintf(filerms,
                      "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad,
@@ -1960,7 +1994,8 @@ void rms_output(FILE *filerms)
     if (optms == 0) 
     {
         std::fprintf(filerms, "Regular ");
-    } else 
+    } 
+    else 
     {
         std::fprintf(filerms, "Microwave-shielded ");
     }
@@ -1969,7 +2004,8 @@ void rms_output(FILE *filerms)
     {
         std::fprintf(filerms, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd,
                      edd);
-    } else 
+    } 
+    else 
     {
         std::fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n",
                      add, gd / par, gd, edd);
@@ -1979,7 +2015,8 @@ void rms_output(FILE *filerms)
     if (QF == 1) 
     {
         std::fprintf(filerms, "QF = 1: h2 = %.6le,\t\tq5 = %.6le\n\n", h2, q5);
-    } else
+    } 
+    else
     {
         std::fprintf(filerms, "QF = 0\n\n");
     }
@@ -2003,7 +2040,8 @@ void rms_output(FILE *filerms)
     if (input != NULL) 
     {
         std::fprintf(filerms, "file %s\n", input);
-    } else 
+    } 
+    else 
     {
         std::fprintf(filerms, "Gaussian\n \t\tSX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
                      sy, sz);
@@ -2026,7 +2064,8 @@ void mu_output(FILE *filemu) {
     if (cfg_read("G") != NULL) 
     {
         std::fprintf(filemu, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
-    } else 
+    } 
+    else 
     {
         std::fprintf(filemu,
                      "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad,
@@ -2036,7 +2075,8 @@ void mu_output(FILE *filemu) {
     if (optms == 0) 
     {
         std::fprintf(filemu, "Regular ");
-    } else 
+    } 
+    else 
     {
         std::fprintf(filemu, "Microwave-shielded ");
     }
@@ -2044,7 +2084,8 @@ void mu_output(FILE *filemu) {
     if (cfg_read("GDD") != NULL) 
     {
         std::fprintf(filemu, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd, edd);
-    } else 
+    } 
+    else 
     {
         std::fprintf(filemu, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n",
                      add, gd / par, gd, edd);
@@ -2054,7 +2095,8 @@ void mu_output(FILE *filemu) {
     if (QF == 1) 
     {
         std::fprintf(filemu, "QF = 1: h2 = %.6le,\t\tq5 = %.6le\n\n", h2, q5);
-    } else
+    } 
+    else
     {
         std::fprintf(filemu, "QF = 0\n\n");
     }
@@ -2075,9 +2117,12 @@ void mu_output(FILE *filemu) {
     std::fprintf(filemu, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
     std::fprintf(filemu, "\t\tDT = %.6le, mt = %.2le\n\n", dt, mt);
     
-    if (input != NULL) {
+    if (input != NULL) 
+    {
         std::fprintf(filemu, "file %s\n", input);
-    } else {
+    } 
+    else 
+    {
         std::fprintf(filemu, "Gaussian\n \t\t SX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
                      sy, sz);
     }

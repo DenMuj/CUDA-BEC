@@ -21,7 +21,7 @@
 #  Type: double
    SX = 0.3
    SY = 0.3
-   SZ = 2.0
+   SZ = 2
    
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
@@ -36,7 +36,7 @@
 #  Dipolar potential cutoff.
 #  Required: no, will be calculated from grid size
 #  Type: double
-#  CUTOFF = 13.
+#  CUTOFF = 13
 
 #  Unit of length in m (defined by a chosen referent frequency omega_ref).
 #  Required: yes
