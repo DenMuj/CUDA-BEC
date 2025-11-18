@@ -125,15 +125,15 @@ int main(int argc, char **argv)
     CudaArray3D<cuDoubleComplex> d_cgammaz(Nz - 1);
 
     // Allocate memory for psi on device
-    CudaArray3D<cuDoubleComplex> d_psi(Nx, Ny, Nz, false);
+    CudaArray3D<cuDoubleComplex> d_psi(Nx, Ny, Nz);
 
     // Allocate memory for work array on device
-    CudaArray3D<double> d_work_array(Nx, Ny, Nz, true);
-    CudaArray3D<cuDoubleComplex> d_work_array_complex(Nx, Ny, Nz, false);
+    CudaArray3D<double> d_work_array(Nx, Ny, Nz);
+    CudaArray3D<cuDoubleComplex> d_work_array_complex(Nx, Ny, Nz);
 
     // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd)
-    CudaArray3D<double> d_pot(Nx, Ny, Nz, false);
-    CudaArray3D<double> d_potdd(Nx, Ny, Nz, false);
+    CudaArray3D<double> d_pot(Nx, Ny, Nz);
+    CudaArray3D<double> d_potdd(Nx, Ny, Nz);
 
     // FFT arrays
     cufftDoubleComplex *d_psi2_fft;
@@ -941,7 +941,7 @@ void readpar(void)
 void compute_rms_values(
     const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D psi array
     CudaArray3D<double> &d_work_array, Simpson3DTiledIntegrator &integ,
-    double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]clean
+    double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 {
     // Check for CUDA errors
     cudaError_t err = cudaGetLastError();

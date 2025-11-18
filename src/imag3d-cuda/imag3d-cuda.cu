@@ -136,15 +136,15 @@ int main(int argc, char **argv)
     CudaArray3D<double> d_cgammaz(Nz - 1);
 
     // Allocate memory for psi on device
-    CudaArray3D<double> d_psi(Nx, Ny, Nz, false);
+    CudaArray3D<double> d_psi(Nx, Ny, Nz);
 
     // Allocate memory for work array on device
-    CudaArray3D<double> d_work_array(Nx, Ny, Nz, false);
+    CudaArray3D<double> d_work_array(Nx, Ny, Nz);
 
     // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd) and memory for
     // squared wave function multiplied by dipole potential (d_psi2dd)
-    CudaArray3D<double> d_pot(Nx, Ny, Nz, false);
-    CudaArray3D<double> d_potdd(Nx, Ny, Nz, false);
+    CudaArray3D<double> d_pot(Nx, Ny, Nz);
+    CudaArray3D<double> d_potdd(Nx, Ny, Nz);
 
     // FFT arrays
     cufftDoubleComplex *d_psi2_fft;

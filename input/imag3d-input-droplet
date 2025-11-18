@@ -7,7 +7,7 @@
 #  Number of atoms in condensate.
 #  Required: yes
 #  Type: long
-   NATOMS = 1500
+   NATOMS = 15000
 
 #  Quantum fluctuation factor. 
 #  If 0, no quantum fluctuation is considered.
@@ -19,14 +19,14 @@
 #  Initial values for the wave function (for a Gaussian).
 #  Required: yes in order to calculate discretization parameters DX, DY and DZ
 #  Type: double
-   SX = 0.3
-   SY = 0.3
-   SZ = 2
+   SX = 3.2701094407510398e+00
+   SY = 3.4458480808137466e+00
+   SZ = 1.6190193780478110e+00
 
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
 #  Type: double
-   MUREL = 1.000000e-10
+   MUREL = 1.000000e-12
 
 #  Absolute chemical potential for the end of the simulation.
 #  Required: yes
@@ -41,32 +41,33 @@
 #  Unit of length in m (defined by a chosen referent frequency omega_ref).
 #  Required: yes
 #  Type: double
-   AHO = 5.55238e-7
-
+   #AHO = 5.55238e-7
+   AHO = 6.809890810104636e-7
+   
 #  Contact interaction strength in units of Bohr radius.
 #  Required: yes
 #  Type: double
-   AS = 70.
+   AS = 132.
 
 #  Dipole-dipole interaction strength in units of Bohr radius. 
 #  Required: yes
 #  Type: double
-   ADD = 132.607
+   ADD = 132.
 
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 128
+   NX = 256
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 128
+   NY = 256
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 128
+   NZ = 256
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
 #  Formula is DX = SX * MX * 2 / NX (same for DY and DZ)and DT = DY * DY / MT
@@ -100,27 +101,27 @@
 #  Gamma coefficient of anisotropy of the trap.
 #  Required: yes
 #  Type: double
-   GAMMA = 0.
+   GAMMA = 0.3458646616541353
 
 #  Nu coefficient of anisotropy of the trap (omega_y / omega_x).
 #  Required: yes
 #  Type: double
-   NU = 0.
+   NU = 0.3308270676691729
 
 #  Lambda coefficient of anisotropy of the trap (omega_z / omega_x).
 #  Required: yes
 #  Type: double
-   LAMBDA = 0.
+   LAMBDA = 1.
 
 #  Number of iterations 
 #  Required: yes
 #  Type: long
-   NITER = 100
+   NITER = 1000000
 
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential, energy and (optionally)
 #  density profiles and write them to specified output files.
-   NSNAP = 10
+   NSNAP = 10000
 
 #  Output file with the summary of final values of all physical quantities. If
 #  not defined, will not be written.
