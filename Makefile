@@ -5,11 +5,11 @@ CXX = g++
 
 # Auto-detect highest supported C++ standard
 # Detect for host compiler first
-CXX_STD_CANDIDATES := c++26 c++23 c++20 c++17 c++14 c++11
+CXX_STD_CANDIDATES := c++23 c++20 c++17 c++14 c++11
 CXXSTD := $(firstword $(foreach s,$(CXX_STD_CANDIDATES),$(if $(shell $(CXX) -std=$(s) -x c++ -E - </dev/null >/dev/null 2>&1 && echo ok),-std=$(s),)))
 
 NVCCSTD := $(CXXSTD)
-ifneq ($(filter -std=c++26 -std=c++23,$(CXXSTD)),)
+ifneq ($(filter -std=c++23,$(CXXSTD)),)
 NVCCSTD := -std=c++20
 endif
 

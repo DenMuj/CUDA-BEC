@@ -60,7 +60,7 @@ Whether a given file is written depends on whether its corresponding key is set 
   - `real3d-cuda/` – real-time solver and headers
   - `utils/` – CUDA arrays, vector arrays, Simpson integration, spatial derivatives, config reader
 - `input/` – example input files for BEC and droplet (imaginary and real time)
-- `output/` – example outputs for the provided inputs (RMS, MU, density profiles, final wavefunction)
+- `output/` – example outputs for the provided inputs (RMS, MU, final wavefunction)
 - `docs/` – Doxygen-generated documentation
 - `Makefile` – builds `imag3d-cuda` and `real3d-cuda`
 
