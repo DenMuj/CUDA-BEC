@@ -1590,7 +1590,12 @@ __global__ void calclux_kernel(double *__restrict__ psi, double *__restrict__ cb
     double psi_i = __ldg(&psi[idx_i]);
     for (int cnti = d_Nx - 2; cnti > 0; cnti--) 
     {
-        droplet
+        long idx_im1 = idx_i - 1;
+        double psi_im1 = __ldg(&psi[idx_im1]);
+
+        double c = fma(Ax0r, psi_i, fma(-Ax, psi_im1, -Ax * psi_ip1));
+        double gamma = (d_Nx - 1 <= CGALPHA_MAX) ? cgammax_c[cnti] : __ldg(&cgammax[cnti]);
+        cbeta[idx_im1] = gamma * fma(Ax, cbeta[idx_i], -c);
 
         // Roll window down in x
         psi_ip1 = psi_i;
