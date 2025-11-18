@@ -821,7 +821,7 @@ void readpar(void)
         dz = atof(cfg_tmp);
     }
 
-    double dmin = std::min({dx, dy, dz});
+    double dmin = std::min(dx, std::min(dy, dz));
 
     if ((cfg_tmp = cfg_read("DT")) == NULL) 
     {
