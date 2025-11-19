@@ -943,13 +943,6 @@ void calcrms(
     CudaArray3D<double> &d_work_array, Simpson3DTiledIntegrator &integ,
     double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 {
-    // Check for CUDA errors
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-    {
-        printf("CUDA error after memcpy: %s\n", cudaGetErrorString(err));
-    }
-
     // Configure kernel launch parameters
     dim3 blockSize(8, 8, 4); // Adjust based on your GPU
     dim3 gridSize((Nx + blockSize.x - 1) / blockSize.x, (Ny + blockSize.y - 1) / blockSize.y,
@@ -960,21 +953,21 @@ void calcrms(
                                                                  0, // 0 for x direction
                                                                  dx);
 
-    // cudaDeviceSynchronize();
+
     double x2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
     // Compute y^2 * psi^2 (reuse d_work_array)
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
                                                                  1, // 1 for y direction
                                                                  dy);
-    // cudaDeviceSynchronize();
+
     double y2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
     // Compute z^2 * psi^2 (reuse d_work_array)
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
                                                                  2, // 2 for z direction
                                                                  dz);
-    // cudaDeviceSynchronize();
+
     double z2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
     // Calculate RMS values and store in pinned memory
