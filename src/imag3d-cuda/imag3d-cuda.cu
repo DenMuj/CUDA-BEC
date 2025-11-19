@@ -2033,7 +2033,7 @@ void rms_output(FILE *filerms) {
 
     std::fprintf(filerms, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
     std::fprintf(filerms, "---------------------------------------------------------------------------------\n");
-    std::fprintf(filerms, "Snap\t\t\t\t<r>\t\t\t\t<x>\t\t\t\t<y>\t\t\t\t<z>\n");
+    std::fprintf(filerms, "Snap\t\t<r>\t\t<x>\t\t<y>\t\t<z>\n");
     std::fprintf(filerms, "---------------------------------------------------------------------------------\n");
     fflush(filerms);
 }
@@ -2116,8 +2116,8 @@ void mu_output(FILE *filemu) {
     std::fprintf(
         filemu,
         "---------------------------------------------------------------------------------------------------------------\n");
-    std::fprintf(filemu, "Snap\t\t\t\tmu\t\t\t\tKin\t\t\t\tPot\t\t\t\tContact\t\t\t\t"
-                         "DDI\t\t\t\tQF\n");
+    std::fprintf(filemu, "Snap\t\tmu\t\tKin\t\tPot\t\tContact\t\t"
+                         "DDI\t\tQF\n");
     std::fprintf(
         filemu,
         "---------------------------------------------------------------------------------------------------------------\n");
