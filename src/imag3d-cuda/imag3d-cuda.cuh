@@ -71,7 +71,7 @@ void initpsi(double *psi, MultiArray<double> &x2, MultiArray<double> &y2, MultiA
 void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double> &y2,
              MultiArray<double> &z2);
 
-void compute_rms_values(const double *d_psi, double *d_work_array, Simpson3DTiledIntegrator &integ,
+void calcrms(const double *d_psi, double *d_work_array, Simpson3DTiledIntegrator &integ,
                         double *h_rms_pinned);
 
 __global__ void compute_single_weighted_psi_squared(const double *__restrict__ psi, double *result,
@@ -122,7 +122,7 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
                MultiArray<double> &kz, MultiArray<double> &kx2, MultiArray<double> &ky2,
                MultiArray<double> &kz2);
 
-void calc_psid2_potdd(cufftHandle forward_plan, cufftHandle backward_plan, const double *d_psi,
+void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, const double *d_psi,
                       double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd);
 __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
                                     const double *__restrict__ potdd);

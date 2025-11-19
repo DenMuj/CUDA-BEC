@@ -291,7 +291,7 @@ int main(int argc, char **argv)
     calcnorm(d_psi.raw(), d_work_array.raw(), norm, integ);
 
     // Compute RMS values
-    compute_rms_values(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
+    calcrms(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
     if (rmsout != NULL) 
     {
         double rms_r = sqrt(h_rms_pinned[0] * h_rms_pinned[0] + h_rms_pinned[1] * h_rms_pinned[1] +
@@ -448,7 +448,7 @@ int main(int argc, char **argv)
     {
         for (long j = 0; j < nsteps; j++) 
         {
-            calc_psid2_potdd(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(),
+            calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(),
                              d_psi2_fft, d_potdd.raw());
             calcnu(d_psi.raw(), d_work_array.raw(), d_pot.raw(), g, gd, h2);
             calclux(d_psi.raw(), d_work_array.raw(), d_calphax.raw(), d_cgammax.raw(), Ax0r, Ax);
@@ -457,7 +457,7 @@ int main(int argc, char **argv)
             calcnorm(d_psi.raw(), d_work_array.raw(), norm, integ);
         }
 
-        compute_rms_values(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
+        calcrms(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
 
         if (rmsout != NULL) 
         {
@@ -982,7 +982,7 @@ void readpar(void)
  * @param integ: Simpson3DTiledIntegrator
  * @param h_rms_pinned: Output RMS values in pinned memory [rms_x, rms_y, rms_z]
  */
-void compute_rms_values(
+void calcrms(
     const double *d_psi, // Device: 3D psi array
     double *d_work_array, Simpson3DTiledIntegrator &integ,
     double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
@@ -1390,7 +1390,7 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
  * @param d_psi2_fft: Device: 3D psi2 array in FFT format
  * @param potdd: Device: 3D dipolar potential array
  */
-void calc_psid2_potdd(cufftHandle forward_plan, cufftHandle backward_plan, const double *d_psi,
+void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, const double *d_psi,
                       double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd) 
 {
     calc_d_psi2(d_psi, d_psi2_real);
@@ -1839,7 +1839,7 @@ void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double
     muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
     // Step 3: Dipolar energy - requires FFT computation first
-    calc_psid2_potdd(forward_plan, backward_plan, d_psi, d_psi2dd, d_psi2_fft, d_potdd);
+    calcpsidd2(forward_plan, backward_plan, d_psi, d_psi2dd, d_psi2_fft, d_potdd);
     calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_psi2dd, half_gd);
     muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz) * inv_NxNyNz;
 
