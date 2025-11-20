@@ -1172,18 +1172,18 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
     dky = 2. * pi / (Ny * dy);
     dkz = 2. * pi / (Nz * dz);
 
-    for (cnti = 0; cnti < Nx2; cnti++)
+    for (cnti = 0; cnti <= Nx2; cnti++)
         kx[cnti] = cnti * dkx;
-    for (cnti = 0; cnti < Nx2; cnti++)
-        kx[cnti + Nx2] = (cnti - Nx2) * dkx;
-    for (cntj = 0; cntj < Ny2; cntj++)
+    for (cnti = Nx2 + 1; cnti < Nx; cnti++)
+        kx[cnti] = (cnti - Nx) * dkx;
+    for (cntj = 0; cntj <= Ny2; cntj++)
         ky[cntj] = cntj * dky;
-    for (cntj = 0; cntj < Ny2; cntj++)
-        ky[cntj + Ny2] = (cntj - Ny2) * dky;
-    for (cntk = 0; cntk < Nz2; cntk++)
+    for (cntj = Ny2 + 1; cntj < Ny; cntj++)
+        ky[cntj] = (cntj - Ny) * dky;
+    for (cntk = 0; cntk <= Nz2; cntk++)
         kz[cntk] = cntk * dkz;
-    for (cntk = 0; cntk < Nz2; cntk++)
-        kz[cntk + Nz2] = (cntk - Nz2) * dkz;
+    for (cntk = Nz2 + 1; cntk < Nz; cntk++)
+        kz[cntk] = (cntk - Nz) * dkz;
 
     for (cnti = 0; cnti < Nx; cnti++)
         kx2[cnti] = kx[cnti] * kx[cnti];
