@@ -1974,74 +1974,42 @@ void calcmuen_kin(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_wo
 void rms_output(FILE *filerms) 
 {
     std::fprintf(filerms, "\n**********************************************\n");
-    if (cfg_read("G") != NULL) 
-    {
-        std::fprintf(filerms, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
-    } 
-    else 
-    {
-        std::fprintf(filerms,
-                     "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad,
-                     as, g / par, g);
-    }
+    std::fprintf(filerms, "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad, as, g / par, g);
 
-    if (optms == 0) 
-    {
-        std::fprintf(filerms, "Regular ");
-    } 
-    else 
-    {
-        std::fprintf(filerms, "Microwave-shielded ");
-    }
-
-    if (cfg_read("GDD") != NULL) 
-    {
-        std::fprintf(filerms, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd,
-                     edd);
-    } 
-    else 
-    {
-        std::fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n",
-                     add, gd / par, gd, edd);
-    }
+    std::fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);
+    
     std::fprintf(filerms, "\t\tDipolar cutoff Scut = %.6le,\n\n", cutoff);
     
     if (QF == 1) 
     {
-        std::fprintf(filerms, "QF = 1: h2 = %.6le,\t\tq5 = %.6le\n\n", h2, q5);
+        std::fprintf(filerms, "Quantum fluctuation: QF = 1: h2 = %.6le,\t\tq5 = %.6le\n\n", h2, q5);
     } 
     else
     {
-        std::fprintf(filerms, "QF = 0\n\n");
+        std::fprintf(filerms, "Quantum fluctuation: QF = 0\n\n");
     }
 
     std::fprintf(filerms, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma,
                  vnu, vlambda);
-    std::fprintf(filerms, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
+    
+    std::fprintf(filerms, "\nSpace discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
+    
     std::fprintf(filerms,
-                 "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
-                 "%.2le, mz = %.2le\n",
-                 dx, dy, dz, mx, my, mz);
+                "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
+                "%.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
 
-    if (cfg_read("AHO") != NULL)
-    {
-        std::fprintf(filerms, "\t\tUnit of length: aho = %.6le m\n", aho);
-    }
+
+    std::fprintf(filerms, "\t\tUnit of length: aho = %.6le m\n", aho);
 
     std::fprintf(filerms, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
+    
     std::fprintf(filerms, "\t\tDT = %.6le, mt = %.2le\n\n", dt, mt);
 
-    if (input != NULL) 
-    {
-        std::fprintf(filerms, "file %s\n", input);
-    } 
-    else 
-    {
-        std::fprintf(filerms, "Gaussian\n \t\tSX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
-                     sy, sz);
-    }
+    std::fprintf(filerms, "Input file: %s\n", input);
 
-    std::fprintf(filerms, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
+
+    std::fprintf(filerms, "\nMUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
+
     std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
     std::fprintf(filerms, "Snap\t\t\t\t<r>\t\t\t\t\t<x>\t\t\t\t\t\t<y>\t\t\t\t\t\t<z>\n");
     std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
@@ -2055,73 +2023,40 @@ void rms_output(FILE *filerms)
 void mu_output(FILE *filemu) {
     std::fprintf(filemu, "\n**********************************************\n");
     
-    if (cfg_read("G") != NULL) 
-    {
-        std::fprintf(filemu, "Contact: G = %.6le, G * par = %.6le\n", g / par, g);
-    } 
-    else 
-    {
-        std::fprintf(filemu,
-                     "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad,
-                     as, g / par, g);
-    }
+    std::fprintf(filemu, "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad, as, g / par, g);
 
-    if (optms == 0) 
-    {
-        std::fprintf(filemu, "Regular ");
-    } 
-    else 
-    {
-        std::fprintf(filemu, "Microwave-shielded ");
-    }
+    std::fprintf(filemu, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);
 
-    if (cfg_read("GDD") != NULL) 
-    {
-        std::fprintf(filemu, "DDI: GD = %.6le, GD * par = %.6le, edd = %.6le\n", gd / par, gd, edd);
-    } 
-    else 
-    {
-        std::fprintf(filemu, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n",
-                     add, gd / par, gd, edd);
-    }
     std::fprintf(filemu, "\t\tDipolar cutoff Scut = %.6le,\n\n", cutoff);
     
     if (QF == 1) 
     {
-        std::fprintf(filemu, "QF = 1: h2 = %.6le,\t\tq5 = %.6le\n\n", h2, q5);
+        std::fprintf(filemu, "Quantum fluctuation: QF = 1: h2 = %.6le,\t\tq5 = %.6le\n\n", h2, q5);
     } 
     else
     {
-        std::fprintf(filemu, "QF = 0\n\n");
+        std::fprintf(filemu, "Quantum fluctuation: QF = 0\n\n");
     }
 
     std::fprintf(filemu, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma,
                  vnu, vlambda);
-    std::fprintf(filemu, "Space discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
-    std::fprintf(filemu,
-                 "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
-                 "%.2le, mz = %.2le\n",
-                 dx, dy, dz, mx, my, mz);
     
-    if (cfg_read("AHO") != NULL)
-    {
-        std::fprintf(filemu, "\t\tUnit of length: aho = %.6le m\n", aho);
-    }
+    std::fprintf(filemu, "\nSpace discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
+    
+    std::fprintf(filemu,
+                "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
+                "%.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
+    
+    std::fprintf(filemu, "\t\tUnit of length: aho = %.6le m\n", aho);
     
     std::fprintf(filemu, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
+
     std::fprintf(filemu, "\t\tDT = %.6le, mt = %.2le\n\n", dt, mt);
     
-    if (input != NULL) 
-    {
-        std::fprintf(filemu, "file %s\n", input);
-    } 
-    else 
-    {
-        std::fprintf(filemu, "Gaussian\n \t\t SX = %.6le, SY = %.6le, SZ = %.6le\n", sx,
-                     sy, sz);
-    }
-    
-    std::fprintf(filemu, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
+    std::fprintf(filemu, "Input file: %s\n", input);
+
+    std::fprintf(filemu, "\nMUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
+
     std::fprintf(
         filemu,
         "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");

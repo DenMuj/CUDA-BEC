@@ -34,7 +34,7 @@
    MUEND = 10.0
 
 #  Dipolar potential cutoff.
-#  Required: no, will be calculated from grid size
+#  Required: no, can be calculated from grid size
 #  Type: double
 #  CUTOFF = 13.
 
@@ -45,12 +45,12 @@
 
 #  Contact interaction strength in units of Bohr radius.
 #  defined.
-#  Required: conditionally
+#  Required: yes
 #  Type: double
    AS = 100.
 
 #  Dipole-dipole interaction strength in units of Bohr radius.
-#  Required: conditionally
+#  Required: yes
 #  Type: double
    ADD = 67.
 
