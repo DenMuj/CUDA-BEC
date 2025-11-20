@@ -275,7 +275,7 @@ int main(int argc, char **argv)
     {
         double rms_r = sqrt(h_rms_pinned[0] * h_rms_pinned[0] + h_rms_pinned[1] * h_rms_pinned[1] +
                             h_rms_pinned[2] * h_rms_pinned[2]);
-        std::fprintf(filerms, "%-9d %-19.10le %-19.16le %-19.16le %-19.16le\n", 0, rms_r,
+        std::fprintf(filerms, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le\n", 0, rms_r,
                      h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
         fflush(filerms);
     }
@@ -439,7 +439,7 @@ int main(int argc, char **argv)
             double rms_r =
                 sqrt(h_rms_pinned[0] * h_rms_pinned[0] + h_rms_pinned[1] * h_rms_pinned[1] +
                      h_rms_pinned[2] * h_rms_pinned[2]);
-            std::fprintf(filerms, "%-9li %-19.10le %-19.16le %-19.16le %-19.16le\n", snap, rms_r,
+            std::fprintf(filerms, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le\n", snap, rms_r,
                          h_rms_pinned[0], h_rms_pinned[1], h_rms_pinned[2]);
             fflush(filerms);
         }
@@ -591,17 +591,18 @@ int main(int argc, char **argv)
         // std::fprintf(filerms,
         // "-------------------------------------------------------------------\n\n");
         // std::fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
-        std::fprintf(filerms,
-                     "-------------------------------------------------------------------\n\n");
+        std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
         fclose(filerms);
     }
     if (muoutput != NULL) 
     {
-        std::fprintf(filemu, "---------------------------------------------------------------------"
-                             "------------\n\n");
+        std::fprintf(
+            filemu,
+            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         std::fprintf(filemu, "Total time on GPU: %f seconds\n", duration.count());
-        std::fprintf(filemu, "---------------------------------------------------------------------"
-                             "------------\n\n");
+        std::fprintf(
+            filemu,
+            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
         fclose(filemu);
     }
 
@@ -2041,9 +2042,9 @@ void rms_output(FILE *filerms)
     }
 
     std::fprintf(filerms, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
-    std::fprintf(filerms, "-------------------------------------------------------------------\n");
-    std::fprintf(filerms, "Snap\t\t<r>\t\t<x>\t\t<y>\t\t<z>\n");
-    std::fprintf(filerms, "-------------------------------------------------------------------\n");
+    std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
+    std::fprintf(filerms, "Snap\t\t\t\t<r>\t\t\t\t\t<x>\t\t\t\t\t\t<y>\t\t\t\t\t\t<z>\n");
+    std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
     fflush(filerms);
 }
 
@@ -2121,10 +2122,14 @@ void mu_output(FILE *filemu) {
     }
     
     std::fprintf(filemu, "MUREL = %.6le, MUEND=%.6le\n\n", murel, muend);
-    std::fprintf(filemu, "---------------------------------------------------------------------------------------------------------------\n");
-    std::fprintf(filemu, "Snap\t\tmu\t\tKin\t\tPot\t\tContact\t\t"
-                                        "DDI\t\tQF\n");
-    std::fprintf(filemu, "---------------------------------------------------------------------------------------------------------------\n");
+    std::fprintf(
+        filemu,
+        "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    std::fprintf(filemu, "Snap\t\t\t\tmu\t\t\t\t\tKin\t\t\t\t\t\tPot\t\t\t\t\t\tContact\t\t\t\t\t"
+                                        "DDI\t\t\t\t\tQF\n");
+    std::fprintf(
+                filemu,
+                "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     fflush(filemu);
 }
 
