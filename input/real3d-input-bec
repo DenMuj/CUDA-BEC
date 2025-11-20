@@ -17,7 +17,7 @@
    QF = 0
 
 #  Initial values for the wave function (for a Gaussian).
-#  Required: yes in order to calculate discretization parameters DX, DY and DZ
+#  Required: no, then DX, DY and DZ need to be defined in the configuration file
 #  Type: double
    SX = 0.8
    SY = 0.8
@@ -45,12 +45,12 @@
 
 #  Contact interaction strength in units of Bohr radius.
 #  defined.
-#  Required: conditionally
+#  Required: yes
 #  Type: double
    AS = 100.
 
 #  Dipole-dipole interaction strength in units of Bohr radius.
-#  Required: conditionally
+#  Required: yes
 #  Type: double
    ADD = 67.
    
@@ -121,13 +121,14 @@
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
 #  density profiles and write them to specified output files.
+#  Required: no, default is 1
+#  Type: long
    NSNAP = 100
 
 #  Input file with the wave function, obtained from previous executions.
-#  Required: no
+#  Required: yes
 #  Type: string
    INPUT = ./imag3d-finalpsi.bin
-   INPUT_TYPE = PSI
 
 #  Output file with the wave function obtained from integrated density profiles.
 #  If not defined, density profiles will not be written.
@@ -163,6 +164,6 @@
 #  written (8 + 16 + 32), while other density profiles will be ommited.
 #  Required if wave function output file (NITEROUT)
 #  is defined.
-#  Required: conditionally
+#  Required: no
 #  Type: int
-OUTFLAGS = 56
+   OUTFLAGS = 56

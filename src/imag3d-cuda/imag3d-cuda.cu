@@ -708,42 +708,23 @@ void readpar(void)
     }
     Na = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("AHO")) == NULL) 
-    {
-        std::fprintf(stderr, "AHO is not defined in the configuration file.\n");
-        exit(EXIT_FAILURE);
-    }
     aho = atof(cfg_tmp);
 
-    if ((cfg_tmp = cfg_read("G")) == NULL) 
+    if ((cfg_tmp = cfg_read("AS")) == NULL) 
     {
-        if ((cfg_tmp = cfg_read("AS")) == NULL) 
-        {
-            std::fprintf(stderr, "AS is not defined in the configuration file.\n");
+        std::fprintf(stderr, "AS is not defined in the configuration file.\n");
             exit(EXIT_FAILURE);
-        }
-        as = atof(cfg_tmp);
-        g = 4. * pi * as * Na * BOHR_RADIUS / aho;
-    } 
-    else 
-    {
-        g = atof(cfg_tmp);
     }
+    as = atof(cfg_tmp);
+    g = 4. * pi * as * Na * BOHR_RADIUS / aho;
 
-    if ((cfg_tmp = cfg_read("GDD")) == NULL) 
+    if ((cfg_tmp = cfg_read("ADD")) == NULL) 
     {
-        if ((cfg_tmp = cfg_read("ADD")) == NULL) 
-        {
-            std::fprintf(stderr, "ADD is not defined in the configuration file.\n");
-            exit(EXIT_FAILURE);
-        }
-        add = atof(cfg_tmp);
-        gd = 3. * add * Na * BOHR_RADIUS / aho;
-    } 
-    else 
-    {
-        gd = atof(cfg_tmp);
+        std::fprintf(stderr, "ADD is not defined in the configuration file.\n");
+        exit(EXIT_FAILURE);
     }
+    add = atof(cfg_tmp);
+    gd = 3. * add * Na * BOHR_RADIUS / aho;
 
     if ((cfg_tmp = cfg_read("QF")) == NULL) 
     {

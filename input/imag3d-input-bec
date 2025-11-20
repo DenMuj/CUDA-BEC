@@ -121,6 +121,8 @@
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
 #  density profiles and write them to specified output files.
+#  Required: no, default is 1
+#  Type: long
    NSNAP = 10
 
 #  Output file with the summary of final values of all physical quantities. If
@@ -144,14 +146,14 @@
 #  If not defined, density profiles will not be written.
 #  Required: no
 #  Type: string
-#   NITEROUT = imag3d-den-niter
+#  NITEROUT = imag3d-den-niter
 
 #  Output file with the final wave function obtained at program end that can
 #  subsequently be used as an input wave function. If not defined, the wave
 #  function will not be saved.
 #  Required: no
 #  Type: string
-  FINALPSI = imag3d-finalpsi
+   FINALPSI = imag3d-finalpsi
 
 #  Value that controls what density profiles will be written in output files.
 #  List of output functions:
@@ -169,6 +171,6 @@
 #  written (8 + 16 + 32), while other density profiles will be ommited.
 #  Required if wave function output file (NITEROUT)
 #  is defined.
-#  Required: conditionally
+#  Required: no
 #  Type: int
-OUTFLAGS = 56
+   OUTFLAGS = 56
