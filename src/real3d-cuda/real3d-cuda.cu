@@ -153,6 +153,18 @@ int main(int argc, char **argv)
     CUDA_CHECK(cudaMemcpyToSymbol(d_Ny, &Ny, sizeof(long)));
     CUDA_CHECK(cudaMemcpyToSymbol(d_Nz, &Nz, sizeof(long)));
     CUDA_CHECK(cudaMemcpyToSymbol(d_dt, &dt, sizeof(double)));
+    
+    // Copy constants for on-the-fly potential calculation
+    CUDA_CHECK(cudaMemcpyToSymbol(d_dx, &dx, sizeof(double)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_dy, &dy, sizeof(double)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_dz, &dz, sizeof(double)));
+    double vgamma2 = vgamma * vgamma;
+    double vnu2 = vnu * vnu;
+    double vlambda2 = vlambda * vlambda;
+    CUDA_CHECK(cudaMemcpyToSymbol(d_vgamma2, &vgamma2, sizeof(double)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_vnu2, &vnu2, sizeof(double)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_vlambda2, &vlambda2, sizeof(double)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_par, &par, sizeof(double)));
 
     // Get GPU SM count for optimal kernel launch configuration
     int smCount = getGPUSMCount();
@@ -215,7 +227,13 @@ int main(int argc, char **argv)
     CudaArray3D<cuDoubleComplex> d_work_array_complex(Nx, Ny, Nz);
 
     // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd)
-    CudaArray3D<double> d_pot(Nx, Ny, Nz);
+    // d_pot is only allocated if initialize_pot == 1 (precomputed mode)
+    // When initialize_pot == 0, potential is computed on-the-fly to save GPU memory
+    double *d_pot_ptr = nullptr;
+    if (initialize_pot == 1) 
+    {
+        CUDA_CHECK(cudaMalloc(&d_pot_ptr, Nx * Ny * Nz * sizeof(double)));
+    }
     CudaArray3D<double> d_potdd(Nx, Ny, Nz);
 
     // FFT arrays
@@ -324,8 +342,12 @@ int main(int argc, char **argv)
     // Copy psi data to device
     d_psi.copyFromHost(psi);
 
-    // Copy trap potential and dipole potential to device
-    d_pot.copyFromHost(pot.raw());
+    // Copy trap potential to device only if using precomputed mode
+    if (initialize_pot == 1) 
+    {
+        CUDA_CHECK(cudaMemcpy(d_pot_ptr, pot.raw(), Nx * Ny * Nz * sizeof(double), cudaMemcpyHostToDevice));
+    }
+    // Copy dipole potential to device
     d_potdd.copyFromHost(potdd.raw());
 
     if (rmsout != NULL) 
@@ -495,7 +517,7 @@ int main(int argc, char **argv)
         {
             calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(),
                              d_psi2_fft, d_potdd.raw());
-            calcnu(d_psi, d_work_array, d_pot, g, gd, h2);
+            calcnu(d_psi, d_work_array, d_pot_ptr, g, gd, h2);
             calclux(d_psi, d_work_array_complex.raw(), d_calphax, d_cgammax, Ax0r, Ax);
             calcluy(d_psi, d_work_array_complex.raw(), d_calphay, d_cgammay, Ay0r, Ay);
             calcluz(d_psi, d_work_array_complex.raw(), d_calphaz, d_cgammaz, Az0r, Az);
@@ -689,6 +711,11 @@ int main(int argc, char **argv)
         cudaFree(backward_work);
     cufftDestroy(forward_plan);
     cufftDestroy(backward_plan);
+    
+    // Cleanup trap potential if it was allocated
+    if (d_pot_ptr)
+        cudaFree(d_pot_ptr);
+    
     return 0;
 }
 
@@ -972,6 +999,16 @@ void readpar(void)
     else
     {
         outflags = 0;
+    }
+
+    // Read INITIALIZE_POT flag (default is 1 = precomputed, 0 = on-the-fly)
+    if ((cfg_tmp = cfg_read("INITIALIZE_POT")) == NULL)
+    {
+        initialize_pot = 1; // Default: precompute and store potential on GPU
+    }
+    else
+    {
+        initialize_pot = atoi(cfg_tmp);
     }
 
     return;
@@ -1567,27 +1604,52 @@ void gencoef(MultiArray<cuDoubleComplex> &calphax, MultiArray<cuDoubleComplex> &
  * without spatial derivatives).
  * @param d_psi: Device: 3D psi array
  * @param d_psi2: Device: 3D psi2 array
- * @param d_pot: Device: 3D trap potential array
+ * @param d_pot: Device: 3D trap potential array (can be nullptr if initialize_pot == 0)
  * @param g: Host to Device: g coefficient for contact interaction term
  * @param gd: Host to Device: gd coefficient for dipolar interaction term
  * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
  */
 void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2,
-            CudaArray3D<double> &d_pot, double g, double gd, double h2) 
+            double *d_pot, double g, double gd, double h2) 
 {
-    // calc_d_psi2(d_psi, d_psi2);
-
     // Precompute ratio_gd on host (constant for all threads)
     double ratio_gd = gd / ((double)(Nx * Ny * Nz));
 
     static int smCount = getGPUSMCount();
     dim3 threadsPerBlock(8, 8, 8);  // threads per block
     dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
-    calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), d_pot.raw(), g,
-                                                  ratio_gd, h2);
-    CUDA_CHECK_KERNEL("calcnu_kernel");
+    
+    if (initialize_pot == 1) 
+    {
+        // Use precomputed potential from GPU memory
+        calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), d_pot, g,
+                                                      ratio_gd, h2);
+        CUDA_CHECK_KERNEL("calcnu_kernel");
+    } 
+    else 
+    {
+        // Compute potential on-the-fly (saves GPU memory for large grids)
+        calcnu_kernel_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), g,
+                                                               ratio_gd, h2);
+        CUDA_CHECK_KERNEL("calcnu_kernel_onthefly");
+    }
     CUDA_SYNC_CHECK("calcnu");  // Only active in debug mode
     return;
+}
+
+/**
+ * @brief Device function to compute trap potential on-the-fly from grid indices
+ * @param ix: x index
+ * @param iy: y index
+ * @param iz: z index
+ * @return Trap potential value at (ix, iy, iz)
+ */
+__device__ __forceinline__ double compute_pot_onthefly(int ix, int iy, int iz) 
+{
+    double x = (static_cast<double>(ix) - static_cast<double>(d_Nx) * 0.5) * d_dx;
+    double y = (static_cast<double>(iy) - static_cast<double>(d_Ny) * 0.5) * d_dy;
+    double z = (static_cast<double>(iz) - static_cast<double>(d_Nz) * 0.5) * d_dz;
+    return 0.5 * d_par * (d_vgamma2 * x * x + d_vnu2 * y * y + d_vlambda2 * z * z);
 }
 
 /**
@@ -1641,6 +1703,61 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi, double *__res
 
                 // Optimized: manually inline complex multiply: psi_val * (c, s)
                 // (a, b) * (c, s) = (a*c - b*s, a*s + b*c)
+                d_psi[linear_idx].x = fma(psi_val.x, c, -psi_val.y * s);
+                d_psi[linear_idx].y = fma(psi_val.x, s, psi_val.y * c);
+            }
+        }
+    }
+}
+
+/**
+ * @brief Kernel to compute H1 time propagation with on-the-fly potential calculation.
+ *        Saves GPU memory by computing trap potential from grid indices instead of reading from array.
+ * @param d_psi: Device: 3D psi array (complex)
+ * @param d_psi2: Device: 3D psi2 array (contains psi2dd after calcpsidd2)
+ * @param g: Contact interaction coefficient
+ * @param ratio_gd: Precomputed ratio gd/(Nx*Ny*Nz) for dipolar interaction term
+ * @param h2: Quantum fluctuation coefficient
+ */
+__global__ void calcnu_kernel_onthefly(cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_psi2,
+                                       const double g, const double ratio_gd, const double h2) 
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                
+                // Compute potential on-the-fly instead of reading from global memory
+                double pot_val = compute_pot_onthefly(ix, iy, iz);
+                
+                cuDoubleComplex psi_val = d_psi[linear_idx];
+                double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
+
+                // Using cuCabs() for |psi|
+                double psi_abs = cuCabs(psi_val);              // |psi|
+                double psi_val2 = fma(psi_abs, psi_abs, 0.0);  // |psi|^2
+
+                // all coefficients
+                double temp1 = fma(psi_val2, g, pot_val);
+                double sum = temp1 + psi2dd;
+                double tmp = fma(-d_dt, sum, 0.0);
+
+                // compute e^{-i*tmp} = cos(tmp) + i*sin(tmp)
+                double s, c;
+                sincos(tmp, &s, &c);
+
+                // Optimized: manually inline complex multiply: psi_val * (c, s)
                 d_psi[linear_idx].x = fma(psi_val.x, c, -psi_val.y * s);
                 d_psi[linear_idx].y = fma(psi_val.x, s, psi_val.y * c);
             }
@@ -2088,9 +2205,17 @@ void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
     muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
 
     // Step 2: Potential energy - Calculate ψ² and 0.5 * ψ² * V
-    calcmuen_fused_potential<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(),
-                                                             d_pot.raw());
-    CUDA_CHECK_KERNEL("calcmuen_fused_potential");
+    if (initialize_pot == 1) 
+    {
+        calcmuen_fused_potential<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(),
+                                                                 d_pot.raw());
+        CUDA_CHECK_KERNEL("calcmuen_fused_potential");
+    } 
+    else 
+    {
+        calcmuen_fused_potential_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw());
+        CUDA_CHECK_KERNEL("calcmuen_fused_potential_onthefly");
+    }
     muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
 
     // Step 3: Dipolar energy - requires FFT computation first
@@ -2174,6 +2299,39 @@ __global__ void calcmuen_fused_potential(const cuDoubleComplex *__restrict__ d_p
                 double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|² directly
                 d_result[linear_idx] =
                     0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
+            }
+        }
+    }
+}
+
+/**
+ * @brief Kernel to calculate trap potential energy term with on-the-fly potential computation
+ * @param d_psi: Device: 3D psi array (complex)
+ * @param d_result: Device: 3D result array
+ */
+__global__ void calcmuen_fused_potential_onthefly(const cuDoubleComplex *__restrict__ d_psi,
+                                                   double *__restrict__ d_result) 
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|² directly
+                // Compute potential on-the-fly
+                double pot_val = compute_pot_onthefly(ix, iy, iz);
+                d_result[linear_idx] = 0.5 * psi2_val * pot_val;
             }
         }
     }
@@ -2266,6 +2424,17 @@ void calcmuen_kin(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_wo
 void rms_output(FILE *filerms) 
 {
     std::fprintf(filerms, "\n**********************************************\n");
+
+    // Print memory mode
+    if (initialize_pot == 1) 
+    {
+        std::fprintf(filerms, "Potential mode: PRECOMPUTED (stored on GPU)\n\n");
+    } 
+    else 
+    {
+        std::fprintf(filerms, "Potential mode: ON-THE-FLY (computed in kernels, saves GPU memory)\n\n");
+    }
+
     std::fprintf(filerms, "Contact: Natoms = %.11le, as = %.6le * a0, G = %.6le, G * par = %.6le\n", Nad, as, g / par, g);
 
     std::fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);

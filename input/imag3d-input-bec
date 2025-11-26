@@ -4,6 +4,13 @@
 #  Type: int
    OPTION = 2
 
+#  Initialize trap potential on GPU (memory vs. compute trade-off).
+#  If 1, potential is precomputed and stored on GPU (faster, uses more memory).
+#  If 0, potential is computed on-the-fly in kernels (saves GPU memory for large grids).
+#  Required: no (default is 1)
+#  Type: int
+   INITIALIZE_POT = 1
+
 #  Number of atoms in condensate.
 #  Required: yes
 #  Type: long

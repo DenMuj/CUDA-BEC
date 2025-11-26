@@ -62,6 +62,14 @@ double dt;
 __constant__ double d_dt;
 double vnu, vlambda, vgamma;
 double par;
+
+// Flag for on-the-fly potential calculation (0 = on-the-fly, 1 = precomputed)
+int initialize_pot;
+
+// Device constants for on-the-fly potential calculation
+__constant__ double d_dx, d_dy, d_dz;
+__constant__ double d_vgamma2, d_vnu2, d_vlambda2;
+__constant__ double d_par;
 double cutoff;
 double mx, my, mz, mt;
 
@@ -92,10 +100,15 @@ extern __global__ void diff_kernel(double hx, double hy, double hz, double *__re
 void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegrator &integ);
 __global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm);
 
+// Device function to compute trap potential on-the-fly
+__device__ __forceinline__ double compute_pot_onthefly(int ix, int iy, int iz);
+
 void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, double h2);
 __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d_psi2,
                               const double *__restrict__ pot, const double g, const double ratio_gd,
                               const double h2);
+__global__ void calcnu_kernel_onthefly(double *__restrict__ d_psi, double *__restrict__ d_psi2,
+                                       const double g, const double ratio_gd, const double h2);
 
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgammax, double d_Ax0r,
              double d_Ax);
@@ -139,6 +152,8 @@ __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi,
 __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi,
                                          double *__restrict__ d_result,
                                          const double *__restrict__ d_pot);
+__global__ void calcmuen_fused_potential_onthefly(const double *__restrict__ d_psi,
+                                                   double *__restrict__ d_result);
 __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi,
                                        double *__restrict__ d_result,
                                        const double *__restrict__ d_psidd2, const double half_gd);
