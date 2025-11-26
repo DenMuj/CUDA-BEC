@@ -8,6 +8,7 @@
  */
 #include "simpson3d_integrator.hpp"
 #include "simpson3d_kernel.cuh"
+#include "cuda_error_check.cuh"
 #include <algorithm>
 #include <cmath>
 #include <cuda_runtime.h>
@@ -37,15 +38,8 @@ class Simpson3DTiledIntegratorImpl {
 
         // Allocate memory for one tile
         max_tile_points = Nx * Ny * tile_size_z;
-        cudaMalloc(&d_f, max_tile_points * sizeof(double));
-        cudaMalloc(&d_partial_sum, sizeof(double));
-
-        // Check for allocation errors
-        cudaError_t err = cudaGetLastError();
-        if (err != cudaSuccess) {
-            std::cerr << "CUDA allocation error: " << cudaGetErrorString(err) << std::endl;
-            throw std::runtime_error("Failed to allocate GPU memory");
-        }
+        CUDA_CHECK(cudaMalloc(&d_f, max_tile_points * sizeof(double)));
+        CUDA_CHECK(cudaMalloc(&d_partial_sum, sizeof(double)));
     }
 
     /**
@@ -73,25 +67,21 @@ class Simpson3DTiledIntegratorImpl {
             long tile_points = Nx * Ny * current_tile_z;
 
             // Copy this tile's data from host to device
-            cudaMemcpy(d_f, h_f + z_start * Nx * Ny, tile_points * sizeof(double),
-                       cudaMemcpyHostToDevice);
+            CUDA_CHECK(cudaMemcpy(d_f, h_f + z_start * Nx * Ny, tile_points * sizeof(double),
+                       cudaMemcpyHostToDevice));
 
             // Reset the partial sum for this tile
-            cudaMemset(d_partial_sum, 0, sizeof(double));
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
 
             // Launch kernel for this tile
             launchSimpson3DKernel(d_f, d_partial_sum, Nx, Ny, Nz, tile_size_z, z_start,
                                   current_tile_z);
 
             // Synchronize to ensure kernel completion and check for errors
-            cudaError_t err = cudaDeviceSynchronize();
-            if (err != cudaSuccess) {
-                std::cerr << "Kernel execution error: " << cudaGetErrorString(err) << std::endl;
-                return 0.0;
-            }
+            CUDA_CHECK(cudaDeviceSynchronize());
 
             // Copy result back to host
-            cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost);
+            CUDA_CHECK(cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
 
             // Accumulate the result
             total_sum += h_tile_sum;
@@ -111,7 +101,6 @@ class Simpson3DTiledIntegratorImpl {
     double integrateDevice(double hx, double hy, double hz, double *d_f_full, long Nx, long Ny,
                            long Nz) {
         double total_sum = 0.0;
-        double compensation = 0.0;
 
         // Process the volume in tiles along the Z direction
         for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
@@ -119,34 +108,24 @@ class Simpson3DTiledIntegratorImpl {
             long current_tile_z = std::min(tile_size_z, Nz - z_start);
 
             // Reset the partial sum for this tile
-            cudaMemset(d_partial_sum, 0, sizeof(double));
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
 
             // Launch kernel for this tile (pass pointer directly with offset - no D2D copy needed)
             launchSimpson3DKernel(d_f_full + z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz,
                                   tile_size_z, z_start, current_tile_z);
 
-            // Synchronize to ensure kernel completion and check for errors
-            cudaError_t err = cudaDeviceSynchronize();
-            if (err != cudaSuccess) {
-                std::cerr << "Kernel execution error: " << cudaGetErrorString(err) << std::endl;
-                return 0.0;
-            }
+            // Debug mode: sync and check for kernel execution errors
+            CUDA_SYNC_CHECK("integrateDevice kernel");
 
-            // Copy result back to host
-            cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost);
+            // Copy result back to host (implicitly syncs)
+            CUDA_CHECK(cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
 
             // Accumulate the result
-            double temp = total_sum + h_tile_sum;
-            if (std::abs(total_sum) >= std::abs(h_tile_sum)) {
-                compensation += (total_sum - temp) + h_tile_sum;
-            } else {
-                compensation += (h_tile_sum - temp) + total_sum;
-            }
-            total_sum = temp;
+            total_sum += h_tile_sum;
         }
 
         // Apply Simpson's rule scaling factor
-        return (total_sum + compensation) * hx * hy * hz / 27.0;
+        return total_sum * hx * hy * hz / 27.0;
     }
 
     /**
@@ -162,14 +141,9 @@ class Simpson3DTiledIntegratorImpl {
         // Reallocate if new size is larger
         long new_max_points = cached_Nx * cached_Ny * tile_size_z;
         if (new_max_points > max_tile_points) {
-            cudaFree(d_f);
+            cudaFree(d_f);  // Safe to call on previously allocated memory
             max_tile_points = new_max_points;
-            cudaMalloc(&d_f, max_tile_points * sizeof(double));
-
-            cudaError_t err = cudaGetLastError();
-            if (err != cudaSuccess) {
-                throw std::runtime_error("Failed to reallocate GPU memory");
-            }
+            CUDA_CHECK(cudaMalloc(&d_f, max_tile_points * sizeof(double)));
         }
     }
 };

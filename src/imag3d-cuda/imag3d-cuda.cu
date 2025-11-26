@@ -1,4 +1,5 @@
 #include "imag3d-cuda.cuh"
+#include "../utils/cuda_error_check.cuh"
 
 // Use constant memory for tridiagonal coefficients when sizes are modest.
 #define CGALPHA_MAX 1024
@@ -8,6 +9,74 @@ __constant__ double cgammay_c[CGALPHA_MAX];
 __constant__ double calphay_c[CGALPHA_MAX];
 __constant__ double cgammaz_c[CGALPHA_MAX];
 __constant__ double calphaz_c[CGALPHA_MAX];
+
+/**
+ * @brief Simple helper function to get GPU SM count
+ * @return Number of streaming multiprocessors on the current GPU
+ */
+inline int getGPUSMCount() {
+    int smCount;
+    int device;
+    CUDA_CHECK(cudaGetDevice(&device));
+    CUDA_CHECK(cudaDeviceGetAttribute(&smCount, cudaDevAttrMultiProcessorCount, device));
+    return smCount;
+}
+
+/**
+ * @brief Calculate optimal grid size for 3D kernels with grid-stride loops
+ * @param smCount: Number of SMs on GPU
+ * @param Nx, Ny, Nz: Problem dimensions
+ * @param blockSize: Block dimensions
+ * @param blocksPerSM: Minimum blocks per SM for occupancy 
+ * @return dim3 grid size
+ */
+inline dim3 getOptimalGrid3D(int smCount, long Nx, long Ny, long Nz, dim3 blockSize, int blocksPerSM = 4) {
+    // Calculate grid needed to cover the problem with some stride
+    int stride = 1;
+    int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  // with stride
+    int gridY = (Ny + blockSize.y * stride - 1) / (blockSize.y * stride);
+    int gridZ = (Nz + blockSize.z * stride - 1) / (blockSize.z * stride);
+    
+    // Ensure minimum blocks for occupancy
+    int minBlocks = smCount * blocksPerSM;
+    int totalBlocks = gridX * gridY * gridZ;
+    
+    if (totalBlocks < minBlocks) {
+        // Scale up if too few blocks
+        double scale = sqrt((double)minBlocks / totalBlocks);
+        gridX = (int)(gridX * scale) + 1;
+        gridY = (int)(gridY * scale) + 1;
+    }
+    
+    return dim3(gridX, gridY, gridZ);
+}
+
+/**
+ * @brief Calculate optimal grid size for 2D kernels with grid-stride loops
+ * @param smCount: Number of SMs on GPU
+ * @param Nx, Ny: Problem dimensions for the 2D sweep
+ * @param blockSize: Block dimensions
+ * @param blocksPerSM: Minimum blocks per SM for occupancy
+ * @return dim3 grid size
+ */
+inline dim3 getOptimalGrid2D(int smCount, long Nx, long Ny, dim3 blockSize, int blocksPerSM = 4) {
+    // Calculate grid needed to cover the problem with some stride
+    int stride = 1;
+    int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  //with stride
+    int gridY = (Ny + blockSize.y * stride - 1) / (blockSize.y * stride);
+    
+    // Ensure minimum blocks for occupancy
+    int minBlocks = smCount * blocksPerSM;
+    int totalBlocks = gridX * gridY;
+    
+    if (totalBlocks < minBlocks) {
+        double scale = sqrt((double)minBlocks / totalBlocks);
+        gridX = (int)(gridX * scale) + 1;
+        gridY = (int)(gridY * scale) + 1;
+    }
+    
+    return dim3(gridX, gridY, 1);
+}
 
 int main(int argc, char **argv) 
 {
@@ -85,14 +154,16 @@ int main(int argc, char **argv)
     dz2 = dz * dz;
 
     // Copy constants Nx, Ny, Nz (number of grid points), dt (time step) to device
-    cudaMemcpyToSymbol(d_Nx, &Nx, sizeof(long));
-    cudaMemcpyToSymbol(d_Ny, &Ny, sizeof(long));
-    cudaMemcpyToSymbol(d_Nz, &Nz, sizeof(long));
-    cudaMemcpyToSymbol(d_dt, &dt, sizeof(double));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_Nx, &Nx, sizeof(long)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_Ny, &Ny, sizeof(long)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_Nz, &Nz, sizeof(long)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_dt, &dt, sizeof(double)));
 
+    // Get GPU SM count for optimal kernel launch configuration
+    int smCount = getGPUSMCount();
     // Allocate memory for psi (pinned memory) and squared wave function (psi2)
     double *psi;
-    cudaMallocHost(&psi, Nz * Ny * Nx * sizeof(double));
+    CUDA_CHECK(cudaMallocHost(&psi, Nz * Ny * Nx * sizeof(double)));
     MultiArray<double> psi2(Nz, Ny, Nx);
 
     // Allocation of the wave function norm
@@ -148,7 +219,7 @@ int main(int argc, char **argv)
 
     // FFT arrays
     cufftDoubleComplex *d_psi2_fft;
-    cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex));
+    CUDA_CHECK(cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex)));
 
     // Create plan for FFT of 3D array with explicit work area management
     cufftHandle forward_plan, backward_plan;
@@ -157,44 +228,14 @@ int main(int argc, char **argv)
     void *backward_work = nullptr;
 
     // Create forward plan
-    cufftResult res = cufftCreate(&forward_plan);
-    if (res != CUFFT_SUCCESS) 
-    {
-        std::cerr << "CUFFT error: Forward plan creation failed" << std::endl;
-        return -1;
-    }
-
-    res = cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize);
-    if (res != CUFFT_SUCCESS) 
-    {
-        std::cerr << "CUFFT error: Forward plan setup failed" << std::endl;
-        cufftDestroy(forward_plan);
-        return -1;
-    }
+    CUFFT_CHECK(cufftCreate(&forward_plan));
+    CUFFT_CHECK(cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize));
 
     // Defer work area allocation until both plan sizes are known; will share one buffer
 
     // Create backward plan
-    res = cufftCreate(&backward_plan);
-    if (res != CUFFT_SUCCESS) 
-    {
-        std::cerr << "CUFFT error: Backward plan creation failed" << std::endl;
-        if (forward_work)
-            cudaFree(forward_work);
-        cufftDestroy(forward_plan);
-        return -1;
-    }
-
-    res = cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize);
-    if (res != CUFFT_SUCCESS) 
-    {
-        std::cerr << "CUFFT error: Backward plan setup failed" << std::endl;
-        if (forward_work)
-            cudaFree(forward_work);
-        cufftDestroy(forward_plan);
-        cufftDestroy(backward_plan);
-        return -1;
-    }
+    CUFFT_CHECK(cufftCreate(&backward_plan));
+    CUFFT_CHECK(cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize));
 
     // Allocate a single shared work area for both forward and backward plans
     {
@@ -202,15 +243,15 @@ int main(int argc, char **argv)
             (forward_worksize > backward_worksize) ? forward_worksize : backward_worksize;
         if (shared_worksize > 0) 
         {
-            cudaMalloc(&forward_work, shared_worksize);
-            cufftSetWorkArea(forward_plan, forward_work);
-            cufftSetWorkArea(backward_plan, forward_work);
+            CUDA_CHECK(cudaMalloc(&forward_work, shared_worksize));
+            CUFFT_CHECK(cufftSetWorkArea(forward_plan, forward_work));
+            CUFFT_CHECK(cufftSetWorkArea(backward_plan, forward_work));
         }
     }
 
     // Allocate pinned memory for RMS results
     double *h_rms_pinned;
-    cudaHostAlloc(&h_rms_pinned, 3 * sizeof(double), cudaHostAllocDefault);
+    CUDA_CHECK(cudaHostAlloc(&h_rms_pinned, 3 * sizeof(double), cudaHostAllocDefault));
 
     // Initialize RMS output file that will store root mean square values <r>, <x>, <y>, <z>
     if (rmsout != NULL) 
@@ -225,15 +266,15 @@ int main(int argc, char **argv)
 
     // Initialize chemical potential output file that will store chemical potential values, total
     // chemical pot., kinetic, trap, contact, dipole and quantum fluctuation terms
-    if (muoutput != NULL) 
-    {
-        sprintf(filename, "%s.txt", muoutput);
-        filemu = fopen(filename, "w");
-    } 
-    else
-    {
-        filemu = NULL;
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     sprintf(filename, "%s.txt", muoutput);
+    //     filemu = fopen(filename, "w");
+    // } 
+    // else
+    // {
+    //     filemu = NULL;
+    // }
 
     // Initialize psi function
     initpsi(psi, x2, y2, z2, x, y, z);
@@ -257,18 +298,18 @@ int main(int argc, char **argv)
     // Also copy coefficients to constant memory for warp-broadcast
     if (Nx - 1 <= CGALPHA_MAX) 
     {
-        cudaMemcpyToSymbol(calphax_c, calphax.raw(), (Nx - 1) * sizeof(double));
-        cudaMemcpyToSymbol(cgammax_c, cgammax.raw(), (Nx - 1) * sizeof(double));
+        CUDA_CHECK(cudaMemcpyToSymbol(calphax_c, calphax.raw(), (Nx - 1) * sizeof(double)));
+        CUDA_CHECK(cudaMemcpyToSymbol(cgammax_c, cgammax.raw(), (Nx - 1) * sizeof(double)));
     }
     if (Ny - 1 <= CGALPHA_MAX) 
     {
-        cudaMemcpyToSymbol(calphay_c, calphay.raw(), (Ny - 1) * sizeof(double));
-        cudaMemcpyToSymbol(cgammay_c, cgammay.raw(), (Ny - 1) * sizeof(double));
+        CUDA_CHECK(cudaMemcpyToSymbol(calphay_c, calphay.raw(), (Ny - 1) * sizeof(double)));
+        CUDA_CHECK(cudaMemcpyToSymbol(cgammay_c, cgammay.raw(), (Ny - 1) * sizeof(double)));
     }
     if (Nz - 1 <= CGALPHA_MAX) 
     {
-        cudaMemcpyToSymbol(calphaz_c, calphaz.raw(), (Nz - 1) * sizeof(double));
-        cudaMemcpyToSymbol(cgammaz_c, cgammaz.raw(), (Nz - 1) * sizeof(double));
+        CUDA_CHECK(cudaMemcpyToSymbol(calphaz_c, calphaz.raw(), (Nz - 1) * sizeof(double)));
+        CUDA_CHECK(cudaMemcpyToSymbol(cgammaz_c, cgammaz.raw(), (Nz - 1) * sizeof(double)));
     }
 
     // Copy psi data to device
@@ -282,10 +323,10 @@ int main(int argc, char **argv)
     {
         rms_output(filerms);
     }
-    if (muoutput != NULL) 
-    {
-        mu_output(filemu);
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     mu_output(filemu);
+    // }
 
     // Compute wave function norm
     calcnorm(d_psi.raw(), d_work_array.raw(), norm, integ);
@@ -302,17 +343,17 @@ int main(int argc, char **argv)
     }
 
     // Compute chemical potential terms
-    if (muoutput != NULL) 
-    {
-        calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
-                 d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
-        std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
-                    0, muen[0] + muen[1] + muen[2] + muen[3] + muen[4], muen[3], muen[1], muen[0],
-                    muen[2], muen[4]);
+    //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
+      //           d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+    // if (muoutput != NULL) 
+    // {
+    //     std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
+    //                 0, muen[0] + muen[1] + muen[2] + muen[3] + muen[4], muen[3], muen[1], muen[0],
+    //                 muen[2], muen[4]);
                     
-        fflush(filemu);
-        mutotold = muen[0] + muen[1] + muen[2] + muen[3];
-    }
+    //     fflush(filemu);
+    //     mutotold = muen[0] + muen[1] + muen[2] + muen[3];
+    // }
 
     if (Niterout != NULL) 
     {
@@ -441,9 +482,9 @@ int main(int argc, char **argv)
     nsteps = Niter / Nsnap;
     // CUDA events for GPU timing
     cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start);
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
+    CUDA_CHECK(cudaEventRecord(start));
     for (long snap = 1; snap <= Nsnap; snap++) 
     {
         for (long j = 0; j < nsteps; j++) 
@@ -470,20 +511,20 @@ int main(int argc, char **argv)
             fflush(filerms);
         }
         // Compute chemical potential terms
-        calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
-                 d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
-        if (muoutput != NULL) 
-        {
-            std::fprintf(filemu,
-                         "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
-                         snap, muen[0] + muen[1] + muen[2] + muen[3] + muen[4], muen[3], muen[1],
-                         muen[0], muen[2], muen[4]);
-            fflush(filemu);
-        }
+        //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
+                 //d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+        // if (muoutput != NULL) 
+        // {
+        //     std::fprintf(filemu,
+        //                  "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
+        //                  snap, muen[0] + muen[1] + muen[2] + muen[3] + muen[4], muen[3], muen[1],
+        //                  muen[0], muen[2], muen[4]);
+        //     fflush(filemu);
+        // }
         if (Niterout != NULL) 
         {
             // Move d_psi to host, host is pinned memory
-            cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(double), cudaMemcpyDeviceToHost);
+            CUDA_CHECK(cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(double), cudaMemcpyDeviceToHost));
             char itername[32]; // Increased buffer size to prevent overflow
             sprintf(itername, "-%06li-", snap);
             if (outflags & DEN_X) 
@@ -604,34 +645,33 @@ int main(int argc, char **argv)
                 fclose(file);
             }
         }
-        mutotnew = muen[0] + muen[1] + muen[2] + muen[3] + muen[4];
-        if (fabs((mutotold - mutotnew) / mutotnew) < murel)
-            break;
-        mutotold = mutotnew;
-        if (mutotnew > muend)
-            break;
+        // mutotnew = muen[0] + muen[1] + muen[2] + muen[3] + muen[4];
+        // if (fabs((mutotold - mutotnew) / mutotnew) < murel)
+        //     break;
+        // mutotold = mutotnew;
+        // if (mutotnew > muend)
+        //     break;
     }
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
+    CUDA_CHECK(cudaEventRecord(stop));
+    CUDA_CHECK(cudaEventSynchronize(stop));
 
     float gpu_time_ms = 0.0f;
-    cudaEventElapsedTime(&gpu_time_ms, start, stop);
+    CUDA_CHECK(cudaEventElapsedTime(&gpu_time_ms, start, stop));
     double gpu_time_seconds = gpu_time_ms / 1000.0;
     if (rmsout != NULL) 
     {
-        // std::fprintf(filerms,
-        // "-------------------------------------------------------------------\n\n");
-        // std::fprintf(filerms, "Total time on GPU: %f seconds\n", gpu_time_seconds);
+        std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
+        std::fprintf(filerms, "Total time on GPU: %f seconds\n", gpu_time_seconds);
         std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
         fclose(filerms);
     }
-    if (muoutput != NULL) 
-    {
-        std::fprintf(filemu, "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        std::fprintf(filemu, "Total time on GPU: %f seconds\n", gpu_time_seconds);
-        std::fprintf(filemu, "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        fclose(filemu);
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     std::fprintf(filemu, "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    //     std::fprintf(filemu, "Total time on GPU: %f seconds\n", gpu_time_seconds);
+    //     std::fprintf(filemu, "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    //     fclose(filemu);
+    // }
     // Save FINALPSI
     if (finalpsi != NULL) 
     {
@@ -708,6 +748,11 @@ void readpar(void)
     }
     Na = atof(cfg_tmp);
 
+    if ((cfg_tmp = cfg_read("AHO")) == NULL) 
+    {
+        std::fprintf(stderr, "AHO is not defined in the configuration file.\n");
+        exit(EXIT_FAILURE);
+    }
     aho = atof(cfg_tmp);
 
     if ((cfg_tmp = cfg_read("AS")) == NULL) 
@@ -965,16 +1010,16 @@ void calcrms(
     double *d_work_array, Simpson3DTiledIntegrator &integ,
     double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 {
+    // Configure kernel launch parameters using grid-stride approach
+    static int smCount = getGPUSMCount();
+    dim3 blockSize(32, 4, 2);  // 256 threads per block
+    dim3 gridSize = getOptimalGrid3D(smCount, Nx, Ny, Nz, blockSize, 4);
 
-    // Configure kernel launch parameters
-    dim3 blockSize(8, 8, 4);
-    dim3 gridSize((Nx + blockSize.x - 1) / blockSize.x, (Ny + blockSize.y - 1) / blockSize.y,
-                  (Nz + blockSize.z - 1) / blockSize.z);
-
-    // Compute x^2 * psi^2 (weights computed on-the-fly)
+    // Compute x^2 * psi^2 
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
                                                                  0, // 0 for x direction
                                                                  dx);
+    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (x)");
 
     
     //  Integrate x^2 * psi^2
@@ -984,6 +1029,7 @@ void calcrms(
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
                                                                  1, // 1 for y direction
                                                                  dy);
+    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (y)");
 
     //  Integrate y^2 * psi^2
     double y2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -992,6 +1038,7 @@ void calcrms(
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
                                                                  2, // 2 for z direction
                                                                  dz);
+    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (z)");
 
     //  Integrate z^2 * psi^2
     double z2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
@@ -1016,32 +1063,42 @@ __global__ void compute_single_weighted_psi_squared(const double *__restrict__ p
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double psi_val = __ldg(&psi[linear_idx]); // Read-only cache for psi
+                double psi_squared = psi_val * psi_val;
 
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double psi_val = __ldg(&psi[linear_idx]); // Read-only cache for psi
-    double psi_squared = psi_val * psi_val;
+                double weight = 0.0;
+                if (direction == 0) 
+                {
+                    double x = (static_cast<double>(ix) - static_cast<double>(d_Nx) * 0.5) * scale;
+                    weight = x * x;
+                } 
+                else if (direction == 1) 
+                {
+                    double y = (static_cast<double>(iy) - static_cast<double>(d_Ny) * 0.5) * scale;
+                    weight = y * y;
+                } 
+                else if (direction == 2) 
+                {
+                    double z = (static_cast<double>(iz) - static_cast<double>(d_Nz) * 0.5) * scale;
+                    weight = z * z;
+                }
 
-    double weight = 0.0;
-    if (direction == 0) 
-    {
-        double x = (static_cast<double>(idx) - static_cast<double>(d_Nx) * 0.5) * scale;
-        weight = x * x;
-    } 
-    else if (direction == 1) 
-    {
-        double y = (static_cast<double>(idy) - static_cast<double>(d_Ny) * 0.5) * scale;
-        weight = y * y;
-    } 
-    else if (direction == 2) 
-    {
-        double z = (static_cast<double>(idz) - static_cast<double>(d_Nz) * 0.5) * scale;
-        weight = z * z;
+                result[linear_idx] = weight * psi_squared;
+            }
+        }
     }
-
-    result[linear_idx] = weight * psi_squared;
 }
 
 /**
@@ -1051,11 +1108,11 @@ __global__ void compute_single_weighted_psi_squared(const double *__restrict__ p
  */
 void calc_d_psi2(const double *d_psi, double *d_psi2) 
 {
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
     compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
+    CUDA_CHECK_KERNEL("compute_d_psi2");
     return;
 }
 
@@ -1069,14 +1126,23 @@ __global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restr
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-
-    double psi_val = d_psi[linear_idx];
-    d_psi2[linear_idx] = psi_val * psi_val;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double psi_val = d_psi[linear_idx];
+                d_psi2[linear_idx] = psi_val * psi_val;
+            }
+        }
+    }
 }
 
 /**
@@ -1240,12 +1306,12 @@ void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegra
     norm = 1.0 / sqrt(raw_norm);
 
     // Apply normalization
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 4);
 
     multiply_by_norm<<<numBlocks, threadsPerBlock>>>(d_psi, norm);
+    CUDA_CHECK_KERNEL("multiply_by_norm");
 }
 
 /**
@@ -1258,12 +1324,22 @@ __global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm)
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    long linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    d_psi[linear_idx] *= norm;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                long linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                d_psi[linear_idx] *= norm;
+            }
+        }
+    }
 }
 
 /**
@@ -1366,16 +1442,21 @@ void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, const doubl
                       double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd) 
 {
     calc_d_psi2(d_psi, d_psi2_real);
-    cufftExecD2Z(forward_plan, (cufftDoubleReal *)d_psi2_real, d_psi2_fft);
+    CUFFT_CHECK(cufftExecD2Z(forward_plan, (cufftDoubleReal *)d_psi2_real, d_psi2_fft));
 
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx / 2 + 1 + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
     compute_psid2_potdd<<<numBlocks, threadsPerBlock>>>(d_psi2_fft, potdd);
+    CUDA_CHECK_KERNEL("compute_psid2_potdd");
 
-    cufftExecZ2D(backward_plan, d_psi2_fft, (cufftDoubleReal *)d_psi2_real);
-    calcpsidd2_boundaries<<<numBlocks, threadsPerBlock>>>(d_psi2_real);
+    CUFFT_CHECK(cufftExecZ2D(backward_plan, d_psi2_fft, (cufftDoubleReal *)d_psi2_real));
+    
+    // Boundary kernel uses 2D grid
+    dim3 blockSize2D(32, 8);
+    dim3 numBlocks2D = getOptimalGrid2D(smCount, Ny, Nz, blockSize2D, 4);
+    calcpsidd2_boundaries<<<numBlocks2D, blockSize2D>>>(d_psi2_real);
+    CUDA_CHECK_KERNEL("calcpsidd2_boundaries");
     return;
 }
 
@@ -1455,16 +1536,15 @@ void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArra
  */
 void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, double h2) 
 {
-
     // Precompute ratio_gd on host (constant for all threads)
     double ratio_gd = gd / ((double)(Nx * Ny * Nz));
 
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
     calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_pot, g, ratio_gd, h2);
-    // cudaDeviceSynchronize();
+    CUDA_CHECK_KERNEL("calcnu_kernel");
+    CUDA_SYNC_CHECK("calcnu");  // Only active in debug mode
     return;
 }
 
@@ -1485,22 +1565,33 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double psi_val = d_psi[linear_idx];
-    double psi_val2 = fma(psi_val, psi_val, 0.0);        // psi^2
-    double psi_val3 = fma(psi_val2, fabs(psi_val), 0.0); // psi^3
-    double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
-    double pot_val = __ldg(&d_pot[linear_idx]);
-    double temp1 = fma(psi_val2, g, psi2dd);
-    double temp2 = fma(psi_val3, h2, pot_val);
-    double sum = temp1 + temp2;
-    double tmp = fma(d_dt, sum, 0.0);
-    // double tmp = d_dt * (psi_val3*h2);
-    d_psi[linear_idx] *= exp(-tmp);
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double psi_val = d_psi[linear_idx];
+                double psi_val2 = fma(psi_val, psi_val, 0.0);        // psi^2
+                //double psi_val3 = fma(psi_val2, fabs(psi_val), 0.0); // psi^3
+                double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
+                double pot_val = __ldg(&d_pot[linear_idx]);
+                double temp1 = fma(psi_val2, g, psi2dd);
+                //double temp2 = fma(psi_val3, h2, pot_val);
+                //double sum = temp1 + temp2;
+                double sum = temp1 + pot_val;
+                double tmp = fma(d_dt, sum, 0.0);
+                // double tmp = d_dt * (psi_val3*h2);
+                d_psi[linear_idx] *= exp(-tmp);
+            }
+        }
+    }
 }
 
 /**
@@ -1515,14 +1606,16 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgammax, double Ax0r,
              double Ax) 
 {
-
-    dim3 threadsPerBlock(32, 8); // 256 threads per block
-    dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Nz + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    // Use grid-stride approach with optimal block count
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(64, 8);  // threads per block
+    // For batched kernel, effective Ny dimension is Ny/BATCH_SIZE (16)
+    long effectiveNy = (Ny + 15) / 16;
+    dim3 numBlocks = getOptimalGrid2D(smCount, effectiveNy, Nz, threadsPerBlock, 2);
 
     calclux_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_cbeta, d_calphax, d_cgammax, Ax0r, Ax);
-
-    // cudaDeviceSynchronize();
+    CUDA_CHECK_KERNEL("calclux_kernel");
+    CUDA_SYNC_CHECK("calclux");  // Only active in debug mode
     return;
 }
 
@@ -1540,56 +1633,75 @@ __global__ void calclux_kernel(double *__restrict__ psi, double *__restrict__ cb
                                const double *__restrict__ cgammax, const double Ax0r,
                                const double Ax) 
 {
-
+    // Batched processing: each thread handles BATCH_SIZE Y-lines
+    constexpr int BATCH_SIZE = 16;
+    
     // Map y to threadIdx.x for better locality across warp; z to threadIdx.y
-    int cntj = blockIdx.x * blockDim.x + threadIdx.x;
-    int cntk = blockIdx.y * blockDim.y + threadIdx.y;
+    int cntj_base_init = (blockIdx.x * blockDim.x + threadIdx.x) * BATCH_SIZE;
+    int cntk_init = blockIdx.y * blockDim.y + threadIdx.y;
+    
+    int stride_j = gridDim.x * blockDim.x * BATCH_SIZE;
+    int stride_k = gridDim.y * blockDim.y;
 
-    if (cntj >= d_Ny || cntk >= d_Nz)
-        return;
-
-    // Base offset for this (j,k) y-z position
-    const long base_offset = cntk * d_Ny * d_Nx + cntj * d_Nx;
-
-    // Forward elimination: fill cbeta array
-    // Boundary condition: cbeta[nx-2] = psi[nx-1]
-    long idx_i = base_offset + (d_Nx - 2);
-    long idx_ip1 = base_offset + (d_Nx - 1);
-    cbeta[idx_i] = psi[idx_ip1];
-
-    // Algorithm forward sweep with rolling window in x
-    double psi_ip1 = __ldg(&psi[idx_ip1]);
-    double psi_i = __ldg(&psi[idx_i]);
-    for (int cnti = d_Nx - 2; cnti > 0; cnti--) 
+    // Grid-stride loop over z
+    for (int cntk = cntk_init; cntk < d_Nz; cntk += stride_k) 
     {
-        long idx_im1 = idx_i - 1;
-        double psi_im1 = __ldg(&psi[idx_im1]);
+        // Grid-stride loop over y batches
+        for (int cntj_base = cntj_base_init; cntj_base < d_Ny; cntj_base += stride_j) 
+        {
+            // Process BATCH_SIZE consecutive Y-lines
+            #pragma unroll
+            for (int batch = 0; batch < BATCH_SIZE; batch++) {
+                int cntj = cntj_base + batch;
+                
+                if (cntj >= d_Ny)
+                    break;
 
-        double c = fma(Ax0r, psi_i, fma(-Ax, psi_im1, -Ax * psi_ip1));
-        double gamma = (d_Nx - 1 <= CGALPHA_MAX) ? cgammax_c[cnti] : __ldg(&cgammax[cnti]);
-        cbeta[idx_im1] = gamma * fma(Ax, cbeta[idx_i], -c);
+                // Base offset for this (j,k) y-z position
+                const long base_offset = cntk * d_Ny * d_Nx + cntj * d_Nx;
 
-        // Roll window down in x
-        psi_ip1 = psi_i;
-        psi_i = psi_im1;
-        idx_i = idx_im1;
+                // Forward elimination: fill cbeta array
+                // Boundary condition: cbeta[nx-2] = psi[nx-1]
+                long idx_i = base_offset + (d_Nx - 2);
+                long idx_ip1 = base_offset + (d_Nx - 1);
+                cbeta[idx_i] = psi[idx_ip1];
+
+                // Algorithm forward sweep with rolling window in x
+                double psi_ip1 = __ldg(&psi[idx_ip1]);
+                double psi_i = __ldg(&psi[idx_i]);
+                for (int cnti = d_Nx - 2; cnti > 0; cnti--) 
+                {
+                    long idx_im1 = idx_i - 1;
+                    double psi_im1 = __ldg(&psi[idx_im1]);
+
+                    double c = fma(Ax0r, psi_i, fma(-Ax, psi_im1, -Ax * psi_ip1));
+                    double gamma = (d_Nx - 1 <= CGALPHA_MAX) ? cgammax_c[cnti] : __ldg(&cgammax[cnti]);
+                    cbeta[idx_im1] = gamma * fma(Ax, cbeta[idx_i], -c);
+
+                    // Roll window down in x
+                    psi_ip1 = psi_i;
+                    psi_i = psi_im1;
+                    idx_i = idx_im1;
+                }
+
+                // Boundary condition
+                psi[base_offset + 0] = 0.0;
+
+                // Back substitution: update psi values
+                long idx_i_bs = base_offset; // i = 0
+                for (int cnti = 0; cnti < d_Nx - 2; cnti++) 
+                {
+                    long idx_ip1_bs = idx_i_bs + 1; // i+1
+                    double alpha = (d_Nx - 1 <= CGALPHA_MAX) ? calphax_c[cnti] : __ldg(&calphax[cnti]);
+                    psi[idx_ip1_bs] = fma(alpha, psi[idx_i_bs], cbeta[idx_i_bs]);
+                    idx_i_bs = idx_ip1_bs;
+                }
+
+                // Boundary condition
+                psi[base_offset + d_Nx - 1] = 0.0;
+            }
+        }
     }
-
-    // Boundary condition
-    psi[base_offset + 0] = 0.0;
-
-    // Back substitution: update psi values
-    long idx_i_bs = base_offset; // i = 0
-    for (int cnti = 0; cnti < d_Nx - 2; cnti++) 
-    {
-        long idx_ip1_bs = idx_i_bs + 1; // i+1
-        double alpha = (d_Nx - 1 <= CGALPHA_MAX) ? calphax_c[cnti] : __ldg(&calphax[cnti]);
-        psi[idx_ip1_bs] = fma(alpha, psi[idx_i_bs], cbeta[idx_i_bs]);
-        idx_i_bs = idx_ip1_bs;
-    }
-
-    // Boundary condition
-    psi[base_offset + d_Nx - 1] = 0.0;
 }
 
 /**
@@ -1604,14 +1716,14 @@ __global__ void calclux_kernel(double *__restrict__ psi, double *__restrict__ cb
 void calcluy(double *d_psi, double *d_cbeta, double *d_calphay, double *d_cgammay, double Ay0r,
              double Ay) 
 {
-
-    // Map threadIdx.x to the fastest-varying axis (x) for coalesced access
-    dim3 threadsPerBlock(32, 8); // 256 threads per block, x-major
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Nz + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    // Use grid-stride approach with optimal block count
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(64, 8);  // threads per block, x-major for coalescing
+    dim3 numBlocks = getOptimalGrid2D(smCount, Nx, Nz, threadsPerBlock, 2);
 
     calcluy_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_cbeta, d_calphay, d_cgammay, Ay0r, Ay);
-
+    CUDA_CHECK_KERNEL("calcluy_kernel");
+    CUDA_SYNC_CHECK("calcluy");  // Only active in debug mode
     return;
 }
 
@@ -1629,54 +1741,61 @@ __global__ void calcluy_kernel(double *__restrict__ psi, double *__restrict__ cb
                                const double *__restrict__ cgammay, const double Ay0r,
                                const double Ay) 
 {
-
     // Map x to threadIdx.x for coalesced global memory access within a warp
     int cnti = blockIdx.x * blockDim.x + threadIdx.x; // x (fastest)
     int cntk = blockIdx.y * blockDim.y + threadIdx.y; // z
+    
+    int stride_i = gridDim.x * blockDim.x;
+    int stride_k = gridDim.y * blockDim.y;
 
-    if (cnti >= d_Nx || cntk >= d_Nz)
-        return;
-
-    // Forward elimination: fill cbeta array
-    // Boundary condition: cbeta[ny-2] = psi[ny-1]
-    long base_offset = cntk * d_Ny * d_Nx + cnti;
-    long idx = base_offset + (d_Ny - 2) * d_Nx;     // j = Ny-2
-    long idx_jp1 = base_offset + (d_Ny - 1) * d_Nx; // j+1 = Ny-1
-    cbeta[idx] = psi[idx_jp1];
-
-    // Algorithm forward sweep (y-direction) with rolling window
-    double psi_jp1 = __ldg(&psi[idx_jp1]);
-    double psi_j = __ldg(&psi[idx]);
-    for (int cntj = d_Ny - 2; cntj > 0; cntj--) 
+    // Grid-stride loop over z
+    for (int k = cntk; k < d_Nz; k += stride_k) 
     {
-        long idx_jm1 = idx - d_Nx; // j-1
-        double psi_jm1 = __ldg(&psi[idx_jm1]);
+        // Grid-stride loop over x
+        for (int i = cnti; i < d_Nx; i += stride_i) 
+        {
+            // Forward elimination: fill cbeta array
+            // Boundary condition: cbeta[ny-2] = psi[ny-1]
+            long base_offset = k * d_Ny * d_Nx + i;
+            long idx = base_offset + (d_Ny - 2) * d_Nx;     // j = Ny-2
+            long idx_jp1 = base_offset + (d_Ny - 1) * d_Nx; // j+1 = Ny-1
+            cbeta[idx] = psi[idx_jp1];
 
-        double c = fma(Ay0r, psi_j, fma(-Ay, psi_jm1, -Ay * psi_jp1));
-        double gamma = (d_Ny - 1 <= CGALPHA_MAX) ? cgammay_c[cntj] : __ldg(&cgammay[cntj]);
-        cbeta[idx_jm1] = gamma * fma(Ay, cbeta[idx], -c);
+            // Algorithm forward sweep (y-direction) with rolling window
+            double psi_jp1 = __ldg(&psi[idx_jp1]);
+            double psi_j = __ldg(&psi[idx]);
+            for (int cntj = d_Ny - 2; cntj > 0; cntj--) 
+            {
+                long idx_jm1 = idx - d_Nx; // j-1
+                double psi_jm1 = __ldg(&psi[idx_jm1]);
 
-        // Roll window down in y
-        psi_jp1 = psi_j;
-        psi_j = psi_jm1;
-        idx = idx_jm1;
+                double c = fma(Ay0r, psi_j, fma(-Ay, psi_jm1, -Ay * psi_jp1));
+                double gamma = (d_Ny - 1 <= CGALPHA_MAX) ? cgammay_c[cntj] : __ldg(&cgammay[cntj]);
+                cbeta[idx_jm1] = gamma * fma(Ay, cbeta[idx], -c);
+
+                // Roll window down in y
+                psi_jp1 = psi_j;
+                psi_j = psi_jm1;
+                idx = idx_jm1;
+            }
+
+            // Boundary condition
+            psi[base_offset + 0] = 0.0;
+
+            // Back substitution: update psi values
+            long idx_j = base_offset; // j = 0
+            for (int cntj = 0; cntj < d_Ny - 2; cntj++) 
+            {
+                long idx_jp1_bs = idx_j + d_Nx; // j+1
+                double alpha = (d_Ny - 1 <= CGALPHA_MAX) ? calphay_c[cntj] : __ldg(&calphay[cntj]);
+                psi[idx_jp1_bs] = fma(alpha, psi[idx_j], cbeta[idx_j]);
+                idx_j = idx_jp1_bs;
+            }
+
+            // Boundary condition
+            psi[base_offset + (d_Ny - 1) * d_Nx] = 0.0;
+        }
     }
-
-    // Boundary condition
-    psi[base_offset + 0] = 0.0;
-
-    // Back substitution: update psi values
-    long idx_j = base_offset; // j = 0
-    for (int cntj = 0; cntj < d_Ny - 2; cntj++) 
-    {
-        long idx_jp1_bs = idx_j + d_Nx; // j+1
-        double alpha = (d_Ny - 1 <= CGALPHA_MAX) ? calphay_c[cntj] : __ldg(&calphay[cntj]);
-        psi[idx_jp1_bs] = fma(alpha, psi[idx_j], cbeta[idx_j]);
-        idx_j = idx_jp1_bs;
-    }
-
-    // Boundary condition
-    psi[base_offset + (d_Ny - 1) * d_Nx] = 0.0;
 }
 
 /**
@@ -1691,14 +1810,14 @@ __global__ void calcluy_kernel(double *__restrict__ psi, double *__restrict__ cb
 void calcluz(double *d_psi, double *d_cbeta, double *d_calphaz, double *d_cgammaz, double Az0r,
              double Az) 
 {
-
-    // Map threadIdx.x to the fastest-varying axis (x) for coalesced access
-    dim3 threadsPerBlock(32, 8); // 256 threads per block, x-major
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    // Use grid-stride approach with optimal block count
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(32, 8);  // threads per block, x-major for coalescing
+    dim3 numBlocks = getOptimalGrid2D(smCount, Nx, Ny, threadsPerBlock, 4);
 
     calcluz_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_cbeta, d_calphaz, d_cgammaz, Az0r, Az);
-
+    CUDA_CHECK_KERNEL("calcluz_kernel");
+    CUDA_SYNC_CHECK("calcluz");  // Only active in debug mode
     return;
 }
 
@@ -1716,56 +1835,63 @@ __global__ void calcluz_kernel(double *__restrict__ psi, double *__restrict__ cb
                                const double *__restrict__ cgammaz, const double Az0r,
                                const double Az) 
 {
-
     int cnti = blockIdx.x * blockDim.x + threadIdx.x; // x (fastest)
     int cntj = blockIdx.y * blockDim.y + threadIdx.y; // y
+    
+    int stride_i = gridDim.x * blockDim.x;
+    int stride_j = gridDim.y * blockDim.y;
 
-    if (cnti >= d_Nx || cntj >= d_Ny)
-        return;
-
-    // Base offset for this (i,j) x-y position - points to z=0
-    const long base_offset = cntj * d_Nx + cnti;
-    const long stride = d_Ny * d_Nx; // stride to move in z-direction
-
-    // Forward elimination: fill cbeta array
-    // Boundary condition: cbeta[nz-2] = psi[nz-1]
-    cbeta[base_offset + (d_Nz - 2) * stride] = psi[base_offset + (d_Nz - 1) * stride];
-
-    // Algorithm forward sweep (working in z-direction) with rolling window to reduce global loads
-    long idx_kp1 = base_offset + (d_Nz - 1) * stride; // k+1
-    long idx_k = base_offset + (d_Nz - 2) * stride;   // k
-    double psi_kp1 = __ldg(&psi[idx_kp1]);
-    double psi_k = __ldg(&psi[idx_k]);
-    for (int cntk = d_Nz - 2; cntk > 0; cntk--) 
+    // Grid-stride loop over y
+    for (int j = cntj; j < d_Ny; j += stride_j) 
     {
-        long idx_km1 = idx_k - stride; // k-1
-        double psi_km1 = __ldg(&psi[idx_km1]);
+        // Grid-stride loop over x
+        for (int i = cnti; i < d_Nx; i += stride_i) 
+        {
+            // Base offset for this (i,j) x-y position - points to z=0
+            const long base_offset = j * d_Nx + i;
+            const long stride = d_Ny * d_Nx; // stride to move in z-direction
 
-        double c = fma(Az0r, psi_k, fma(-Az, psi_km1, -Az * psi_kp1));
-        double gamma = (d_Nz - 1 <= CGALPHA_MAX) ? cgammaz_c[cntk] : __ldg(&cgammaz[cntk]);
-        cbeta[idx_km1] = gamma * fma(Az, cbeta[idx_k], -c);
+            // Forward elimination: fill cbeta array
+            // Boundary condition: cbeta[nz-2] = psi[nz-1]
+            cbeta[base_offset + (d_Nz - 2) * stride] = psi[base_offset + (d_Nz - 1) * stride];
 
-        // Roll window down in z
-        psi_kp1 = psi_k;
-        psi_k = psi_km1;
-        idx_k = idx_km1;
+            // Algorithm forward sweep (working in z-direction) with rolling window to reduce global loads
+            long idx_kp1 = base_offset + (d_Nz - 1) * stride; // k+1
+            long idx_k = base_offset + (d_Nz - 2) * stride;   // k
+            double psi_kp1 = __ldg(&psi[idx_kp1]);
+            double psi_k = __ldg(&psi[idx_k]);
+            for (int cntk = d_Nz - 2; cntk > 0; cntk--) 
+            {
+                long idx_km1 = idx_k - stride; // k-1
+                double psi_km1 = __ldg(&psi[idx_km1]);
+
+                double c = fma(Az0r, psi_k, fma(-Az, psi_km1, -Az * psi_kp1));
+                double gamma = (d_Nz - 1 <= CGALPHA_MAX) ? cgammaz_c[cntk] : __ldg(&cgammaz[cntk]);
+                cbeta[idx_km1] = gamma * fma(Az, cbeta[idx_k], -c);
+
+                // Roll window down in z
+                psi_kp1 = psi_k;
+                psi_k = psi_km1;
+                idx_k = idx_km1;
+            }
+
+            // Boundary condition
+            psi[base_offset + 0 * stride] = 0.0;
+
+            // Back substitution: update psi values
+            long idx_k_bs = base_offset; // k = 0
+            for (int cntk = 0; cntk < d_Nz - 2; cntk++) 
+            {
+                long idx_kp1_bs = idx_k_bs + stride; // k+1
+                double alpha = (d_Nz - 1 <= CGALPHA_MAX) ? calphaz_c[cntk] : __ldg(&calphaz[cntk]);
+                psi[idx_kp1_bs] = fma(alpha, psi[idx_k_bs], cbeta[idx_k_bs]);
+                idx_k_bs = idx_kp1_bs;
+            }
+
+            // Boundary condition
+            psi[base_offset + (d_Nz - 1) * stride] = 0.0;
+        }
     }
-
-    // Boundary condition
-    psi[base_offset + 0 * stride] = 0.0;
-
-    // Back substitution: update psi values
-    long idx_k_bs = base_offset; // k = 0
-    for (int cntk = 0; cntk < d_Nz - 2; cntk++) 
-    {
-        long idx_kp1_bs = idx_k_bs + stride; // k+1
-        double alpha = (d_Nz - 1 <= CGALPHA_MAX) ? calphaz_c[cntk] : __ldg(&calphaz[cntk]);
-        psi[idx_kp1_bs] = fma(alpha, psi[idx_k_bs], cbeta[idx_k_bs]);
-        idx_k_bs = idx_kp1_bs;
-    }
-
-    // Boundary condition
-    psi[base_offset + (d_Nz - 1) * stride] = 0.0;
 }
 
 /**
@@ -1790,29 +1916,30 @@ void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double
               cufftHandle backward_plan, Simpson3DTiledIntegrator &integ, const double g,
               const double gd, const double h2) 
 {
-
     // Precompute constants
     const double inv_NxNyNz = 1.0 / ((double)Nx * Ny * Nz);
     const double half_g = 0.5 * g;
     const double half_gd = 0.5 * gd;
     const double half_h2 = 0.5 * h2;
 
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 4);
 
     // Step 1: Contact energy - Calculate 0.5 * g * ψ⁴
     calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, half_g);
+    CUDA_CHECK_KERNEL("calcmuen_fused_contact");
     muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
     // Step 2: Potential energy - Calculate 0.5 * ψ² * V
     calcmuen_fused_potential<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_pot);
+    CUDA_CHECK_KERNEL("calcmuen_fused_potential");
     muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
     // Step 3: Dipolar energy - requires FFT computation first
     calcpsidd2(forward_plan, backward_plan, d_psi, d_psi2dd, d_psi2_fft, d_potdd);
     calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_psi2dd, half_gd);
+    CUDA_CHECK_KERNEL("calcmuen_fused_dipolar");
     muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz) * inv_NxNyNz;
 
     // Step 4: Kinetic energy - calculate gradients and kinetic energy density directly
@@ -1821,6 +1948,7 @@ void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double
 
     // Step 5: H2 energy - calculate quantum fluctuation energy density
     calcmuen_fused_h2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, half_h2);
+    CUDA_CHECK_KERNEL("calcmuen_fused_h2");
     muen[4] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
 
     return;
@@ -1837,15 +1965,25 @@ __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi,
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double psi_val = d_psi[linear_idx];
-    double psi2_val = psi_val * psi_val;
-    double psi4_val = psi2_val * psi2_val;
-    d_result[linear_idx] = psi4_val * half_g;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double psi_val = d_psi[linear_idx];
+                double psi2_val = psi_val * psi_val;
+                double psi4_val = psi2_val * psi2_val;
+                d_result[linear_idx] = psi4_val * half_g;
+            }
+        }
+    }
 }
 
 /**
@@ -1861,15 +1999,25 @@ __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi,
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-    double psi2_val = psi_val * psi_val;
-    d_result[linear_idx] =
-        0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi2_val = psi_val * psi_val;
+                d_result[linear_idx] =
+                    0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
+            }
+        }
+    }
 }
 
 /**
@@ -1886,15 +2034,25 @@ __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi,
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-    double psi2_val = psi_val * psi_val;
-    double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
-    d_result[linear_idx] = psi2_val * psidd2_val * half_gd;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi2_val = psi_val * psi_val;
+                double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
+                d_result[linear_idx] = psi2_val * psidd2_val * half_gd;
+            }
+        }
+    }
 }
 
 /**
@@ -1909,14 +2067,24 @@ __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__re
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-    double psi5_val = psi_val * psi_val * psi_val * psi_val * psi_val;
-    d_result[linear_idx] = psi5_val * half_h2;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi5_val = psi_val * psi_val * psi_val * psi_val * psi_val;
+                d_result[linear_idx] = psi5_val * half_h2;
+            }
+        }
+    }
 }
 
 /**
@@ -2044,16 +2212,8 @@ void save_psi_from_gpu(double *psi, double *d_psi, const char *filename, long Nx
     // Allocate host memory
     size_t total_size = Nx * Ny * Nz;
 
-    // Copy from device to host
-    cudaMemcpy(psi, d_psi, total_size * sizeof(double), cudaMemcpyDeviceToHost);
-
-    // Check for CUDA errors
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-    {
-        fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
-        return;
-    }
+    // Copy from device to host with error checking
+    CUDA_CHECK(cudaMemcpy(psi, d_psi, total_size * sizeof(double), cudaMemcpyDeviceToHost));
 
     // Write to binary file
     FILE *file = fopen(filename, "wb");

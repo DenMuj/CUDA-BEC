@@ -1,5 +1,85 @@
 #include "real3d-cuda.cuh"
+#include "../utils/cuda_error_check.cuh"
 #include <cuComplex.h>
+
+// Use constant memory for tridiagonal coefficients when sizes are modest.
+// CUDA constant memory is limited to 64KB total
+// 6 arrays * 512 elements * 16 bytes (cuDoubleComplex) = 49,152 bytes (~48KB)
+#define CGALPHA_MAX 512
+__constant__ cuDoubleComplex cgammax_c[CGALPHA_MAX];
+__constant__ cuDoubleComplex calphax_c[CGALPHA_MAX];
+__constant__ cuDoubleComplex cgammay_c[CGALPHA_MAX];
+__constant__ cuDoubleComplex calphay_c[CGALPHA_MAX];
+__constant__ cuDoubleComplex cgammaz_c[CGALPHA_MAX];
+__constant__ cuDoubleComplex calphaz_c[CGALPHA_MAX];
+
+/**
+ * @brief Simple helper function to get GPU SM count
+ * @return Number of streaming multiprocessors on the current GPU
+ */
+inline int getGPUSMCount() {
+    int smCount;
+    int device;
+    CUDA_CHECK(cudaGetDevice(&device));
+    CUDA_CHECK(cudaDeviceGetAttribute(&smCount, cudaDevAttrMultiProcessorCount, device));
+    return smCount;
+}
+
+/**
+ * @brief Calculate optimal grid size for 3D kernels with grid-stride loops
+ * @param smCount: Number of SMs on GPU
+ * @param Nx, Ny, Nz: Problem dimensions
+ * @param blockSize: Block dimensions
+ * @param blocksPerSM: Minimum blocks per SM for occupancy
+ * @return dim3 grid size
+ */
+inline dim3 getOptimalGrid3D(int smCount, long Nx, long Ny, long Nz, dim3 blockSize, int blocksPerSM = 4) {
+    // Calculate grid needed to cover the problem with some stride
+    int stride = 2;
+    int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  // with stride
+    int gridY = (Ny + blockSize.y * stride - 1) / (blockSize.y * stride);
+    int gridZ = (Nz + blockSize.z * stride - 1) / (blockSize.z * stride);
+    
+    // Ensure minimum blocks for occupancy
+    int minBlocks = smCount * blocksPerSM;
+    int totalBlocks = gridX * gridY * gridZ;
+    
+    if (totalBlocks < minBlocks) {
+        // Scale up if too few blocks
+        double scale = sqrt((double)minBlocks / totalBlocks);
+        gridX = (int)(gridX * scale) + 1;
+        gridY = (int)(gridY * scale) + 1;
+    }
+    
+    return dim3(gridX, gridY, gridZ);
+}
+
+/**
+ * @brief Calculate optimal grid size for 2D kernels with grid-stride loops
+ * @param smCount: Number of SMs on GPU
+ * @param Nx, Ny: Problem dimensions for the 2D sweep
+ * @param blockSize: Block dimensions
+ * @param blocksPerSM: Minimum blocks per SM for occupancy
+ * @return dim3 grid size
+ */
+inline dim3 getOptimalGrid2D(int smCount, long Nx, long Ny, dim3 blockSize, int blocksPerSM = 4) {
+    // Calculate grid needed to cover the problem with some stride
+    int stride = 2;
+    int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  // with stride
+    int gridY = (Ny + blockSize.y * stride - 1) / (blockSize.y * stride);
+    
+    // Ensure minimum blocks for occupancy
+    int minBlocks = smCount * blocksPerSM;
+    int totalBlocks = gridX * gridY;
+    
+    if (totalBlocks < minBlocks) {
+        double scale = sqrt((double)minBlocks / totalBlocks);
+        gridX = (int)(gridX * scale) + 1;
+        gridY = (int)(gridY * scale) + 1;
+    }
+    
+    return dim3(gridX, gridY, 1);
+}
 
 int main(int argc, char **argv) 
 {
@@ -69,10 +149,13 @@ int main(int argc, char **argv)
     Nz2 = Nz / 2;
 
     // Copy constants Nx, Ny, Nz (number of grid points), dt (time step) to device
-    cudaMemcpyToSymbol(d_Nx, &Nx, sizeof(long));
-    cudaMemcpyToSymbol(d_Ny, &Ny, sizeof(long));
-    cudaMemcpyToSymbol(d_Nz, &Nz, sizeof(long));
-    cudaMemcpyToSymbol(d_dt, &dt, sizeof(double));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_Nx, &Nx, sizeof(long)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_Ny, &Ny, sizeof(long)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_Nz, &Nz, sizeof(long)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_dt, &dt, sizeof(double)));
+
+    // Get GPU SM count for optimal kernel launch configuration
+    int smCount = getGPUSMCount();
 
     // Initialize squared grid spacings
     dx2 = dx * dx;
@@ -81,7 +164,7 @@ int main(int argc, char **argv)
 
     // Allocate memory for psi (pinned memory) and squared wave function (psi2)
     cuDoubleComplex *psi;
-    cudaMallocHost(&psi, Nz * Ny * Nx * sizeof(cuDoubleComplex));
+    CUDA_CHECK(cudaMallocHost(&psi, Nz * Ny * Nx * sizeof(cuDoubleComplex)));
     MultiArray<double> psi2(Nz, Ny, Nx);
 
     // Allocation of the wave function norm
@@ -137,7 +220,7 @@ int main(int argc, char **argv)
 
     // FFT arrays
     cufftDoubleComplex *d_psi2_fft;
-    cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex));
+    CUDA_CHECK(cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex)));
 
     // Create plan for FFT of 3D array with explicit work area management
     cufftHandle forward_plan, backward_plan;
@@ -146,41 +229,12 @@ int main(int argc, char **argv)
     void *backward_work = nullptr;
 
     // Create forward plan
-    cufftResult res = cufftCreate(&forward_plan);
-    if (res != CUFFT_SUCCESS) 
-    {
-        std::cerr << "CUFFT error: Forward plan creation failed" << std::endl;
-        return -1;
-    }
-
-    res = cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize);
-    if (res != CUFFT_SUCCESS) 
-    {
-        std::cerr << "CUFFT error: Forward plan setup failed" << std::endl;
-        cufftDestroy(forward_plan);
-        return -1;
-    }
+    CUFFT_CHECK(cufftCreate(&forward_plan));
+    CUFFT_CHECK(cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize));
 
     // Create backward plan
-    res = cufftCreate(&backward_plan);
-    if (res != CUFFT_SUCCESS) 
-    {
-        std::cerr << "CUFFT error: Backward plan creation failed" << std::endl;
-        if (forward_work)
-            cudaFree(forward_work);
-        cufftDestroy(forward_plan);
-        return -1;
-    }
-
-    res = cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize);
-    if (res != CUFFT_SUCCESS) {
-        std::cerr << "CUFFT error: Backward plan setup failed" << std::endl;
-        if (forward_work)
-            cudaFree(forward_work);
-        cufftDestroy(forward_plan);
-        cufftDestroy(backward_plan);
-        return -1;
-    }
+    CUFFT_CHECK(cufftCreate(&backward_plan));
+    CUFFT_CHECK(cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize));
 
     // Allocate a single shared work area for both forward and backward plans
     {
@@ -188,15 +242,15 @@ int main(int argc, char **argv)
             (forward_worksize > backward_worksize) ? forward_worksize : backward_worksize;
         if (shared_worksize > 0) 
         {
-            cudaMalloc(&forward_work, shared_worksize);
-            cufftSetWorkArea(forward_plan, forward_work);
-            cufftSetWorkArea(backward_plan, forward_work);
+            CUDA_CHECK(cudaMalloc(&forward_work, shared_worksize));
+            CUFFT_CHECK(cufftSetWorkArea(forward_plan, forward_work));
+            CUFFT_CHECK(cufftSetWorkArea(backward_plan, forward_work));
         }
     }
 
     // Allocate pinned memory for RMS results
     double *h_rms_pinned;
-    cudaHostAlloc(&h_rms_pinned, 3 * sizeof(double), cudaHostAllocDefault);
+    CUDA_CHECK(cudaHostAlloc(&h_rms_pinned, 3 * sizeof(double), cudaHostAllocDefault));
 
     // Initialize RMS output file that will store root mean square values <r>, <x>, <y>, <z>
     if (rmsout != NULL) 
@@ -211,15 +265,15 @@ int main(int argc, char **argv)
 
     // Initialize chemical potential output file that will store chemical potential values, total
     // chemical pot., kinetic, trap, contact, dipole and quantum fluctuation terms
-    if (muoutput != NULL) 
-    {
-        sprintf(filename, "%s.txt", muoutput);
-        filemu = fopen(filename, "w");
-    } 
-    else
-    {
-        filemu = NULL;
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     sprintf(filename, "%s.txt", muoutput);
+    //     filemu = fopen(filename, "w");
+    // } 
+    // else
+    // {
+    //     filemu = NULL;
+    // }
 
     // Initialize psi function
     initpsi((double *)psi, x2, y2, z2, x, y, z);
@@ -238,9 +292,9 @@ int main(int argc, char **argv)
     minusAx = make_cuDoubleComplex(0., -Ax.y);
     minusAy = make_cuDoubleComplex(0., -Ay.y);
     minusAz = make_cuDoubleComplex(0., -Az.y);
-    cudaMemcpyToSymbol(d_minusAx, &minusAx, sizeof(cuDoubleComplex));
-    cudaMemcpyToSymbol(d_minusAy, &minusAy, sizeof(cuDoubleComplex));
-    cudaMemcpyToSymbol(d_minusAz, &minusAz, sizeof(cuDoubleComplex));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_minusAx, &minusAx, sizeof(cuDoubleComplex)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_minusAy, &minusAy, sizeof(cuDoubleComplex)));
+    CUDA_CHECK(cudaMemcpyToSymbol(d_minusAz, &minusAz, sizeof(cuDoubleComplex)));
 
     // Copy coefficients to device
     d_calphax.copyFromHost(calphax.raw());
@@ -249,6 +303,23 @@ int main(int argc, char **argv)
     d_cgammay.copyFromHost(cgammay.raw());
     d_calphaz.copyFromHost(calphaz.raw());
     d_cgammaz.copyFromHost(cgammaz.raw());
+
+    // Also copy coefficients to constant memory for warp-broadcast
+    if (Nx - 1 <= CGALPHA_MAX) 
+    {
+        CUDA_CHECK(cudaMemcpyToSymbol(calphax_c, calphax.raw(), (Nx - 1) * sizeof(cuDoubleComplex)));
+        CUDA_CHECK(cudaMemcpyToSymbol(cgammax_c, cgammax.raw(), (Nx - 1) * sizeof(cuDoubleComplex)));
+    }
+    if (Ny - 1 <= CGALPHA_MAX) 
+    {
+        CUDA_CHECK(cudaMemcpyToSymbol(calphay_c, calphay.raw(), (Ny - 1) * sizeof(cuDoubleComplex)));
+        CUDA_CHECK(cudaMemcpyToSymbol(cgammay_c, cgammay.raw(), (Ny - 1) * sizeof(cuDoubleComplex)));
+    }
+    if (Nz - 1 <= CGALPHA_MAX) 
+    {
+        CUDA_CHECK(cudaMemcpyToSymbol(calphaz_c, calphaz.raw(), (Nz - 1) * sizeof(cuDoubleComplex)));
+        CUDA_CHECK(cudaMemcpyToSymbol(cgammaz_c, cgammaz.raw(), (Nz - 1) * sizeof(cuDoubleComplex)));
+    }
 
     // Copy psi data to device
     d_psi.copyFromHost(psi);
@@ -261,10 +332,10 @@ int main(int argc, char **argv)
     {
         rms_output(filerms);
     }
-    if (muoutput != NULL) 
-    {
-        mu_output(filemu);
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     mu_output(filemu);
+    // }
 
     // Compute wave function norm
     calcnorm(d_psi, d_work_array, norm, integ);
@@ -281,17 +352,17 @@ int main(int argc, char **argv)
     }
 
     // Compute chemical potential terms
-    if (muoutput != NULL) 
-    {
-        calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan,
-                 backward_plan, integ, g, gd, h2);
-        std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
-                    0, muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2],
-                    muen[4]);
+    // if (muoutput != NULL) 
+    // {
+    //     calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan,
+    //              backward_plan, integ, g, gd, h2);
+    //     std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
+    //                 0, muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2],
+    //                 muen[4]);
                     
-        fflush(filemu);
-        mutotold = muen[0] + muen[1] + muen[2] + muen[3];
-    }
+    //     fflush(filemu);
+    //     mutotold = muen[0] + muen[1] + muen[2] + muen[3];
+    // }
 
     if (Niterout != NULL) 
     {
@@ -445,19 +516,19 @@ int main(int argc, char **argv)
         }
 
         // Compute chemical potential terms
-        calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan,
-                 backward_plan, integ, g, gd, h2);
-        if (muoutput != NULL) 
-        {
-            std::fprintf(
-                filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap,
-                muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2], muen[4]);
-            fflush(filemu);
-        }
+        // calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan,
+        //          backward_plan, integ, g, gd, h2);
+        // if (muoutput != NULL) 
+        // {
+        //     std::fprintf(
+        //         filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap,
+        //         muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2], muen[4]);
+        //     fflush(filemu);
+        // }
         if (Niterout != NULL) 
         {
             // Move d_psi to host, host is pinned memory
-            cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
+            CUDA_CHECK(cudaMemcpy(psi, d_psi.data(), Nx * Ny * Nz * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost));
             char itername[32]; // Increased buffer size to prevent overflow
             sprintf(itername, "-%06li-", snap);
             if (outflags & DEN_X) 
@@ -577,34 +648,34 @@ int main(int argc, char **argv)
                 fclose(file);
             }
         }
-        mutotnew = muen[0] + muen[1] + muen[2] + muen[3] + muen[4];
-        if (fabs((mutotold - mutotnew) / mutotnew) < murel)
-            break;
-        mutotold = mutotnew;
-        if (mutotnew > muend)
-            break;
+        // mutotnew = muen[0] + muen[1] + muen[2] + muen[3] + muen[4];
+        // if (fabs((mutotold - mutotnew) / mutotnew) < murel)
+        //     break;
+        // mutotold = mutotnew;
+        // if (mutotnew > muend)
+        //     break;
     }
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
     if (rmsout != NULL) 
     {
-        // std::fprintf(filerms,
-        // "-------------------------------------------------------------------\n\n");
-        // std::fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
+         std::fprintf(filerms,
+         "-------------------------------------------------------------------\n\n");
+         std::fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
         std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
         fclose(filerms);
     }
-    if (muoutput != NULL) 
-    {
-        std::fprintf(
-            filemu,
-            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        std::fprintf(filemu, "Total time on GPU: %f seconds\n", duration.count());
-        std::fprintf(
-            filemu,
-            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        fclose(filemu);
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     std::fprintf(
+    //         filemu,
+    //         "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    //     std::fprintf(filemu, "Total time on GPU: %f seconds\n", duration.count());
+    //     std::fprintf(
+    //         filemu,
+    //         "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    //     fclose(filemu);
+    // }
 
     // Cleanup pinned memory
     cudaFreeHost(h_rms_pinned);
@@ -921,16 +992,16 @@ void calcrms(
     CudaArray3D<double> &d_work_array, Simpson3DTiledIntegrator &integ,
     double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 {
-    // Configure kernel launch parameters
-    dim3 blockSize(8, 8, 4); // Adjust based on your GPU
-    dim3 gridSize((Nx + blockSize.x - 1) / blockSize.x, (Ny + blockSize.y - 1) / blockSize.y,
-                  (Nz + blockSize.z - 1) / blockSize.z);
+    // Configure kernel launch parameters using grid-stride approach
+    static int smCount = getGPUSMCount();
+    dim3 blockSize(32, 4, 2);  // threads per block
+    dim3 gridSize = getOptimalGrid3D(smCount, Nx, Ny, Nz, blockSize, 4);
 
     // Compute x^2 * psi^2
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
                                                                  0, // 0 for x direction
                                                                  dx);
-
+    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (x)");
 
     double x2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
@@ -938,6 +1009,7 @@ void calcrms(
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
                                                                  1, // 1 for y direction
                                                                  dy);
+    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (y)");
 
     double y2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
@@ -945,6 +1017,7 @@ void calcrms(
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
                                                                  2, // 2 for z direction
                                                                  dz);
+    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (z)");
 
     double z2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
 
@@ -970,38 +1043,48 @@ __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__res
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&psi[linear_idx]); // Read-only cache for psi
+                double psi_squared = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
 
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    cuDoubleComplex psi_val = __ldg(&psi[linear_idx]); // Read-only cache for psi
-    double psi_squared = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+                double weight = 0.0;
+                if (direction == 0) 
+                {
+                    // x = ix * scale + (-0.5 * d_Nx * scale)
+                    double offset = (-0.5 * static_cast<double>(d_Nx)) * discretiz;
+                    double x = fma(static_cast<double>(ix), discretiz, offset);
+                    weight = fma(x, x, 0.0);
+                } 
+                else if (direction == 1) 
+                {
+                    // y = iy * scale + (-0.5 * d_Ny * scale)
+                    double offset = (-0.5 * static_cast<double>(d_Ny)) * discretiz;
+                    double y = fma(static_cast<double>(iy), discretiz, offset);
+                    weight = fma(y, y, 0.0);
+                } 
+                else if (direction == 2) 
+                {
+                    // z = iz * scale + (-0.5 * d_Nz * scale)
+                    double offset = (-0.5 * static_cast<double>(d_Nz)) * discretiz;
+                    double z = fma(static_cast<double>(iz), discretiz, offset);
+                    weight = fma(z, z, 0.0);
+                }
 
-    double weight = 0.0;
-    if (direction == 0) 
-    {
-        // x = idx * scale + (-0.5 * d_Nx * scale)
-        double offset = (-0.5 * static_cast<double>(d_Nx)) * discretiz;
-        double x = fma(static_cast<double>(idx), discretiz, offset);
-        weight = fma(x, x, 0.0);
-    } 
-    else if (direction == 1) 
-    {
-        // y = idy * scale + (-0.5 * d_Ny * scale)
-        double offset = (-0.5 * static_cast<double>(d_Ny)) * discretiz;
-        double y = fma(static_cast<double>(idy), discretiz, offset);
-        weight = fma(y, y, 0.0);
-    } 
-    else if (direction == 2) 
-    {
-        // z = idz * scale + (-0.5 * d_Nz * scale)
-        double offset = (-0.5 * static_cast<double>(d_Nz)) * discretiz;
-        double z = fma(static_cast<double>(idz), discretiz, offset);
-        weight = fma(z, z, 0.0);
+                result[linear_idx] = fma(weight, psi_squared, 0.0);
+            }
+        }
     }
-
-    result[linear_idx] = fma(weight, psi_squared, 0.0);
 }
 
 /**
@@ -1011,11 +1094,11 @@ __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__res
  */
 void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2) 
 {
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
     compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
+    CUDA_CHECK_KERNEL("compute_d_psi2");
     return;
 }
 
@@ -1030,15 +1113,23 @@ __global__ void compute_d_psi2(const cuDoubleComplex *__restrict__ d_psi,
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-
-    cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
-
-    d_psi2[linear_idx] = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
+                d_psi2[linear_idx] = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+            }
+        }
+    }
 }
 
 /**
@@ -1212,13 +1303,12 @@ void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, 
     //std::cout<<"raw_norm: "<<raw_norm<<std::endl;
 
     // Apply normalization
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 4);
 
     multiply_by_norm<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), norm);
-    // cudaDeviceSynchronize(); // Ensure completion
+    CUDA_CHECK_KERNEL("multiply_by_norm");
 }
 
 /**
@@ -1231,13 +1321,23 @@ __global__ void multiply_by_norm(cuDoubleComplex *__restrict__ d_psi, const doub
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    long linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    d_psi[linear_idx] =
-        make_cuDoubleComplex(d_psi[linear_idx].x * norm, d_psi[linear_idx].y * norm);
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                long linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                d_psi[linear_idx] =
+                    make_cuDoubleComplex(d_psi[linear_idx].x * norm, d_psi[linear_idx].y * norm);
+            }
+        }
+    }
 }
 
 /**
@@ -1347,16 +1447,21 @@ void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, cuDoubleCom
                       double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd) 
 {
     calc_d_psi2(d_psi, d_psi2_real);
-    cufftExecD2Z(forward_plan, (cufftDoubleReal *)d_psi2_real, d_psi2_fft);
+    CUFFT_CHECK(cufftExecD2Z(forward_plan, (cufftDoubleReal *)d_psi2_real, d_psi2_fft));
 
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx / 2 + 1 + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
     compute_psid2_potdd<<<numBlocks, threadsPerBlock>>>(d_psi2_fft, potdd);
+    CUDA_CHECK_KERNEL("compute_psid2_potdd");
 
-    cufftExecZ2D(backward_plan, d_psi2_fft, (cufftDoubleReal *)d_psi2_real);
-    calcpsidd2_boundaries<<<numBlocks, threadsPerBlock>>>(d_psi2_real);
+    CUFFT_CHECK(cufftExecZ2D(backward_plan, d_psi2_fft, (cufftDoubleReal *)d_psi2_real));
+    
+    // Boundary kernel uses 2D grid
+    dim3 blockSize2D(32, 8);
+    dim3 numBlocks2D = getOptimalGrid2D(smCount, Ny, Nz, blockSize2D, 4);
+    calcpsidd2_boundaries<<<numBlocks2D, blockSize2D>>>(d_psi2_real);
+    CUDA_CHECK_KERNEL("calcpsidd2_boundaries");
     return;
 }
 
@@ -1410,24 +1515,48 @@ void gencoef(MultiArray<cuDoubleComplex> &calphax, MultiArray<cuDoubleComplex> &
     cgammax[Nx - 2] = cuCdiv(minus1, Ax0);
     for (cnti = Nx - 2; cnti > 0; cnti--) 
     {
-        calphax[cnti - 1] = cuCmul(Ax, cgammax[cnti]);
-        cgammax[cnti - 1] = cuCdiv(minus1, cuCadd(Ax0, cuCmul(Ax, calphax[cnti - 1])));
+        // Optimized: Ax is purely imaginary (0, Ax.y)
+        // (0, i) * (a, b) = (-i*b, i*a)
+        calphax[cnti - 1].x = -Ax.y * cgammax[cnti].y;
+        calphax[cnti - 1].y = Ax.y * cgammax[cnti].x;
+        
+        // Ax0 + Ax * calphax[cnti-1]
+        cuDoubleComplex term;
+        term.x = Ax0.x + (-Ax.y * calphax[cnti - 1].y);
+        term.y = Ax0.y + (Ax.y * calphax[cnti - 1].x);
+        cgammax[cnti - 1] = cuCdiv(minus1, term);
     }
 
     calphay[Ny - 2] = make_cuDoubleComplex(0., 0.);
     cgammay[Ny - 2] = cuCdiv(minus1, Ay0);
     for (cnti = Ny - 2; cnti > 0; cnti--) 
     {
-        calphay[cnti - 1] = cuCmul(Ay, cgammay[cnti]);
-        cgammay[cnti - 1] = cuCdiv(minus1, cuCadd(Ay0, cuCmul(Ay, calphay[cnti - 1])));
+        // Optimized: Ay is purely imaginary (0, Ay.y)
+        // (0, i) * (a, b) = (-i*b, i*a)
+        calphay[cnti - 1].x = -Ay.y * cgammay[cnti].y;
+        calphay[cnti - 1].y = Ay.y * cgammay[cnti].x;
+        
+        // Ay0 + Ay * calphay[cnti-1]
+        cuDoubleComplex term;
+        term.x = Ay0.x + (-Ay.y * calphay[cnti - 1].y);
+        term.y = Ay0.y + (Ay.y * calphay[cnti - 1].x);
+        cgammay[cnti - 1] = cuCdiv(minus1, term);
     }
 
     calphaz[Nz - 2] = make_cuDoubleComplex(0., 0.);
     cgammaz[Nz - 2] = cuCdiv(minus1, Az0);
     for (cnti = Nz - 2; cnti > 0; cnti--) 
     {
-        calphaz[cnti - 1] = cuCmul(Az, cgammaz[cnti]);
-        cgammaz[cnti - 1] = cuCdiv(minus1, cuCadd(Az0, cuCmul(Az, calphaz[cnti - 1])));
+        // Optimized: Az is purely imaginary (0, Az.y)
+        // (0, i) * (a, b) = (-i*b, i*a)
+        calphaz[cnti - 1].x = -Az.y * cgammaz[cnti].y;
+        calphaz[cnti - 1].y = Az.y * cgammaz[cnti].x;
+        
+        // Az0 + Az * calphaz[cnti-1]
+        cuDoubleComplex term;
+        term.x = Az0.x + (-Az.y * calphaz[cnti - 1].y);
+        term.y = Az0.y + (Az.y * calphaz[cnti - 1].x);
+        cgammaz[cnti - 1] = cuCdiv(minus1, term);
     }
 
     return;
@@ -1451,13 +1580,13 @@ void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2,
     // Precompute ratio_gd on host (constant for all threads)
     double ratio_gd = gd / ((double)(Nx * Ny * Nz));
 
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
     calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), d_pot.raw(), g,
                                                   ratio_gd, h2);
-    // cudaDeviceSynchronize();
+    CUDA_CHECK_KERNEL("calcnu_kernel");
+    CUDA_SYNC_CHECK("calcnu");  // Only active in debug mode
     return;
 }
 
@@ -1478,32 +1607,45 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi, double *__res
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                double pot_val = __ldg(&d_pot[linear_idx]);
+                cuDoubleComplex psi_val = d_psi[linear_idx];
+                double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
 
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    double pot_val = __ldg(&d_pot[linear_idx]);
-    cuDoubleComplex psi_val = d_psi[linear_idx];
-    double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
+                // Using cuCabs() for |psi|
+                double psi_abs = cuCabs(psi_val);              // |psi|
+                double psi_val2 = fma(psi_abs, psi_abs, 0.0);  // |psi|^2
+                double psi_val3 = fma(psi_val2, psi_abs, 0.0); // |psi|^3
 
-    // Using cuCabs() for |psi|
-    double psi_abs = cuCabs(psi_val);              // |psi|
-    double psi_val2 = fma(psi_abs, psi_abs, 0.0);  // |psi|^2
-    double psi_val3 = fma(psi_val2, psi_abs, 0.0); // |psi|^3
+                // all coefficients
+                double temp1 = fma(psi_val2, g, pot_val);
+                //double temp2 = fma(psi_val3, h2, psi2dd);
+                //double sum = temp1 + temp2;
+                double sum = temp1 + psi2dd;
+                double tmp = fma(-d_dt, sum, 0.0);
 
-    // all coefficients
-    double temp1 = fma(psi_val2, g, pot_val);
-    double temp2 = fma(psi_val3, h2, psi2dd);
-    double sum = temp1 + temp2;
-    double tmp = fma(-d_dt, sum, 0.0);
+                // compute e^{-i*tmp} = cos(tmp) + i*sin(tmp)
+                double s, c;
+                sincos(tmp, &s, &c);
 
-    // compute e^{-i*tmp} = cos(tmp) - i sin(tmp)
-    double s, c;
-    sincos(tmp, &s, &c);
-
-    // multiply psi by e^{-i tmp} using cuCmul (complex * complex)
-    d_psi[linear_idx] = cuCmul(psi_val, make_cuDoubleComplex(c, s));
+                // Optimized: manually inline complex multiply: psi_val * (c, s)
+                // (a, b) * (c, s) = (a*c - b*s, a*s + b*c)
+                d_psi[linear_idx].x = fma(psi_val.x, c, -psi_val.y * s);
+                d_psi[linear_idx].y = fma(psi_val.x, s, psi_val.y * c);
+            }
+        }
+    }
 }
 
 /**
@@ -1519,16 +1661,17 @@ void calclux(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta,
              CudaArray3D<cuDoubleComplex> &d_calphax, CudaArray3D<cuDoubleComplex> &d_cgammax,
              cuDoubleComplex Ax0r, cuDoubleComplex Ax) 
 {
-
-    // Match mapping used in imag3d: threadIdx.x -> y, threadIdx.y -> z
-    dim3 threadsPerBlock(32, 8);
-    dim3 numBlocks((Ny + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Nz + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    // Use grid-stride approach with optimal block count
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(64, 8);  // threads per block
+    // For batched kernel, effective Ny dimension is Ny/BATCH_SIZE (16)
+    long effectiveNy = (Ny + 15) / 16;
+    dim3 numBlocks = getOptimalGrid2D(smCount, effectiveNy, Nz, threadsPerBlock, 2);
 
     calclux_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_cbeta, d_calphax.raw(),
                                                    d_cgammax.raw(), Ax0r, Ax);
-
-    // cudaDeviceSynchronize();
+    CUDA_CHECK_KERNEL("calclux_kernel");
+    CUDA_SYNC_CHECK("calclux");  // Only active in debug mode
     return;
 }
 
@@ -1547,52 +1690,101 @@ __global__ void calclux_kernel(cuDoubleComplex *__restrict__ psi,
                                const cuDoubleComplex *__restrict__ cgammax,
                                const cuDoubleComplex Ax0r, const cuDoubleComplex Ax) 
 {
-
+    // Batched processing: each thread handles 8 Y-lines
+    constexpr int BATCH_SIZE = 16;
+    
     // Map y to threadIdx.x, z to threadIdx.y (as in imag3d)
-    int cntj = blockIdx.x * blockDim.x + threadIdx.x;
-    int cntk = blockIdx.y * blockDim.y + threadIdx.y;
+    int cntj_base_init = (blockIdx.x * blockDim.x + threadIdx.x) * BATCH_SIZE;
+    int cntk_init = blockIdx.y * blockDim.y + threadIdx.y;
+    
+    int stride_j = gridDim.x * blockDim.x * BATCH_SIZE;
+    int stride_k = gridDim.y * blockDim.y;
 
-    if (cntj >= d_Ny || cntk >= d_Nz)
-        return;
-
-    // Base offset for this (j,k) y-z position
-    const long base_offset = cntk * d_Ny * d_Nx + cntj * d_Nx;
-
-    // Forward elimination: fill cbeta array using a rolling window in x
-    // Boundary condition: cbeta[nx-2] = psi[nx-1]
-    long idx_i = base_offset + (d_Nx - 2);
-    long idx_ip1 = base_offset + (d_Nx - 1);
-    cbeta[idx_i] = psi[idx_ip1];
-
-    cuDoubleComplex psi_ip1 = __ldg(&psi[idx_ip1]);
-    cuDoubleComplex psi_i = __ldg(&psi[idx_i]);
-    for (int cnti = d_Nx - 2; cnti > 0; cnti--) 
+    // Grid-stride loop over z
+    for (int cntk = cntk_init; cntk < d_Nz; cntk += stride_k) 
     {
-        long idx_im1 = idx_i - 1;
-        cuDoubleComplex psi_im1 = __ldg(&psi[idx_im1]);
+        // Grid-stride loop over y batches
+        for (int cntj_base = cntj_base_init; cntj_base < d_Ny; cntj_base += stride_j) 
+        {
+            // Process BATCH_SIZE consecutive Y-lines
+            #pragma unroll
+            for (int batch = 0; batch < BATCH_SIZE; batch++) {
+                int cntj = cntj_base + batch;
+        
+        if (cntj >= d_Ny)
+            break;
 
-        cuDoubleComplex c = cuCadd(cuCadd(cuCmul(d_minusAx, psi_ip1), cuCmul(Ax0r, psi_i)),
-                                   cuCmul(d_minusAx, psi_im1));
-        cbeta[idx_im1] = cuCmul(__ldg(&cgammax[cnti]), cuCsub(cuCmul(Ax, cbeta[idx_i]), c));
+        // Base offset for this (j,k) y-z position
+        const long base_offset = cntk * d_Ny * d_Nx + cntj * d_Nx;
 
-        // Roll window down in x
-        psi_ip1 = psi_i;
-        psi_i = psi_im1;
-        idx_i = idx_im1;
+        // Forward elimination: fill cbeta array using a rolling window in x
+        // Boundary condition: cbeta[nx-2] = psi[nx-1]
+        long idx_i = base_offset + (d_Nx - 2);
+        long idx_ip1 = base_offset + (d_Nx - 1);
+        cbeta[idx_i] = psi[idx_ip1];
+
+        cuDoubleComplex psi_ip1 = __ldg(&psi[idx_ip1]);
+        cuDoubleComplex psi_i = __ldg(&psi[idx_i]);
+        for (int cnti = d_Nx - 2; cnti > 0; cnti--) 
+        {
+            long idx_im1 = idx_i - 1;
+            cuDoubleComplex psi_im1 = __ldg(&psi[idx_im1]);
+
+            // Optimized: d_minusAx is purely imaginary (0, d_minusAx.y)
+            // (0, i) * (a, b) = (-i*b, i*a)
+            double minusAx_y = d_minusAx.y;
+            double term_ip1_x = -minusAx_y * psi_ip1.y;
+            double term_ip1_y = minusAx_y * psi_ip1.x;
+            double term_im1_x = -minusAx_y * psi_im1.y;
+            double term_im1_y = minusAx_y * psi_im1.x;
+            
+            // Ax0r has both real and imaginary parts
+            double term_i_x = fma(Ax0r.x, psi_i.x, -Ax0r.y * psi_i.y);
+            double term_i_y = fma(Ax0r.x, psi_i.y, Ax0r.y * psi_i.x);
+            
+            // Sum all terms: c = term_ip1 + term_i + term_im1
+            double c_x = term_ip1_x + term_i_x + term_im1_x;
+            double c_y = term_ip1_y + term_i_y + term_im1_y;
+            
+            cuDoubleComplex gamma = (d_Nx - 1 <= CGALPHA_MAX) ? cgammax_c[cnti] : __ldg(&cgammax[cnti]);
+            
+            // Ax is purely imaginary: Ax * cbeta[idx_i]
+            double Ax_cbeta_x = -Ax.y * cbeta[idx_i].y;
+            double Ax_cbeta_y = Ax.y * cbeta[idx_i].x;
+            
+            // (Ax * cbeta) - c
+            double diff_x = Ax_cbeta_x - c_x;
+            double diff_y = Ax_cbeta_y - c_y;
+            
+            // gamma * diff (full complex multiply)
+            cbeta[idx_im1].x = fma(gamma.x, diff_x, -gamma.y * diff_y);
+            cbeta[idx_im1].y = fma(gamma.x, diff_y, gamma.y * diff_x);
+
+            // Roll window down in x
+            psi_ip1 = psi_i;
+            psi_i = psi_im1;
+            idx_i = idx_im1;
+        }
+
+        // Boundary condition
+        psi[base_offset + 0] = make_cuDoubleComplex(0.0, 0.0);
+
+        // Back substitution: update psi values
+        for (int cnti = 0; cnti < d_Nx - 2; cnti++) 
+        {
+            cuDoubleComplex alpha = (d_Nx - 1 <= CGALPHA_MAX) ? calphax_c[cnti] : __ldg(&calphax[cnti]);
+            cuDoubleComplex psi_curr = psi[base_offset + cnti];
+            cuDoubleComplex cbeta_curr = cbeta[base_offset + cnti];
+        
+            psi[base_offset + cnti + 1].x = fma(alpha.x, psi_curr.x, fma(-alpha.y, psi_curr.y, cbeta_curr.x));
+            psi[base_offset + cnti + 1].y = fma(alpha.x, psi_curr.y, fma(alpha.y, psi_curr.x, cbeta_curr.y));
+        }
+
+        // Boundary condition
+        psi[base_offset + d_Nx - 1] = make_cuDoubleComplex(0.0, 0.0);
+            }
+        }
     }
-
-    // Boundary condition
-    psi[base_offset + 0] = make_cuDoubleComplex(0.0, 0.0);
-
-    // Back substitution: update psi values
-    for (int cnti = 0; cnti < d_Nx - 2; cnti++) 
-    {
-        psi[base_offset + cnti + 1] =
-            cuCfma(__ldg(&calphax[cnti]), psi[base_offset + cnti], cbeta[base_offset + cnti]);
-    }
-
-    // Boundary condition
-    psi[base_offset + d_Nx - 1] = make_cuDoubleComplex(0.0, 0.0);
 }
 
 /**
@@ -1608,16 +1800,15 @@ void calcluy(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta,
              CudaArray3D<cuDoubleComplex> &d_calphay, CudaArray3D<cuDoubleComplex> &d_cgammay,
              cuDoubleComplex Ay0r, cuDoubleComplex Ay) 
 {
-
-    // Match imag3d layout: x as fastest varying index in blocks
-    dim3 threadsPerBlock(32, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Nz + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    // Use grid-stride approach with optimal block count
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(64, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid2D(smCount, Nx, Nz, threadsPerBlock, 2);
 
     calcluy_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_cbeta, d_calphay.raw(),
                                                    d_cgammay.raw(), Ay0r, Ay);
-
-    // cudaDeviceSynchronize();
+    CUDA_CHECK_KERNEL("calcluy_kernel");
+    CUDA_SYNC_CHECK("calcluy");  // Only active in debug mode
     return;
 }
 
@@ -1636,16 +1827,21 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
                                const cuDoubleComplex *__restrict__ cgammay,
                                const cuDoubleComplex Ay0r, const cuDoubleComplex Ay) 
 {
-
     // Map x to threadIdx.x, z to threadIdx.y (as in imag3d)
     int cnti = blockIdx.x * blockDim.x + threadIdx.x;
     int cntk = blockIdx.y * blockDim.y + threadIdx.y;
+    
+    int stride_i = gridDim.x * blockDim.x;
+    int stride_k = gridDim.y * blockDim.y;
 
-    if (cnti >= d_Nx || cntk >= d_Nz)
-        return;
-
-    // Base offset for this (i,k) x-z position
-    const long base_offset = cntk * d_Ny * d_Nx + cnti;
+    // Grid-stride loop over z
+    for (int k = cntk; k < d_Nz; k += stride_k) 
+    {
+        // Grid-stride loop over x
+        for (int i = cnti; i < d_Nx; i += stride_i) 
+        {
+            // Base offset for this (i,k) x-z position
+            const long base_offset = k * d_Ny * d_Nx + i;
 
     // Forward elimination: fill cbeta array using a rolling window in y
     // Boundary condition: cbeta[ny-2] = psi[ny-1]
@@ -1660,9 +1856,35 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
         long idx_jm1 = idx_j - d_Nx;
         cuDoubleComplex psi_jm1 = __ldg(&psi[idx_jm1]);
 
-        cuDoubleComplex c = cuCadd(cuCadd(cuCmul(d_minusAy, psi_jp1), cuCmul(Ay0r, psi_j)),
-                                   cuCmul(d_minusAy, psi_jm1));
-        cbeta[idx_jm1] = cuCmul(__ldg(&cgammay[cntj]), cuCsub(cuCmul(Ay, cbeta[idx_j]), c));
+        // Optimized: d_minusAy is purely imaginary (0, d_minusAy.y)
+        // (0, i) * (a, b) = (-i*b, i*a)
+        double minusAy_y = d_minusAy.y;
+        double term_jp1_x = -minusAy_y * psi_jp1.y;
+        double term_jp1_y = minusAy_y * psi_jp1.x;
+        double term_jm1_x = -minusAy_y * psi_jm1.y;
+        double term_jm1_y = minusAy_y * psi_jm1.x;
+        
+        // Ay0r has both real and imaginary parts
+        double term_j_x = fma(Ay0r.x, psi_j.x, -Ay0r.y * psi_j.y);
+        double term_j_y = fma(Ay0r.x, psi_j.y, Ay0r.y * psi_j.x);
+        
+        // Sum all terms: c = term_jp1 + term_j + term_jm1
+        double c_x = term_jp1_x + term_j_x + term_jm1_x;
+        double c_y = term_jp1_y + term_j_y + term_jm1_y;
+        
+        cuDoubleComplex gamma = (d_Ny - 1 <= CGALPHA_MAX) ? cgammay_c[cntj] : __ldg(&cgammay[cntj]);
+        
+        // Ay is purely imaginary: Ay * cbeta[idx_j]
+        double Ay_cbeta_x = -Ay.y * cbeta[idx_j].y;
+        double Ay_cbeta_y = Ay.y * cbeta[idx_j].x;
+        
+        // (Ay * cbeta) - c
+        double diff_x = Ay_cbeta_x - c_x;
+        double diff_y = Ay_cbeta_y - c_y;
+        
+        // gamma * diff (full complex multiply)
+        cbeta[idx_jm1].x = fma(gamma.x, diff_x, -gamma.y * diff_y);
+        cbeta[idx_jm1].y = fma(gamma.x, diff_y, gamma.y * diff_x);
 
         // Roll window down in y
         psi_jp1 = psi_j;
@@ -1676,13 +1898,23 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
     // Back substitution: update psi values
     for (int cntj = 0; cntj < d_Ny - 2; cntj++) 
     {
-        psi[base_offset + (cntj + 1) * d_Nx] =
-            cuCfma(__ldg(&calphay[cntj]), psi[base_offset + cntj * d_Nx],
-                   cbeta[base_offset + cntj * d_Nx]);
+        cuDoubleComplex alpha = (d_Ny - 1 <= CGALPHA_MAX) ? calphay_c[cntj] : __ldg(&calphay[cntj]);
+        long idx_curr = base_offset + cntj * d_Nx;
+        cuDoubleComplex psi_curr = psi[idx_curr];
+        cuDoubleComplex cbeta_curr = cbeta[idx_curr];
+        
+        // Optimized manual inline: alpha * psi_curr + cbeta_curr
+        // result = (a_r + i*a_i) * (p_r + i*p_i) + (c_r + i*c_i)
+        // result.x = a_r*p_r - a_i*p_i + c_r
+        // result.y = a_r*p_i + a_i*p_r + c_i
+        psi[base_offset + (cntj + 1) * d_Nx].x = fma(alpha.x, psi_curr.x, fma(-alpha.y, psi_curr.y, cbeta_curr.x));
+        psi[base_offset + (cntj + 1) * d_Nx].y = fma(alpha.x, psi_curr.y, fma(alpha.y, psi_curr.x, cbeta_curr.y));
     }
 
-    // Boundary condition
-    psi[base_offset + (d_Ny - 1) * d_Nx] = make_cuDoubleComplex(0.0, 0.0);
+            // Boundary condition
+            psi[base_offset + (d_Ny - 1) * d_Nx] = make_cuDoubleComplex(0.0, 0.0);
+        }
+    }
 }
 
 /**
@@ -1698,16 +1930,15 @@ void calcluz(CudaArray3D<cuDoubleComplex> &d_psi, cuDoubleComplex *d_cbeta,
              CudaArray3D<cuDoubleComplex> &d_calphaz, CudaArray3D<cuDoubleComplex> &d_cgammaz,
              cuDoubleComplex Az0r, cuDoubleComplex Az) 
 {
-
-    // Match imag3d layout: x as fastest varying in blocks over x-y plane
-    dim3 threadsPerBlock(32, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y);
+    // Use grid-stride approach with optimal block count
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(32, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid2D(smCount, Nx, Ny, threadsPerBlock, 4);
 
     calcluz_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_cbeta, d_calphaz.raw(),
                                                    d_cgammaz.raw(), Az0r, Az);
-
-    // cudaDeviceSynchronize();
+    CUDA_CHECK_KERNEL("calcluz_kernel");
+    CUDA_SYNC_CHECK("calcluz");  // Only active in debug mode
     return;
 }
 
@@ -1726,17 +1957,22 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
                                const cuDoubleComplex *__restrict__ cgammaz,
                                const cuDoubleComplex Az0r, const cuDoubleComplex Az) 
 {
-
     // Map x to threadIdx.x, y to threadIdx.y (as in imag3d)
     int cnti = blockIdx.x * blockDim.x + threadIdx.x;
     int cntj = blockIdx.y * blockDim.y + threadIdx.y;
+    
+    int stride_i = gridDim.x * blockDim.x;
+    int stride_j = gridDim.y * blockDim.y;
 
-    if (cnti >= d_Nx || cntj >= d_Ny)
-        return;
-
-    // Base offset for this (i,j) x-y position - points to z=0
-    const long base_offset = cntj * d_Nx + cnti;
-    const long stride = d_Ny * d_Nx; // stride to move in z-direction
+    // Grid-stride loop over y
+    for (int j = cntj; j < d_Ny; j += stride_j) 
+    {
+        // Grid-stride loop over x
+        for (int i = cnti; i < d_Nx; i += stride_i) 
+        {
+            // Base offset for this (i,j) x-y position - points to z=0
+            const long base_offset = j * d_Nx + i;
+            const long stride = d_Ny * d_Nx; // stride to move in z-direction
 
     // Forward elimination: fill cbeta array using a rolling window in z
     // Boundary condition: cbeta[nz-2] = psi[nz-1]
@@ -1751,9 +1987,35 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
         long idx_km1 = idx_k - stride;
         cuDoubleComplex psi_km1 = __ldg(&psi[idx_km1]);
 
-        cuDoubleComplex c = cuCadd(cuCadd(cuCmul(d_minusAz, psi_kp1), cuCmul(Az0r, psi_k)),
-                                   cuCmul(d_minusAz, psi_km1));
-        cbeta[idx_km1] = cuCmul(__ldg(&cgammaz[cntk]), cuCsub(cuCmul(Az, cbeta[idx_k]), c));
+        // Optimized: d_minusAz is purely imaginary (0, d_minusAz.y)
+        // (0, i) * (a, b) = (-i*b, i*a)
+        double minusAz_y = d_minusAz.y;
+        double term_kp1_x = -minusAz_y * psi_kp1.y;
+        double term_kp1_y = minusAz_y * psi_kp1.x;
+        double term_km1_x = -minusAz_y * psi_km1.y;
+        double term_km1_y = minusAz_y * psi_km1.x;
+        
+        // Az0r has both real and imaginary parts
+        double term_k_x = fma(Az0r.x, psi_k.x, -Az0r.y * psi_k.y);
+        double term_k_y = fma(Az0r.x, psi_k.y, Az0r.y * psi_k.x);
+        
+        // Sum all terms: c = term_kp1 + term_k + term_km1
+        double c_x = term_kp1_x + term_k_x + term_km1_x;
+        double c_y = term_kp1_y + term_k_y + term_km1_y;
+        
+        cuDoubleComplex gamma = (d_Nz - 1 <= CGALPHA_MAX) ? cgammaz_c[cntk] : __ldg(&cgammaz[cntk]);
+        
+        // Az is purely imaginary: Az * cbeta[idx_k]
+        double Az_cbeta_x = -Az.y * cbeta[idx_k].y;
+        double Az_cbeta_y = Az.y * cbeta[idx_k].x;
+        
+        // (Az * cbeta) - c
+        double diff_x = Az_cbeta_x - c_x;
+        double diff_y = Az_cbeta_y - c_y;
+        
+        // gamma * diff (full complex multiply)
+        cbeta[idx_km1].x = fma(gamma.x, diff_x, -gamma.y * diff_y);
+        cbeta[idx_km1].y = fma(gamma.x, diff_y, gamma.y * diff_x);
 
         // Roll window down in z
         psi_kp1 = psi_k;
@@ -1767,13 +2029,23 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
     // Back substitution: update psi values
     for (int cntk = 0; cntk < d_Nz - 2; cntk++) 
     {
-        psi[base_offset + (cntk + 1) * stride] =
-            cuCfma(__ldg(&calphaz[cntk]), psi[base_offset + cntk * stride],
-                   cbeta[base_offset + cntk * stride]);
+        cuDoubleComplex alpha = (d_Nz - 1 <= CGALPHA_MAX) ? calphaz_c[cntk] : __ldg(&calphaz[cntk]);
+        long idx_curr = base_offset + cntk * stride;
+        cuDoubleComplex psi_curr = psi[idx_curr];
+        cuDoubleComplex cbeta_curr = cbeta[idx_curr];
+        
+        // Optimized manual inline: alpha * psi_curr + cbeta_curr
+        // result = (a_r + i*a_i) * (p_r + i*p_i) + (c_r + i*c_i)
+        // result.x = a_r*p_r - a_i*p_i + c_r
+        // result.y = a_r*p_i + a_i*p_r + c_i
+        psi[base_offset + (cntk + 1) * stride].x = fma(alpha.x, psi_curr.x, fma(-alpha.y, psi_curr.y, cbeta_curr.x));
+        psi[base_offset + (cntk + 1) * stride].y = fma(alpha.x, psi_curr.y, fma(alpha.y, psi_curr.x, cbeta_curr.y));
     }
 
-    // Boundary condition
-    psi[base_offset + (d_Nz - 1) * stride] = make_cuDoubleComplex(0.0, 0.0);
+            // Boundary condition
+            psi[base_offset + (d_Nz - 1) * stride] = make_cuDoubleComplex(0.0, 0.0);
+        }
+    }
 }
 
 /**
@@ -1806,18 +2078,19 @@ void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
     const double half_gd = 0.5 * gd;
     const double half_h2 = 0.5 * h2;
 
-    dim3 threadsPerBlock(8, 8, 8);
-    dim3 numBlocks((Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 4);
 
     // Step 1: Contact energy - Calculate ψ² and 0.5 * g * ψ⁴
     calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), half_g);
+    CUDA_CHECK_KERNEL("calcmuen_fused_contact");
     muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
 
     // Step 2: Potential energy - Calculate ψ² and 0.5 * ψ² * V
     calcmuen_fused_potential<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(),
                                                              d_pot.raw());
+    CUDA_CHECK_KERNEL("calcmuen_fused_potential");
     muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
 
     // Step 3: Dipolar energy - requires FFT computation first
@@ -1825,6 +2098,7 @@ void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
                      d_potdd.raw());
     calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(),
                                                            d_psi2dd.raw(), half_gd);
+    CUDA_CHECK_KERNEL("calcmuen_fused_dipolar");
     muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz) * inv_NxNyNz;
 
     // Step 4: Kinetic energy - calculate gradients and kinetic energy density directly
@@ -1833,6 +2107,7 @@ void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
 
     // Step 5: H2 energy - calculate quantum fluctuation energy density
     calcmuen_fused_h2<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), half_h2);
+    CUDA_CHECK_KERNEL("calcmuen_fused_h2");
     muen[4] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
 
     return;
@@ -1849,15 +2124,25 @@ __global__ void calcmuen_fused_contact(const cuDoubleComplex *__restrict__ d_psi
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
-    double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
-    double psi4_val = psi2_val * psi2_val;
-    d_result[linear_idx] = psi4_val * half_g;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+                double psi4_val = psi2_val * psi2_val;
+                d_result[linear_idx] = psi4_val * half_g;
+            }
+        }
+    }
 }
 
 /**
@@ -1873,15 +2158,25 @@ __global__ void calcmuen_fused_potential(const cuDoubleComplex *__restrict__ d_p
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-    double psi2_val = cuCabs(psi_val) * cuCabs(psi_val);
-    d_result[linear_idx] =
-        0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|² directly
+                d_result[linear_idx] =
+                    0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
+            }
+        }
+    }
 }
 
 /**
@@ -1898,15 +2193,25 @@ __global__ void calcmuen_fused_dipolar(const cuDoubleComplex *__restrict__ d_psi
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-    double psi2_val = cuCabs(psi_val) * cuCabs(psi_val);
-    double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
-    d_result[linear_idx] = psi2_val * psidd2_val * half_gd;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|² directly
+                double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
+                d_result[linear_idx] = psi2_val * psidd2_val * half_gd;
+            }
+        }
+    }
 }
 
 /**
@@ -1921,16 +2226,26 @@ __global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi,
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
     int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
 
-    if (idx >= d_Nx || idy >= d_Ny || idz >= d_Nz)
-        return;
-
-    int linear_idx = idz * d_Ny * d_Nx + idy * d_Nx + idx;
-    cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
-    double psi_val2 = cuCabs(psi_val) * cuCabs(psi_val);
-    double psi_val3 = psi_val2 * cuCabs(psi_val);
-    double psi5_val = psi_val3 * psi_val2;
-    d_result[linear_idx] = psi5_val * half_h2;
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|²
+                double psi_abs = sqrt(psi2_val);  // |ψ| - only one sqrt needed
+                double psi5_val = psi2_val * psi2_val * psi_abs;  // |ψ|⁵ = |ψ|² × |ψ|² × |ψ|
+                d_result[linear_idx] = psi5_val * half_h2;
+            }
+        }
+    }
 }
 
 /**
@@ -2059,14 +2374,8 @@ void save_psi_from_gpu(cuDoubleComplex *psi, cuDoubleComplex *d_psi, const char 
 {
     size_t total_size = Nx * Ny * Nz;
 
-    cudaMemcpy(psi, d_psi, total_size * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost);
-
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
-    {
-        std::fprintf(stderr, "CUDA error: %s\n", cudaGetErrorString(err));
-        return;
-    }
+    // Copy from device to host with error checking
+    CUDA_CHECK(cudaMemcpy(psi, d_psi, total_size * sizeof(cuDoubleComplex), cudaMemcpyDeviceToHost));
 
     FILE *file = fopen(filename, "wb");
     if (file == NULL) 

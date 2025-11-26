@@ -7,72 +7,72 @@
 #  Number of atoms in condensate.
 #  Required: yes
 #  Type: long
-   NATOMS = 15000
+   NATOMS = 10000
 
 #  Quantum fluctuation factor. 
 #  If 0, no quantum fluctuation is considered.
 #  If 1, quantum fluctuation is considered.
 #  Required: yes
 #  Type: int
-   QF = 1
+   QF = 0
 
 #  Initial values for the wave function (for a Gaussian).
-#  Required: no, then DX, DY and DZ need to be defined in the configuration file
+#  Required: yes
 #  Type: double
-   SX = 3.2701094407510398e+00
-   SY = 3.4458480808137466e+00
-   SZ = 1.6190193780478110e+00
-   
+   SX = 0.8
+   SY = 0.8
+   SZ = 14.
+
 #  Relative chemical potential for the end of the simulation.
 #  Required: yes
 #  Type: double
-   MUREL = 1.000000e-20
+   MUREL = 1.000000e-10
 
 #  Absolute chemical potential for the end of the simulation.
 #  Required: yes
 #  Type: double
-   MUEND = 10000.0
+   MUEND = 10.0
 
 #  Dipolar potential cutoff.
-#  Required: no, will be calculated from grid size
+#  Required: no, can be calculated from grid size
 #  Type: double
-#  CUTOFF = 13
+#  CUTOFF = 13.
 
 #  Unit of length in m (defined by a chosen referent frequency omega_ref).
 #  Required: yes
 #  Type: double
-   #AHO = 5.55238e-7
-   AHO = 6.809890810104636e-7
+   AHO = 6.199097265431419e-07
 
 #  Contact interaction strength in units of Bohr radius.
+#  defined.
 #  Required: yes
 #  Type: double
-   AS = 76.
+   AS = 100.
 
 #  Dipole-dipole interaction strength in units of Bohr radius.
 #  Required: yes
 #  Type: double
-   ADD = 132
-   
+   ADD = 67.
+
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 256
+   NX = 128
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 256
+   NY = 128
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 256
+   NZ = 128
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
-#  Formula is DX = SX * MX * 2 / NX (same for DY and DZ)and DT = DY * DY / MT
+#  Formula is DX = SX * MX * 2 / NX (same for DY and DZ) and DT = DY * DY / MT
 #  Required: no (default is 10)
-#  Type: double   
+#  Type: double
    MX = 10
    MY = 10
    MZ = 10
@@ -101,52 +101,57 @@
 #  Gamma coefficient of anisotropy of the trap.
 #  Required: yes
 #  Type: double
-   GAMMA = 0.3458646616541353
+   GAMMA = 1.0
 
 #  Nu coefficient of anisotropy of the trap (omega_y / omega_x).
 #  Required: yes
 #  Type: double
-   NU = 0.3308270676691729
+   NU = 1.0
 
 #  Lambda coefficient of anisotropy of the trap (omega_z / omega_x).
 #  Required: yes
 #  Type: double
-   LAMBDA = 1.
+   LAMBDA = 0.04361370716510903
 
-#  Number of iterations
+#  Number of iterations.
 #  Required: yes
 #  Type: long
-   NITER = 1000000
+   NITER = 10000
 
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
 #  density profiles and write them to specified output files.
 #  Required: no, default is 1
 #  Type: long
-   NSNAP = 10000
-
-#  Input file with the wave function, obtained from previous executions.
-#  Required: no
-#  Type: string
-   INPUT = ./imag3d-finalpsi.bin
-
-#  Output file with the wave function obtained from integrated density profiles.
-#  If not defined, the wave function will not be saved.
-#  Required: no
-#  Type: string
-#  NITEROUT = real3d-den-niter
+   NSNAP = 10
 
 #  Output file with the summary of final values of all physical quantities. If
-#  not defined, standard output will be used.
+#  not defined, will not be written.
 #  Required: no
 #  Type: string
-   MUOUTPUT = real3d-mu
+#   MUOUTPUT = imag3d-mu
+
+#  Output file with the chemical potential of the system. If not defined, will not be written.
+#  Required: no
+#  Type: string
+#   OUTPUTMU = imag3d-out
 
 #  Output file with RMS values. The values are written in each snapshot.
-#  If not defined, the RMS values will not be saved.
+#  If not defined, will not be written.
 #  Required: no
 #  Type: string
    RMSOUT = real3d-rms
+
+#  Output file with the wave function obtained from integrated density profiles.
+#  If not defined, density profiles will not be written.
+#  Required: no
+#  Type: string
+#  NITEROUT = imag3d-den-niter
+
+#  Input file with the wave function, obtained from previous executions.
+#  Required: yes
+#  Type: string
+   INPUT = ./imag3d-finalpsi.bin
 
 #  Value that controls what density profiles will be written in output files.
 #  List of output functions:

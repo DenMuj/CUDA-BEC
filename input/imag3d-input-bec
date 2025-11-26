@@ -41,7 +41,8 @@
 #  Unit of length in m (defined by a chosen referent frequency omega_ref).
 #  Required: yes
 #  Type: double
-   AHO = 6.123800e-07
+   #AHO = 6.123800e-07
+   AHO = 6.199097265431419e-07
 
 #  Contact interaction strength in units of Bohr radius.
 #  defined.
@@ -57,17 +58,17 @@
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 128
+   NX = 256
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 128
+   NY = 256
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 128
+   NZ = 256
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
 #  Formula is DX = SX * MX * 2 / NX (same for DY and DZ) and DT = DY * DY / MT
@@ -111,7 +112,7 @@
 #  Lambda coefficient of anisotropy of the trap (omega_z / omega_x).
 #  Required: yes
 #  Type: double
-   LAMBDA = 4.361370e-02
+   LAMBDA = 0.04361370716510903
 
 #  Number of iterations.
 #  Required: yes

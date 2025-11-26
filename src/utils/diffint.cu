@@ -6,6 +6,7 @@
  */
 
 #include "diffint.cuh"
+#include "cuda_error_check.cuh"
 #include <cuComplex.h>
 
 /**
@@ -31,6 +32,7 @@
     
     // Kernel still uses raw pointers
    diff_kernel<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, kin_energy_factor);
+   CUDA_CHECK_KERNEL("diff_kernel");
 }
 
 /**
@@ -149,6 +151,7 @@ void diff_complex(double hx, double hy, double hz, cuDoubleComplex* f, double* _
     
     // Kernel still uses raw pointers
    diff_kernel_complex<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, kin_energy_factor);
+   CUDA_CHECK_KERNEL("diff_kernel_complex");
 }
 
 /**
@@ -329,27 +332,17 @@ void gauleg(double x1, double x2, MultiArray<double>& x, MultiArray<double>& w) 
  * @return Integrated value
  */
 
-__host__ inline double neumaier_sum(double sum, double x, double *c) {
-    double t = sum + x;
-    if (fabs(sum) >= fabs(x))
-        *c += (sum - t) + x;
-    else
-        *c += (x - t) + sum;
-    return t;
-}
-
 __host__ double simpint(double h, double *f, long N) {
     long cnti;
     double sumi = 0., sumj = 0., sumk = 0.;
-    double ci = 0., cj = 0., ck = 0.;  // compensation terms
 
     for (cnti = 1; cnti < N - 1; cnti += 2) {
-        sumi = neumaier_sum(sumi, f[cnti], &ci);
-        sumj = neumaier_sum(sumj, f[cnti - 1], &cj);
-        sumk = neumaier_sum(sumk, f[cnti + 1], &ck);
+        sumi += f[cnti];
+        sumj += f[cnti - 1];
+        sumk += f[cnti + 1];
     }
 
-    double sum = (sumj + cj) + 4.0 * (sumi + ci) + (sumk + ck);
+    double sum = sumj + 4.0 * sumi + sumk;
     if (N % 2 == 0)
         sum += (5.0 * f[N - 1] + 8.0 * f[N - 2] - f[N - 3]) / 4.0;
 
