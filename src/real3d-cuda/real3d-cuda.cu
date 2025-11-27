@@ -208,7 +208,7 @@ int main(int argc, char **argv)
     MultiArray<double> tmpx(Nx), tmpy(Ny), tmpz(Nz);
 
     // Setup Simpson3DTiledIntegrator for integration
-    long TILE_SIZE = Nz;
+    long TILE_SIZE = Nz/4;
     Simpson3DTiledIntegrator integ(Nx, Ny, TILE_SIZE);
 
     // Allocation of crank-nicolson coefficients on device
@@ -237,8 +237,8 @@ int main(int argc, char **argv)
     CudaArray3D<double> d_potdd(Nx, Ny, Nz);
 
     // FFT arrays
-    cufftDoubleComplex *d_psi2_fft;
-    CUDA_CHECK(cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex)));
+    //cufftDoubleComplex *d_psi2_fft;
+    //CUDA_CHECK(cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex)));
 
     // Create plan for FFT of 3D array with explicit work area management
     cufftHandle forward_plan, backward_plan;
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
     // Compute chemical potential terms
     // if (muoutput != NULL) 
     // {
-    //     calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan,
+    //     calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
     //              backward_plan, integ, g, gd, h2);
     //     std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
     //                 0, muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2],
@@ -516,7 +516,7 @@ int main(int argc, char **argv)
         for (long j = 0; j < nsteps; j++) 
         {
             calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(),
-                             d_psi2_fft, d_potdd.raw());
+                             d_work_array_complex.raw(), d_potdd.raw());
             calcnu(d_psi, d_work_array, d_pot_ptr, g, gd, h2);
             calclux(d_psi, d_work_array_complex.raw(), d_calphax, d_cgammax, Ax0r, Ax);
             calcluy(d_psi, d_work_array_complex.raw(), d_calphay, d_cgammay, Ay0r, Ay);
@@ -538,7 +538,7 @@ int main(int argc, char **argv)
         }
 
         // Compute chemical potential terms
-        // calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_psi2_fft, forward_plan,
+        // calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
         //          backward_plan, integ, g, gd, h2);
         // if (muoutput != NULL) 
         // {
@@ -704,7 +704,7 @@ int main(int argc, char **argv)
     cudaFreeHost(psi);
 
     // Cleanup FFT plans and work areas
-    cudaFree(d_psi2_fft);
+    //cudaFree(d_psi2_fft);
     if (forward_work)
         cudaFree(forward_work);
     if (backward_work)

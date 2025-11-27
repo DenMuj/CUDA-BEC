@@ -9,7 +9,7 @@
 #  If 0, potential is computed on-the-fly in kernels (saves GPU memory for large grids).
 #  Required: no (default is 1)
 #  Type: int
-   INITIALIZE_POT = 0
+   INITIALIZE_POT = 1
 
 #  Number of atoms in condensate.
 #  Required: yes
@@ -65,17 +65,17 @@
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 256
+   NX = 128
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 256
+   NY = 128
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 256
+   NZ = 128
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
 #  Formula is DX = SX * MX * 2 / NX (same for DY and DZ) and DT = DY * DY / MT

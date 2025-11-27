@@ -33,8 +33,8 @@
   * @param blocksPerSM: Target blocks per SM (default 3 for reduction kernels)
   * @return dim3 grid size
   */
- inline dim3 getOptimalGridReduction3D(int smCount, long Nx, long Ny, long Nz, dim3 blockSize, int blocksPerSM = 3) {
-     int stride = 2;
+ inline dim3 getOptimalGridReduction3D(int smCount, long Nx, long Ny, long Nz, dim3 blockSize, int blocksPerSM = 4) {
+     int stride = 1;
      int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  // with stride
      int gridY = (Ny + blockSize.y * stride - 1) / (blockSize.y * stride);
      int gridZ = (Nz + blockSize.z * stride - 1) / (blockSize.z * stride);
@@ -169,7 +169,7 @@
      dim3 blockSize(32, 4, 2); // 256 threads per block
  
      // Use SM-aware grid sizing with grid-stride loops
-     dim3 gridSize = getOptimalGridReduction3D(smCount, Nx, Ny, current_tile_z, blockSize, 3);
+     dim3 gridSize = getOptimalGridReduction3D(smCount, Nx, Ny, current_tile_z, blockSize, 2);
  
     // Calculate shared memory size for warp shuffle reduction
     // Only need space for one partial sum per warp (max 32 warps for 1024 threads)

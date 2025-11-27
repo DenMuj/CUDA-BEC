@@ -57,17 +57,17 @@
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 304
+   NX = 408
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 304
+   NY = 408
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 304
+   NZ = 408
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
 #  Formula is DX = SX * MX * 2 / NX (same for DY and DZ) and DT = DY * DY / MT
@@ -116,7 +116,7 @@
 #  Number of iterations.
 #  Required: yes
 #  Type: long
-   NITER = 10000
+   NITER = 100
 
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)

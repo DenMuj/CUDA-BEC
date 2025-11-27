@@ -30,7 +30,7 @@ inline int getGPUSMCount() {
  * @param blocksPerSM: Minimum blocks per SM for occupancy 
  * @return dim3 grid size
  */
-inline dim3 getOptimalGrid3D(int smCount, long Nx, long Ny, long Nz, dim3 blockSize, int blocksPerSM = 4) {
+inline dim3 getOptimalGrid3D(int smCount, long Nx, long Ny, long Nz, dim3 blockSize, int blocksPerSM = 2) {
     // Calculate grid needed to cover the problem with some stride
     int stride = 1;
     int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  // with stride
@@ -59,7 +59,7 @@ inline dim3 getOptimalGrid3D(int smCount, long Nx, long Ny, long Nz, dim3 blockS
  * @param blocksPerSM: Minimum blocks per SM for occupancy
  * @return dim3 grid size
  */
-inline dim3 getOptimalGrid2D(int smCount, long Nx, long Ny, dim3 blockSize, int blocksPerSM = 4) {
+inline dim3 getOptimalGrid2D(int smCount, long Nx, long Ny, dim3 blockSize, int blocksPerSM = 2) {
     // Calculate grid needed to cover the problem with some stride
     int stride = 1;
     int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  //with stride
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
     MultiArray<double> tmpx(Nx), tmpy(Ny), tmpz(Nz);
 
     // Setup Simpson3DTiledIntegrator for integration
-    long TILE_SIZE = Nz;
+    long TILE_SIZE = Nz/2;
     Simpson3DTiledIntegrator integ(Nx, Ny, TILE_SIZE);
 
     // Allocation of crank-nicolson coefficients on device
@@ -364,7 +364,7 @@ int main(int argc, char **argv)
     }
 
     // Compute chemical potential terms
-    //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
+    //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot_ptr, d_work_array.data(),
       //           d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
     // if (muoutput != NULL) 
     // {
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
             fflush(filerms);
         }
         // Compute chemical potential terms
-        //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot.data(), d_work_array.data(),
+        //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot_ptr, d_work_array.data(),
                  //d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
         // if (muoutput != NULL) 
         // {
@@ -1048,7 +1048,7 @@ void calcrms(
 {
     // Configure kernel launch parameters using grid-stride approach
     static int smCount = getGPUSMCount();
-    dim3 blockSize(32, 4, 2);  // 256 threads per block
+    dim3 blockSize(32, 8, 2);  // threads per block
     dim3 gridSize = getOptimalGrid3D(smCount, Nx, Ny, Nz, blockSize, 4);
 
     // Compute x^2 * psi^2 
@@ -1489,7 +1489,7 @@ void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, const doubl
     CUFFT_CHECK(cufftExecZ2D(backward_plan, d_psi2_fft, (cufftDoubleReal *)d_psi2_real));
     
     // Boundary kernel uses 2D grid
-    dim3 blockSize2D(32, 8);
+    dim3 blockSize2D(64, 8);
     dim3 numBlocks2D = getOptimalGrid2D(smCount, Ny, Nz, blockSize2D, 4);
     calcpsidd2_boundaries<<<numBlocks2D, blockSize2D>>>(d_psi2_real);
     CUDA_CHECK_KERNEL("calcpsidd2_boundaries");
@@ -1718,7 +1718,7 @@ void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgamma
     dim3 threadsPerBlock(64, 8);  // threads per block
     // For batched kernel, effective Ny dimension is Ny/BATCH_SIZE (16)
     long effectiveNy = (Ny + 15) / 16;
-    dim3 numBlocks = getOptimalGrid2D(smCount, effectiveNy, Nz, threadsPerBlock, 2);
+    dim3 numBlocks = getOptimalGrid2D(smCount, effectiveNy, Nz, threadsPerBlock, 4);
 
     calclux_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_cbeta, d_calphax, d_cgammax, Ax0r, Ax);
     CUDA_CHECK_KERNEL("calclux_kernel");
@@ -1919,8 +1919,8 @@ void calcluz(double *d_psi, double *d_cbeta, double *d_calphaz, double *d_cgamma
 {
     // Use grid-stride approach with optimal block count
     static int smCount = getGPUSMCount();
-    dim3 threadsPerBlock(32, 8);  // threads per block, x-major for coalescing
-    dim3 numBlocks = getOptimalGrid2D(smCount, Nx, Ny, threadsPerBlock, 4);
+    dim3 threadsPerBlock(64, 8);  // threads per block, x-major for coalescing
+    dim3 numBlocks = getOptimalGrid2D(smCount, Nx, Ny, threadsPerBlock, 2);
 
     calcluz_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_cbeta, d_calphaz, d_cgammaz, Az0r, Az);
     CUDA_CHECK_KERNEL("calcluz_kernel");
@@ -2031,7 +2031,7 @@ void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double
 
     static int smCount = getGPUSMCount();
     dim3 threadsPerBlock(8, 8, 8);  // threads per block
-    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 4);
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
 
     // Step 1: Contact energy - Calculate 0.5 * g * ψ⁴
     calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, half_g);

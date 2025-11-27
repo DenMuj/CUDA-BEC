@@ -35,19 +35,6 @@ class Simpson3DTiledIntegrator {
     Simpson3DTiledIntegrator &operator=(const Simpson3DTiledIntegrator &) = delete;
 
     /**
-     * @brief Perform 3D integration using Simpson's rule (host memory input)
-     * @param hx Step size in X direction
-     * @param hy Step size in Y direction
-     * @param hz Step size in Z direction
-     * @param h_f Pointer to function values (HOST memory)
-     * @param Nx Number of points in X direction
-     * @param Ny Number of points in Y direction
-     * @param Nz Number of points in Z direction
-     * @return Integrated value
-     */
-    double integrate(double hx, double hy, double hz, double *h_f, long Nx, long Ny, long Nz);
-
-    /**
      * @brief Perform 3D integration using Simpson's rule (device memory input)
      * @param hx Step size in X direction
      * @param hy Step size in Y direction
