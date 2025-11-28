@@ -283,15 +283,15 @@ int main(int argc, char **argv)
 
     // Initialize chemical potential output file that will store chemical potential values, total
     // chemical pot., kinetic, trap, contact, dipole and quantum fluctuation terms
-    // if (muoutput != NULL) 
-    // {
-    //     sprintf(filename, "%s.txt", muoutput);
-    //     filemu = fopen(filename, "w");
-    // } 
-    // else
-    // {
-    //     filemu = NULL;
-    // }
+    if (muoutput != NULL) 
+    {
+        sprintf(filename, "%s.txt", muoutput);
+        filemu = fopen(filename, "w");
+    } 
+    else
+    {
+        filemu = NULL;
+    }
 
     // Initialize psi function
     initpsi((double *)psi, x2, y2, z2, x, y, z);
@@ -354,16 +354,16 @@ int main(int argc, char **argv)
     {
         rms_output(filerms);
     }
-    // if (muoutput != NULL) 
-    // {
-    //     mu_output(filemu);
-    // }
+    if (muoutput != NULL) 
+    {
+        mu_output(filemu);
+    }
 
     // Compute wave function norm
-    calcnorm(d_psi, d_work_array, norm, integ);
+    calcnorm(d_psi, d_work_array_complex, norm, integ);
 
     // Compute RMS values
-    calcrms(d_psi, d_work_array, integ, h_rms_pinned);
+    calcrms(d_psi, d_work_array_complex, integ, h_rms_pinned);
     if (rmsout != NULL) 
     {
         double rms_r = sqrt(h_rms_pinned[0] * h_rms_pinned[0] + h_rms_pinned[1] * h_rms_pinned[1] +
@@ -374,17 +374,17 @@ int main(int argc, char **argv)
     }
 
     // Compute chemical potential terms
-    // if (muoutput != NULL) 
-    // {
-    //     calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
-    //              backward_plan, integ, g, gd, h2);
-    //     std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
-    //                 0, muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2],
-    //                 muen[4]);
+    if (muoutput != NULL) 
+    {
+        calcmuen(muen, d_psi, d_work_array, d_pot_ptr, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
+                 backward_plan, integ, g, gd, h2);
+        std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
+                    0, muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2],
+                    muen[4]);
                     
-    //     fflush(filemu);
-    //     mutotold = muen[0] + muen[1] + muen[2] + muen[3];
-    // }
+        fflush(filemu);
+        mutotold = muen[0] + muen[1] + muen[2] + muen[3];
+    }
 
     if (Niterout != NULL) 
     {
@@ -510,7 +510,11 @@ int main(int argc, char **argv)
     // Main loop that does the evolution of the wave function
     long nsteps;
     nsteps = Niter / Nsnap;
-    auto start = std::chrono::high_resolution_clock::now();
+    // CUDA events for GPU timing
+    cudaEvent_t start, stop;
+    CUDA_CHECK(cudaEventCreate(&start));
+    CUDA_CHECK(cudaEventCreate(&stop));
+    CUDA_CHECK(cudaEventRecord(start));
     for (long snap = 1; snap <= Nsnap; snap++) 
     {
         for (long j = 0; j < nsteps; j++) 
@@ -521,10 +525,10 @@ int main(int argc, char **argv)
             calclux(d_psi, d_work_array_complex.raw(), d_calphax, d_cgammax, Ax0r, Ax);
             calcluy(d_psi, d_work_array_complex.raw(), d_calphay, d_cgammay, Ay0r, Ay);
             calcluz(d_psi, d_work_array_complex.raw(), d_calphaz, d_cgammaz, Az0r, Az);
-            calcnorm(d_psi, d_work_array, norm, integ);
+            calcnorm(d_psi, d_work_array_complex, norm, integ);
         }
 
-        calcrms(d_psi, d_work_array, integ, h_rms_pinned);
+        calcrms(d_psi, d_work_array_complex, integ, h_rms_pinned);
 
         if (rmsout != NULL) 
         {
@@ -538,15 +542,15 @@ int main(int argc, char **argv)
         }
 
         // Compute chemical potential terms
-        // calcmuen(muen, d_psi, d_work_array, d_pot, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
-        //          backward_plan, integ, g, gd, h2);
-        // if (muoutput != NULL) 
-        // {
-        //     std::fprintf(
-        //         filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap,
-        //         muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2], muen[4]);
-        //     fflush(filemu);
-        // }
+        calcmuen(muen, d_psi, d_work_array, d_pot_ptr, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
+                 backward_plan, integ, g, gd, h2);
+        if (muoutput != NULL) 
+        {
+            std::fprintf(
+                filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap,
+                muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2], muen[4]);
+            fflush(filemu);
+        }
         if (Niterout != NULL) 
         {
             // Move d_psi to host, host is pinned memory
@@ -677,27 +681,31 @@ int main(int argc, char **argv)
         // if (mutotnew > muend)
         //     break;
     }
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> duration = end - start;
+    CUDA_CHECK(cudaEventRecord(stop));
+    CUDA_CHECK(cudaEventSynchronize(stop));
+
+    float gpu_time_ms = 0.0f;
+    CUDA_CHECK(cudaEventElapsedTime(&gpu_time_ms, start, stop));
+    double gpu_time_seconds = gpu_time_ms / 1000.0;
     if (rmsout != NULL) 
     {
          std::fprintf(filerms,
          "-------------------------------------------------------------------\n\n");
-         std::fprintf(filerms, "Total time on GPU: %f seconds\n", duration.count());
+         std::fprintf(filerms, "Total time on GPU: %f seconds\n", gpu_time_seconds);
         std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
         fclose(filerms);
     }
-    // if (muoutput != NULL) 
-    // {
-    //     std::fprintf(
-    //         filemu,
-    //         "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    //     std::fprintf(filemu, "Total time on GPU: %f seconds\n", duration.count());
-    //     std::fprintf(
-    //         filemu,
-    //         "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-    //     fclose(filemu);
-    // }
+    if (muoutput != NULL) 
+    {
+        std::fprintf(
+            filemu,
+            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        std::fprintf(filemu, "Total time on GPU: %f seconds\n", gpu_time_seconds);
+        std::fprintf(
+            filemu,
+            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+        fclose(filemu);
+    }
 
     // Cleanup pinned memory
     cudaFreeHost(h_rms_pinned);
@@ -1026,7 +1034,7 @@ void readpar(void)
  */
 void calcrms(
     const CudaArray3D<cuDoubleComplex> &d_psi, // Device: 3D psi array
-    CudaArray3D<double> &d_work_array, Simpson3DTiledIntegrator &integ,
+    CudaArray3D<cuDoubleComplex> &d_work_array_complex, Simpson3DTiledIntegrator &integ,
     double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 {
     // Configure kernel launch parameters using grid-stride approach
@@ -1034,29 +1042,32 @@ void calcrms(
     dim3 blockSize(32, 4, 2);  // threads per block
     dim3 gridSize = getOptimalGrid3D(smCount, Nx, Ny, Nz, blockSize, 4);
 
+    // Cast complex array to double* for kernel and integration
+    double *d_work_array_double = reinterpret_cast<double*>(d_work_array_complex.raw());
+
     // Compute x^2 * psi^2
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
+    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
                                                                  0, // 0 for x direction
                                                                  dx);
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (x)");
 
-    double x2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
+    double x2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
 
-    // Compute y^2 * psi^2 (reuse d_work_array)
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
+    // Compute y^2 * psi^2 (reuse d_work_array_complex)
+    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
                                                                  1, // 1 for y direction
                                                                  dy);
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (y)");
 
-    double y2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
+    double y2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
 
-    // Compute z^2 * psi^2 (reuse d_work_array)
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array.raw(),
+    // Compute z^2 * psi^2 (reuse d_work_array_complex)
+    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
                                                                  2, // 2 for z direction
                                                                  dz);
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (z)");
 
-    double z2_integral = integ.integrateDevice(dx, dy, dz, d_work_array.raw(), Nx, Ny, Nz);
+    double z2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
 
     // Calculate RMS values and store in pinned memory
     h_rms_pinned[0] = sqrt(x2_integral); // rms_x
@@ -1118,25 +1129,13 @@ __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__res
                     weight = fma(z, z, 0.0);
                 }
 
-                result[linear_idx] = fma(weight, psi_squared, 0.0);
+                // When result is a complex array cast to double, each element is 2 doubles
+                // Store in the real part (index 2*linear_idx) and zero the imaginary part (index 2*linear_idx+1)
+                result[2 * linear_idx] = fma(weight, psi_squared, 0.0);
+                result[2 * linear_idx + 1] = 0.0;
             }
         }
     }
-}
-
-/**
- * @brief Function to compute squared wave function on device
- * @param d_psi: Device: 3D psi array
- * @param d_psi2: Device: 3D psi2 array
- */
-void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2) 
-{
-    static int smCount = getGPUSMCount();
-    dim3 threadsPerBlock(8, 8, 8);  // threads per block
-    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
-    compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
-    CUDA_CHECK_KERNEL("compute_d_psi2");
-    return;
 }
 
 /**
@@ -1167,6 +1166,71 @@ __global__ void compute_d_psi2(const cuDoubleComplex *__restrict__ d_psi,
             }
         }
     }
+}
+
+/**
+ * @brief Kernel to compute squared wave function (complex array cast to double)
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array (complex array cast to double)
+ */
+__global__ void compute_d_psi2_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                       double *__restrict__ d_psi2) 
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
+                double psi_squared = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+                
+                // When d_psi2 is a complex array cast to double, each element is 2 doubles
+                // Store in the real part (index 2*linear_idx) and zero the imaginary part (index 2*linear_idx+1)
+                d_psi2[2 * linear_idx] = psi_squared;
+                d_psi2[2 * linear_idx + 1] = 0.0;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Function to compute squared wave function on device
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array
+ */
+void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2) 
+{
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
+    compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
+    CUDA_CHECK_KERNEL("compute_d_psi2");
+    return;
+}
+
+/**
+ * @brief Function to compute squared wave function on device (complex array cast to double)
+ * @param d_psi: Device: 3D psi array
+ * @param d_psi2: Device: 3D psi2 array (complex array cast to double)
+ */
+void calc_d_psi2_complex(const cuDoubleComplex *d_psi, double *d_psi2) 
+{
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);  // threads per block
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
+    compute_d_psi2_complex<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
+    CUDA_CHECK_KERNEL("compute_d_psi2_complex");
+    return;
 }
 
 /**
@@ -1326,11 +1390,14 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
  * @param norm: Wave function norm
  * @param integ: Simpson3DTiledIntegrator
  */
-void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, double &norm,
+void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<cuDoubleComplex> &d_work_array_complex, double &norm,
               Simpson3DTiledIntegrator &integ) 
 {
-    calc_d_psi2(d_psi.raw(), d_psi2.raw());
-    double raw_norm = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
+    // Cast complex array to double* for kernel and integration
+    double *d_work_array_double = reinterpret_cast<double*>(d_work_array_complex.raw());
+    
+    calc_d_psi2_complex(d_psi.raw(), d_work_array_double);
+    double raw_norm = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
     norm = 1.0 / sqrt(raw_norm);
 
     Nad *= raw_norm;
@@ -2183,7 +2250,7 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
  * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
  */
 void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
-              CudaArray3D<double> &d_psi2, CudaArray3D<double> &d_pot,
+              CudaArray3D<double> &d_psi2, double *d_pot,
               CudaArray3D<double> &d_psi2dd, CudaArray3D<double> &d_potdd,
               cufftDoubleComplex *d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,
               Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2) 
@@ -2208,7 +2275,7 @@ void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
     if (initialize_pot == 1) 
     {
         calcmuen_fused_potential<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(),
-                                                                 d_pot.raw());
+                                                                 d_pot);
         CUDA_CHECK_KERNEL("calcmuen_fused_potential");
     } 
     else 

@@ -64,17 +64,17 @@
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 408
+   NX = 128
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 408
+   NY = 128
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 408
+   NZ = 128
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
 #  Formula is DX = SX * MX * 2 / NX (same for DY and DZ) and DT = DY * DY / MT

@@ -83,6 +83,44 @@ class Simpson3DTiledIntegratorImpl {
     }
 
     /**
+     * @brief Integrate the function using device memory (complex array cast to double)
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param d_f_full Pointer to function values (DEVICE memory) - complex array cast to double
+     */
+    double integrateDeviceComplex(double hx, double hy, double hz, double *d_f_full, long Nx, long Ny,
+                                  long Nz) {
+        double total_sum = 0.0;
+
+        // Process the volume in tiles along the Z direction
+        for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
+            // Calculate the actual size of this tile (last tile might be smaller)
+            long current_tile_z = std::min(tile_size_z, Nz - z_start);
+
+            // Reset the partial sum for this tile
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
+
+            // Launch kernel for this tile
+            // When complex array is cast to double, pointer offset needs to account for 2 doubles per element
+            launchSimpson3DKernelComplex(d_f_full, d_partial_sum, Nx, Ny, Nz,
+                                         tile_size_z, z_start, current_tile_z);
+
+            // Debug mode: sync and check for kernel execution errors
+            CUDA_SYNC_CHECK("integrateDeviceComplex kernel");
+
+            // Copy result back to host (implicitly syncs)
+            CUDA_CHECK(cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
+
+            // Accumulate the result
+            total_sum += h_tile_sum;
+        }
+
+        // Apply Simpson's rule scaling factor
+        return total_sum * hx * hy * hz / 27.0;
+    }
+
+    /**
      * @brief Set the tile size
      * @param new_tile_size New tile size
      */
@@ -124,6 +162,22 @@ Simpson3DTiledIntegrator::~Simpson3DTiledIntegrator() { delete pImpl; }
 double Simpson3DTiledIntegrator::integrateDevice(double hx, double hy, double hz, double *d_f,
                                                  long Nx, long Ny, long Nz) {
     return pImpl->integrateDevice(hx, hy, hz, d_f, Nx, Ny, Nz);
+}
+
+/**
+ * @brief Integrate the function using device memory (complex array cast to double)
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param d_f Pointer to function values (DEVICE memory) - complex array cast to double
+ * @param Nx Number of points in X direction
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @return Integrated value
+ */
+double Simpson3DTiledIntegrator::integrateDeviceComplex(double hx, double hy, double hz, double *d_f,
+                                                         long Nx, long Ny, long Nz) {
+    return pImpl->integrateDeviceComplex(hx, hy, hz, d_f, Nx, Ny, Nz);
 }
 
 /**

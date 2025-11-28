@@ -4,6 +4,8 @@
 #  Type: int
    OPTION = 2
 
+INITIALIZE_POT = 1
+
 #  Number of atoms in condensate.
 #  Required: yes
 #  Type: long
@@ -57,17 +59,17 @@
 #  Number of discretization points in the x-direction.
 #  Required: yes
 #  Type: long
-   NX = 408
+   NX = 128
 
 #  Number of discretization points in the y-direction.
 #  Required: yes
 #  Type: long
-   NY = 408
+   NY = 128
 
 #  Number of discretization points in the z-direction.
 #  Required: yes
 #  Type: long
-   NZ = 408
+   NZ = 128
 
 #  Multiplicative factor for spatial discretization (MX, MY, MZ) and time discretization (MT)
 #  Formula is DX = SX * MX * 2 / NX (same for DY and DZ) and DT = DY * DY / MT
@@ -134,7 +136,7 @@
 #  Output file with the chemical potential of the system. If not defined, will not be written.
 #  Required: no
 #  Type: string
-#   OUTPUTMU = imag3d-out
+MUOUTPUT = real3d-mu
 
 #  Output file with RMS values. The values are written in each snapshot.
 #  If not defined, will not be written.

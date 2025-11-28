@@ -82,7 +82,7 @@ void initpot(MultiArray<double> &pot, MultiArray<double> &x2, MultiArray<double>
              MultiArray<double> &z2);
 
 void calcrms(const CudaArray3D<cuDoubleComplex> &d_psi,
-                        CudaArray3D<double> &d_work_array, Simpson3DTiledIntegrator &integ,
+                        CudaArray3D<cuDoubleComplex> &d_work_array_complex, Simpson3DTiledIntegrator &integ,
                         double *h_rms_pinned);
 
 __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__restrict__ psi,
@@ -92,6 +92,9 @@ __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__res
 void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2);
 __global__ void compute_d_psi2(const cuDoubleComplex *__restrict__ d_psi,
                                double *__restrict__ d_psi2);
+void calc_d_psi2_complex(const cuDoubleComplex *d_psi, double *d_psi2);
+__global__ void compute_d_psi2_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                       double *__restrict__ d_psi2);
 
 void gencoef(MultiArray<cuDoubleComplex> &calphax, MultiArray<cuDoubleComplex> &cgammax,
              MultiArray<cuDoubleComplex> &calphay, MultiArray<cuDoubleComplex> &cgammay,
@@ -111,7 +114,7 @@ extern __global__ void diff_kernel_complex(double hx, double hy, double hz,
                                            double *__restrict__ f_res, long nx, long ny, long nz,
                                            double kin_energy_factor);
 
-void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2, double &norm,
+void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<cuDoubleComplex> &d_work_array_complex, double &norm,
               Simpson3DTiledIntegrator &integ);
 __global__ void multiply_by_norm(cuDoubleComplex *__restrict__ d_psi, const double norm);
 
@@ -165,7 +168,7 @@ __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
 __global__ void calcpsidd2_boundaries(double *psidd2);
 
 void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
-              CudaArray3D<double> &d_psi2, CudaArray3D<double> &d_pot,
+              CudaArray3D<double> &d_psi2, double *d_pot,
               CudaArray3D<double> &d_psi2dd, CudaArray3D<double> &d_potdd,
               cufftDoubleComplex *d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,
               Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2);

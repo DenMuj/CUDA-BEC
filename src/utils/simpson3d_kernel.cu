@@ -150,10 +150,105 @@
         }
     }
  }
- 
- 
- /**
-  * @brief Launch the Simpson 3D kernel
+
+/**
+ * @brief Kernel function for Simpson 3D tiled reduction with complex array cast to double
+ * @param f Pointer to function values (DEVICE memory) - complex array cast to double
+ * @param partial_sums Pointer to partial sums (DEVICE memory)
+ * @param Nx Number of points in X direction
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param tile_size_z Number of z-slices per tile
+ * @param z_start Starting z-index for the current tile
+ */
+__global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, long Nx, long Ny, long Nz,
+                                               long tile_size_z, long z_start) {
+    extern __shared__ double shared[];
+    double *sum_data = shared;
+
+    // Calculate thread ID within block
+    long tid = threadIdx.x + threadIdx.y * blockDim.x + threadIdx.z * blockDim.x * blockDim.y;
+
+    // Calculate global 3D strides for grid-stride loop
+    long stride_x = blockDim.x * gridDim.x;
+    long stride_y = blockDim.y * gridDim.y;
+    long stride_z = blockDim.z * gridDim.z;
+
+    // Initial indices
+    long idx_start = blockIdx.x * blockDim.x + threadIdx.x;
+    long idy_start = blockIdx.y * blockDim.y + threadIdx.y;
+    long idz_start = blockIdx.z * blockDim.z + threadIdx.z;
+
+    double local_sum = 0.0;
+
+    // Grid-stride loop: each thread processes multiple points
+    for (long idz_local = idz_start; idz_local < tile_size_z; idz_local += stride_z) {
+        long idz_global = z_start + idz_local;
+        if (idz_global >= Nz) continue;
+
+        double weight_z = (idz_global == 0 || idz_global == Nz - 1) ? 1.0
+                          : (idz_global % 2 == 1)                   ? 4.0
+                                                                     : 2.0;
+
+        for (long idy = idy_start; idy < Ny; idy += stride_y) {
+            double weight_y = (idy == 0 || idy == Ny - 1) ? 1.0 : (idy % 2 == 1) ? 4.0 : 2.0;
+            double weight_yz = weight_y * weight_z;
+
+            for (long idx = idx_start; idx < Nx; idx += stride_x) {
+                double weight_x = (idx == 0 || idx == Nx - 1) ? 1.0 : (idx % 2 == 1) ? 4.0 : 2.0;
+
+                // Use local index for accessing the tile data in memory
+                // When complex array is cast to double, each element is 2 doubles (real, imag)
+                // Access the real part at index 2*linear_idx
+                long linear_idx = idz_local * Nx * Ny + idy * Nx + idx;
+                long double_idx = 2 * linear_idx;
+
+                // Accumulate weighted value (read from real part)
+                local_sum = fma(f[double_idx], weight_x * weight_yz, local_sum);
+            }
+        }
+    }
+
+   // ============ WARP SHUFFLE REDUCTION ============
+   // First, reduce within each warp using shuffle intrinsics
+   double val = local_sum;
+   #pragma unroll
+   for (int offset = 16; offset > 0; offset >>= 1) {
+       val += __shfl_down_sync(0xFFFFFFFF, val, offset);
+   }
+
+   // Lane 0 of each warp now has the partial sum for that warp
+   int warp_id = tid >> 5;   // tid / 32
+   int lane_id = tid & 31;   // tid % 32
+   int num_warps = (blockDim.x * blockDim.y * blockDim.z) >> 5;  // block_size / 32
+
+   // Lane 0 of each warp writes its partial sum to shared memory
+   if (lane_id == 0) {
+       sum_data[warp_id] = val;
+   }
+   __syncthreads();
+
+   // First warp reduces all the partial sums from each warp
+   if (warp_id == 0) {
+       // Load partial sum (or 0 if this lane has no corresponding warp)
+       val = (lane_id < num_warps) ? sum_data[lane_id] : 0.0;
+
+       // Full warp shuffle reduction
+       #pragma unroll
+       for (int offset = 16; offset > 0; offset >>= 1) {
+           val += __shfl_down_sync(0xFFFFFFFF, val, offset);
+       }
+
+       // Thread 0 has the final block sum, add to global result
+       if (lane_id == 0) {
+           atomicAdd(&partial_sums[0], val);
+       }
+   }
+}
+
+
+/**
+ * @brief Launch the Simpson 3D kernel
   * @param d_f Pointer to function values (DEVICE memory)
   * @param d_partial_sum Pointer to partial sums (DEVICE memory)
   * @param Nx Number of points in X direction
@@ -181,6 +276,37 @@
                                                                       current_tile_z, z_start);
      CUDA_CHECK_KERNEL("simpson3d_tiled_reduce");
  }
+
+/**
+ * @brief Launch the Simpson 3D kernel for complex array cast to double
+ * @param d_f Pointer to function values (DEVICE memory) - complex array cast to double
+ * @param d_partial_sum Pointer to partial sums (DEVICE memory)
+ * @param Nx Number of points in X direction
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param tile_size_z Number of z-slices per tile
+ * @param z_start Starting z-index for the current tile
+ * @param current_tile_z Number of z-slices in the current tile
+ */
+void launchSimpson3DKernelComplex(double *d_f, double *d_partial_sum, long Nx, long Ny, long Nz,
+                                 long tile_size_z, long z_start, long current_tile_z) {
+    static int smCount = getGPUSMCount();
+    dim3 blockSize(32, 4, 2); // 256 threads per block
+
+    // Use SM-aware grid sizing with grid-stride loops
+    dim3 gridSize = getOptimalGridReduction3D(smCount, Nx, Ny, current_tile_z, blockSize, 2);
+
+   // Calculate shared memory size for warp shuffle reduction
+   // Only need space for one partial sum per warp (max 32 warps for 1024 threads)
+   int num_warps = (blockSize.x * blockSize.y * blockSize.z + 31) / 32;
+   size_t shared_mem_size = num_warps * sizeof(double);
+
+    // Launch kernel
+    // When complex array is cast to double, pointer offset needs to account for 2 doubles per element
+    simpson3d_tiled_reduce_complex<<<gridSize, blockSize, shared_mem_size>>>(d_f + 2 * z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz,
+                                                                             current_tile_z, z_start);
+    CUDA_CHECK_KERNEL("simpson3d_tiled_reduce_complex");
+}
  
  /**
   * @brief Get the CUDA error string
