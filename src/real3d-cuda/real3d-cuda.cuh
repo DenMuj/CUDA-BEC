@@ -75,6 +75,11 @@ double mx, my, mz, mt;
 cuDoubleComplex minusAx, minusAy, minusAz;
 __constant__ cuDoubleComplex d_minusAx, d_minusAy, d_minusAz;
 
+// Variables to track if dimensions were adjusted for FFT work area
+int dimensions_adjusted;
+long original_Nx, original_Ny, original_Nz;
+double original_dx, original_dy, original_dz, original_dt, original_cutoff;
+
 void readpar();
 void initpsi(double *psi, MultiArray<double> &x2, MultiArray<double> &y2, MultiArray<double> &z2,
              MultiArray<double> &x, MultiArray<double> &y, MultiArray<double> &z);
@@ -121,8 +126,8 @@ __global__ void multiply_by_norm(cuDoubleComplex *__restrict__ d_psi, const doub
 // Device function to compute trap potential on-the-fly
 __device__ __forceinline__ double compute_pot_onthefly(int ix, int iy, int iz);
 
-void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2,
-            double *d_pot, double g, double gd, double h2);
+void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, double *d_psi2, double *d_pot, double g,
+            double gd, double h2);
 __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi, double *__restrict__ d_psi2,
                               const double *__restrict__ pot, const double g, const double ratio_gd,
                               const double h2);
@@ -161,31 +166,42 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
                MultiArray<double> &kz2);
 
 void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, cuDoubleComplex *d_psi,
-                      double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd);
+                double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd);
 __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
                                     const double *__restrict__ potdd);
 
 __global__ void calcpsidd2_boundaries(double *psidd2);
 
 void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
-              CudaArray3D<double> &d_psi2, double *d_pot,
-              CudaArray3D<double> &d_psi2dd, CudaArray3D<double> &d_potdd,
-              cufftDoubleComplex *d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,
-              Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2);
+              CudaArray3D<cuDoubleComplex> &d_work_array_complex, double *d_pot,
+              double *d_work_array_complex_as_double, CudaArray3D<double> &d_potdd,
+              cufftHandle forward_plan, cufftHandle backward_plan, Simpson3DTiledIntegrator &integ,
+              const double g, const double gd, const double h2);
 
 __global__ void calcmuen_fused_contact(const cuDoubleComplex *__restrict__ d_psi,
                                        double *__restrict__ d_result, double half_g);
+__global__ void calcmuen_fused_contact_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                               double *__restrict__ d_result, double half_g);
 __global__ void calcmuen_fused_potential(const cuDoubleComplex *__restrict__ d_psi,
                                          double *__restrict__ d_result,
                                          const double *__restrict__ d_pot);
+__global__ void calcmuen_fused_potential_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                                 double *__restrict__ d_result,
+                                                 const double *__restrict__ d_pot);
 __global__ void calcmuen_fused_potential_onthefly(const cuDoubleComplex *__restrict__ d_psi,
                                                    double *__restrict__ d_result);
+__global__ void calcmuen_fused_potential_onthefly_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                                           double *__restrict__ d_result);
 __global__ void calcmuen_fused_dipolar(const cuDoubleComplex *__restrict__ d_psi,
                                        double *__restrict__ d_result,
                                        const double *__restrict__ d_psidd2, const double half_gd);
 __global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi,
                                   double *__restrict__ d_result, const double half_h2);
+__global__ void calcmuen_fused_h2_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                         double *__restrict__ d_result, const double half_h2);
 void calcmuen_kin(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_work_array, int par);
+void calcmuen_kin_complex(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<cuDoubleComplex> &d_work_array_complex, int par);
+__global__ void copy_double_to_complex_array(const double *__restrict__ d_src, double *__restrict__ d_dst, long Nx, long Ny, long Nz);
 
 void save_psi_from_gpu(cuDoubleComplex *psi, cuDoubleComplex *d_psi, const char *filename, long Nx,
                        long Ny, long Nz);
@@ -210,3 +226,4 @@ void outdenyz(cuDoubleComplex *psi, MultiArray<double> &y, MultiArray<double> &z
 void outpsi2xy(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &y, FILE *file);
 void outpsi2xz(cuDoubleComplex *psi, MultiArray<double> &x, MultiArray<double> &z, FILE *file);
 void outpsi2yz(cuDoubleComplex *psi, MultiArray<double> &y, MultiArray<double> &z, FILE *file);
+void initsize(long *newNx, long *newNy, long *newNz);

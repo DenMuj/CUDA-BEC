@@ -17,21 +17,21 @@
  * @param f Function values
  * @param f_res Array with the first derivatives of the function
  */
- void diff(double hx, double hy, double hz, double* f, double* __restrict__ f_res, long nx, long ny, long nz, int par) {
+ void diff(double hx, double hy, double hz, double* f, double* __restrict__ f_res, long nx, long ny, long nz, int par, long f_res_nx) {
     // Get raw pointers and size from MultiArray
    double* f_ptr = f;
    double* f_res_ptr = f_res;
    
    // Precompute kinetic energy factor
    const double kin_energy_factor = 1.0 / (2.0 * (3.0 - par));
-    
+   
    dim3 blockSize(8, 8, 8);
     dim3 gridSize((nx + blockSize.x - 1) / blockSize.x,
                   (ny + blockSize.y - 1) / blockSize.y,
                   (nz + blockSize.z - 1) / blockSize.z);
     
     // Kernel still uses raw pointers
-   diff_kernel<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, kin_energy_factor);
+   diff_kernel<<<gridSize, blockSize>>>(hx, hy, hz, f_ptr, f_res_ptr, nx, ny, nz, kin_energy_factor, f_res_nx);
    CUDA_CHECK_KERNEL("diff_kernel");
 }
 
@@ -47,7 +47,7 @@ __global__ void diff_kernel(
    double hx, double hy, double hz,
    double* __restrict__ psi,
    double* __restrict__ f_res,
-   long nx, long ny, long nz, double kin_energy_factor) {
+   long nx, long ny, long nz, double kin_energy_factor, long f_res_nx) {
    
    int i = threadIdx.x + blockDim.x * blockIdx.x;
    int j = threadIdx.y + blockDim.y * blockIdx.y;
@@ -55,7 +55,9 @@ __global__ void diff_kernel(
    
    if (i >= nx || j >= ny || k >= nz) return;
    
-   int idx = k * nx * ny + j * nx + i;  // 3D to 1D index
+   // Index for writing to f_res (may be padded, uses f_res_nx)
+   // Note: Reading from psi uses nx (unpadded) - indices calculated inline in derivative calculations
+   int f_res_idx = k * f_res_nx * ny + j * f_res_nx + i;
    
    // Precompute reciprocals
    const double inv_12hx = 1.0 / (12.0 * hx);
@@ -67,7 +69,7 @@ __global__ void diff_kernel(
    
    double dpsidx = 0.0, dpsidy = 0.0, dpsidz = 0.0;
    
-   // X-derivative (∂Ψ/∂x)
+   // X-derivative (∂Ψ/∂x) - reading from psi (unpadded, uses nx)
    if (i > 1 && i < nx - 2) {
        // 4th order central difference
        int idx_m2 = k * nx * ny + j * nx + (i - 2);
@@ -88,7 +90,7 @@ __global__ void diff_kernel(
    }
    // Boundary points (i=0, i=nx-1) have dpsidx = 0.0
    
-   // Y-derivative (∂Ψ/∂y)
+   // Y-derivative (∂Ψ/∂y) - reading from psi (unpadded, uses nx)
    if (j > 1 && j < ny - 2) {
        // 4th order central difference
        int idx_m2 = k * nx * ny + (j - 2) * nx + i;
@@ -106,7 +108,7 @@ __global__ void diff_kernel(
        dpsidy = (__ldg(&psi[idx_0]) - __ldg(&psi[idx_m2])) * inv_2hy;
    }
    
-   // Z-derivative (∂Ψ/∂z)
+   // Z-derivative (∂Ψ/∂z) - reading from psi (unpadded, uses nx)
    if (k > 1 && k < nz - 2) {
        // 4th order central difference
        int idx_m2 = (k - 2) * nx * ny + j * nx + i;
@@ -125,7 +127,8 @@ __global__ void diff_kernel(
    }
    
    // Compute kinetic energy density: |∇Ψ|²
-   f_res[idx] = (dpsidx * dpsidx + dpsidy * dpsidy + dpsidz * dpsidz) * kin_energy_factor;
+   // Writing to f_res (may be padded, uses f_res_nx)
+   f_res[f_res_idx] = (dpsidx * dpsidx + dpsidy * dpsidy + dpsidz * dpsidz) * kin_energy_factor;
 }
 
 /**

@@ -50,10 +50,14 @@ class Simpson3DTiledIntegratorImpl {
      * @param hx Step size in X direction
      * @param hy Step size in Y direction
      * @param hz Step size in Z direction
-     * @param d_f_full Pointer to function values (DEVICE memory)
+     * @param d_f_full Pointer to function values (DEVICE memory, may be padded)
+     * @param Nx Logical X dimension (for weighting)
+     * @param Ny Y dimension
+     * @param Nz Z dimension
+     * @param f_Nx Actual X dimension of d_f_full (Nx for unpadded, Nx+2 for padded)
      */
     double integrateDevice(double hx, double hy, double hz, double *d_f_full, long Nx, long Ny,
-                           long Nz) {
+                           long Nz, long f_Nx) {
         double total_sum = 0.0;
 
         // Process the volume in tiles along the Z direction
@@ -64,9 +68,10 @@ class Simpson3DTiledIntegratorImpl {
             // Reset the partial sum for this tile
             CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
 
-            // Launch kernel for this tile (pass pointer directly with offset - no D2D copy needed)
-            launchSimpson3DKernel(d_f_full + z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz,
-                                  tile_size_z, z_start, current_tile_z);
+            // Launch kernel for this tile
+            // Pointer offset must account for actual array dimension (f_Nx) if padded
+            launchSimpson3DKernel(d_f_full + z_start * f_Nx * Ny, d_partial_sum, Nx, Ny, Nz,
+                                  tile_size_z, z_start, current_tile_z, f_Nx);
 
             // Debug mode: sync and check for kernel execution errors
             CUDA_SYNC_CHECK("integrateDevice kernel");
@@ -90,8 +95,11 @@ class Simpson3DTiledIntegratorImpl {
      * @param d_f_full Pointer to function values (DEVICE memory) - complex array cast to double
      */
     double integrateDeviceComplex(double hx, double hy, double hz, double *d_f_full, long Nx, long Ny,
-                                  long Nz) {
+                                  long Nz, long f_Nx) {
         double total_sum = 0.0;
+        
+        // Default to Nx if f_Nx not specified (backward compatibility)
+        if (f_Nx == 0) f_Nx = Nx;
 
         // Process the volume in tiles along the Z direction
         for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
@@ -103,7 +111,8 @@ class Simpson3DTiledIntegratorImpl {
 
             // Launch kernel for this tile
             // When complex array is cast to double, pointer offset needs to account for 2 doubles per element
-            launchSimpson3DKernelComplex(d_f_full, d_partial_sum, Nx, Ny, Nz,
+            // With padding, stride per z-plane is 2 * f_Nx * Ny
+            launchSimpson3DKernelComplex(d_f_full, d_partial_sum, Nx, Ny, Nz, f_Nx,
                                          tile_size_z, z_start, current_tile_z);
 
             // Debug mode: sync and check for kernel execution errors
@@ -153,15 +162,18 @@ Simpson3DTiledIntegrator::~Simpson3DTiledIntegrator() { delete pImpl; }
  * @param hx Step size in X direction
  * @param hy Step size in Y direction
  * @param hz Step size in Z direction
- * @param d_f Pointer to function values (DEVICE memory)
- * @param Nx Number of points in X direction
+ * @param d_f Pointer to function values (DEVICE memory, may be padded)
+ * @param Nx Logical number of points in X direction (for weighting)
  * @param Ny Number of points in Y direction
  * @param Nz Number of points in Z direction
+ * @param f_Nx Actual X dimension of d_f (Nx for unpadded, Nx+2 for padded, defaults to Nx)
  * @return Integrated value
  */
 double Simpson3DTiledIntegrator::integrateDevice(double hx, double hy, double hz, double *d_f,
-                                                 long Nx, long Ny, long Nz) {
-    return pImpl->integrateDevice(hx, hy, hz, d_f, Nx, Ny, Nz);
+                                                 long Nx, long Ny, long Nz, long f_Nx) {
+    // Default to Nx if f_Nx not specified (backward compatibility)
+    if (f_Nx == 0) f_Nx = Nx;
+    return pImpl->integrateDevice(hx, hy, hz, d_f, Nx, Ny, Nz, f_Nx);
 }
 
 /**
@@ -176,8 +188,10 @@ double Simpson3DTiledIntegrator::integrateDevice(double hx, double hy, double hz
  * @return Integrated value
  */
 double Simpson3DTiledIntegrator::integrateDeviceComplex(double hx, double hy, double hz, double *d_f,
-                                                         long Nx, long Ny, long Nz) {
-    return pImpl->integrateDeviceComplex(hx, hy, hz, d_f, Nx, Ny, Nz);
+                                                         long Nx, long Ny, long Nz, long f_Nx) {
+    // Default to Nx if f_Nx not specified (backward compatibility)
+    if (f_Nx == 0) f_Nx = Nx;
+    return pImpl->integrateDeviceComplex(hx, hy, hz, d_f, Nx, Ny, Nz, f_Nx);
 }
 
 /**

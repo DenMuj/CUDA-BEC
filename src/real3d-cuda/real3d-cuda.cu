@@ -104,6 +104,73 @@ int main(int argc, char **argv)
     // Read input parameters from configuration file
     readpar();
     
+    // Adjust Nx, Ny, Nz if necessary to ensure FFT work area fits
+    long newNx, newNy, newNz;
+    
+    // Initialize adjustment tracking
+    dimensions_adjusted = 0;
+    original_Nx = Nx;
+    original_Ny = Ny;
+    original_Nz = Nz;
+    original_dx = dx;
+    original_dy = dy;
+    original_dz = dz;
+    original_dt = dt;
+    original_cutoff = cutoff;
+    
+    initsize(&newNx, &newNy, &newNz);
+    if (Nx != newNx || Ny != newNy || Nz != newNz) {
+        // Store original values before adjustment
+        original_Nx = Nx;
+        original_Ny = Ny;
+        original_Nz = Nz;
+        original_dx = dx;
+        original_dy = dy;
+        original_dz = dz;
+        original_dt = dt;
+        original_cutoff = cutoff;
+        
+        // Update dimensions
+        Nx = newNx; Ny = newNy; Nz = newNz;
+        dimensions_adjusted = 1;
+        
+        // Recalculate values that depend on Nx, Ny, Nz
+        // Check if dx, dy, dz were explicitly set in config (if not, recalculate)
+        const char *dx_cfg = cfg_read("DX");
+        const char *dy_cfg = cfg_read("DY");
+        const char *dz_cfg = cfg_read("DZ");
+        
+        if (dx_cfg == NULL) {
+            dx = sx * mx * 2 / Nx;
+        }
+        if (dy_cfg == NULL) {
+            dy = sy * my * 2 / Ny;
+        }
+        if (dz_cfg == NULL) {
+            dz = sz * mz * 2 / Nz;
+        }
+        
+        // Recalculate dt if it wasn't explicitly set (it depends on dx, dy, dz)
+        const char *dt_cfg = cfg_read("DT");
+        if (dt_cfg == NULL) {
+            double dmin = std::min(dx, std::min(dy, dz));
+            dt = dmin * dmin / mt;
+        }
+        
+        // Recalculate cutoff if it wasn't explicitly set (it depends on Nx, Ny, Nz and dx, dy, dz)
+        const char *cutoff_cfg = cfg_read("CUTOFF");
+        if (cutoff_cfg == NULL) {
+            double dmin = std::min(dx, std::min(dy, dz));
+            if (dmin == dx) {
+                cutoff = Nx * dx / 2;
+            } else if (dmin == dy) {
+                cutoff = Ny * dy / 2;
+            } else if (dmin == dz) {
+                cutoff = Nz * dz / 2;
+            }
+        }
+    }
+    
     if (opt == 2)
         par = 2.;
     else
@@ -222,9 +289,11 @@ int main(int argc, char **argv)
     // Allocate memory for psi on device
     CudaArray3D<cuDoubleComplex> d_psi(Nx, Ny, Nz);
 
-    // Allocate memory for work array on device
-    CudaArray3D<double> d_work_array(Nx, Ny, Nz);
-    CudaArray3D<cuDoubleComplex> d_work_array_complex(Nx, Ny, Nz);
+    // Allocate memory for work array on device (Nx/2+1 complex => Nx+2 doubles for in-place FFT)
+    // This buffer serves dual purpose: FFT data area + embedded FFT work area (similar to d_ctensor in theirs)
+    CudaArray3D<cuDoubleComplex> d_work_array_complex(Nx + 2, Ny, Nz);
+    // Reuse the complex work buffer as a double array when only real values are needed
+    double *d_work_array_complex_as_double = reinterpret_cast<double*>(d_work_array_complex.raw());
 
     // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd)
     // d_pot is only allocated if initialize_pot == 1 (precomputed mode)
@@ -235,34 +304,94 @@ int main(int argc, char **argv)
         CUDA_CHECK(cudaMalloc(&d_pot_ptr, Nx * Ny * Nz * sizeof(double)));
     }
     CudaArray3D<double> d_potdd(Nx, Ny, Nz);
-
-    // FFT arrays
-    //cufftDoubleComplex *d_psi2_fft;
-    //CUDA_CHECK(cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex)));
+    // FFT arrays - now using in-place FFT with d_work_array_complex (d_work_array_complex_as_double)
 
     // Create plan for FFT of 3D array with explicit work area management
+    // Using cufftMakePlanMany for in-place-like R2C FFT support
+    // The FFT work area will be embedded in d_work_array_complex (similar to d_ctensor_h2 in theirs)
     cufftHandle forward_plan, backward_plan;
     size_t forward_worksize, backward_worksize;
-    void *forward_work = nullptr;
-    void *backward_work = nullptr;
+    void *fft_work_area = nullptr;  // Will point to embedded work area in d_work_array_complex
 
-    // Create forward plan
+    // For in-place R2C FFT, we need explicit strides
+    // Memory layout: row-major, index = iz*(Ny*Nx) + iy*Nx + ix (Nx fastest, Nz slowest)
+    // FFT dimensions: (Nz, Ny, Nx) - processed as Nz batches of (Ny, Nx) 2D FFTs
+    int fft_size[3] = {(int)Nz, (int)Ny, (int)Nx};  // Dimensions: [slowest, middle, fastest]
+    
+    // Input strides for real data (row-major: iz*(Ny*Nx) + iy*Nx + ix)
+    // d_work_array_complex is (Nx+2, Ny, Nz), when cast to double it's effectively (2*(Nx+2), Ny, Nz) in doubles
+    // But for FFT input, we use the first Nx doubles of each row
+    int inembed[3] = {(int)Nz, (int)Ny, (int)(Nx+2)};  // Input embedding (padded)
+    int istride = 1;  // Stride within a row (contiguous)
+    int idist = 1;   // Distance between z-planes (batches)
+    
+    // Output strides for complex data (row-major: iz*(Ny*(Nx/2+1)) + iy*(Nx/2+1) + ix)
+    int onembed[3] = {(int)Nz, (int)Ny, (int)(Nx/2 + 1)};  // Output embedding
+    int ostride = 1;  // Stride within a row (contiguous)
+    int odist = 1;  // Distance between z-planes (batches)
+
+    // Create forward plan (D2Z) with explicit strides for in-place-like operation
     CUFFT_CHECK(cufftCreate(&forward_plan));
-    CUFFT_CHECK(cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize));
+    CUFFT_CHECK(cufftSetAutoAllocation(forward_plan, 0));  // Disable auto-allocation
+    CUFFT_CHECK(cufftMakePlanMany(forward_plan, 3, fft_size,
+                                   inembed, istride, idist,  // Input layout
+                                   onembed, ostride, odist,  // Output layout
+                                   CUFFT_D2Z, 1, &forward_worksize));
 
-    // Create backward plan
+    // Create backward plan (Z2D) - reverse the input/output
     CUFFT_CHECK(cufftCreate(&backward_plan));
-    CUFFT_CHECK(cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize));
+    CUFFT_CHECK(cufftSetAutoAllocation(backward_plan, 0));  // Disable auto-allocation
+    CUFFT_CHECK(cufftMakePlanMany(backward_plan, 3, fft_size,
+                                   onembed, ostride, odist,  // Input layout (complex)
+                                   inembed, istride, idist,  // Output layout (real)
+                                   CUFFT_Z2D, 1, &backward_worksize));
 
-    // Allocate a single shared work area for both forward and backward plans
+    // Embed FFT work area in d_work_array_complex
+    // The initsize() function (called before allocation) ensures that Nx, Ny, Nz
+    // are adjusted so that the FFT work area will fit in the available space. This provides
+    // a pre-allocation guarantee. The runtime check below is a safety net that should never
+    // trigger if initsize() worked correctly.
     {
         size_t shared_worksize =
             (forward_worksize > backward_worksize) ? forward_worksize : backward_worksize;
         if (shared_worksize > 0) 
         {
-            CUDA_CHECK(cudaMalloc(&forward_work, shared_worksize));
-            CUFFT_CHECK(cufftSetWorkArea(forward_plan, forward_work));
-            CUFFT_CHECK(cufftSetWorkArea(backward_plan, forward_work));
+            // Calculate buffer dimensions
+            // Buffer: (Nx + 2) × Ny × Nz complex elements
+            size_t total_buffer_bytes = (Nx + 2) * Ny * Nz * sizeof(cuDoubleComplex);
+            
+            // FFT data area: complex output uses (Nx/2 + 1) × Ny × Nz complex elements
+            // This is the maximum space needed for FFT data (R2C output format)
+            size_t fft_data_bytes = (Nx / 2 + 1) * Ny * Nz * sizeof(cuDoubleComplex);
+            
+            // Available space for work area = total - data area
+            // This is: ((Nx + 2) - (Nx/2 + 1)) × Ny × Nz × sizeof(cuDoubleComplex)
+            //         = (Nx/2 + 1) × Ny × Nz × sizeof(cuDoubleComplex)
+            size_t available_work_bytes = total_buffer_bytes - fft_data_bytes;
+            
+            // RUNTIME SAFETY CHECK: Verify work area fits (should always pass due to initsize())
+            // This is a safety net - initsize() should have already ensured dimensions are correct.
+            // If this fails, it indicates a bug in initsize() or a mismatch in FFT plan creation.
+            if (shared_worksize > available_work_bytes) {
+                fprintf(stderr, "ERROR: Required FFT work size (%zu bytes) is too large.\n"
+                        "  Available work space: %zu bytes\n"
+                        "  FFT data area needs: %zu bytes\n"
+                        "  Total buffer size: %zu bytes\n"
+                        "  Buffer dimensions: (Nx+2) × Ny × Nz = (%ld+2) × %ld × %ld complex elements\n"
+                        "  FFT dimensions: Nx × Ny × Nz = %ld × %ld × %ld\n"
+                        "Solution: Try changing the number of discretization points (Nx, Ny, Nz).\n", 
+                        shared_worksize, available_work_bytes, fft_data_bytes, total_buffer_bytes,
+                        Nx, Ny, Nz, Nx, Ny, Nz);
+                exit(EXIT_FAILURE);
+            }
+            
+            // Place work area at the end of the buffer (linear layout)
+            // Work area starts after the FFT data area
+            fft_work_area = (char*)d_work_array_complex.raw() + fft_data_bytes;
+            
+            // Set the embedded work area for both plans
+            CUFFT_CHECK(cufftSetWorkArea(forward_plan, fft_work_area));
+            CUFFT_CHECK(cufftSetWorkArea(backward_plan, fft_work_area));
         }
     }
 
@@ -283,15 +412,15 @@ int main(int argc, char **argv)
 
     // Initialize chemical potential output file that will store chemical potential values, total
     // chemical pot., kinetic, trap, contact, dipole and quantum fluctuation terms
-    if (muoutput != NULL) 
-    {
-        sprintf(filename, "%s.txt", muoutput);
-        filemu = fopen(filename, "w");
-    } 
-    else
-    {
-        filemu = NULL;
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     sprintf(filename, "%s.txt", muoutput);
+    //     filemu = fopen(filename, "w");
+    // } 
+    // else
+    // {
+    //     filemu = NULL;
+    // }
 
     // Initialize psi function
     initpsi((double *)psi, x2, y2, z2, x, y, z);
@@ -374,17 +503,17 @@ int main(int argc, char **argv)
     }
 
     // Compute chemical potential terms
-    if (muoutput != NULL) 
-    {
-        calcmuen(muen, d_psi, d_work_array, d_pot_ptr, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
-                 backward_plan, integ, g, gd, h2);
-        std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
-                    0, muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2],
-                    muen[4]);
+    // if (muoutput != NULL) 
+    // {
+    //     calcmuen(muen, d_psi, d_work_array_complex, d_pot_ptr, d_work_array_complex_as_double,
+    //              d_potdd, forward_plan, backward_plan, integ, g, gd, h2);
+    //     std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
+    //                 0, muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2],
+    //                 muen[4]);
                     
-        fflush(filemu);
-        mutotold = muen[0] + muen[1] + muen[2] + muen[3];
-    }
+    //     fflush(filemu);
+    //     mutotold = muen[0] + muen[1] + muen[2] + muen[3];
+    // }
 
     if (Niterout != NULL) 
     {
@@ -519,9 +648,9 @@ int main(int argc, char **argv)
     {
         for (long j = 0; j < nsteps; j++) 
         {
-            calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(),
-                             d_work_array_complex.raw(), d_potdd.raw());
-            calcnu(d_psi, d_work_array, d_pot_ptr, g, gd, h2);
+            calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_work_array_complex_as_double,
+                       d_work_array_complex.raw(), d_potdd.raw());
+            calcnu(d_psi, d_work_array_complex_as_double, d_pot_ptr, g, gd, h2);
             calclux(d_psi, d_work_array_complex.raw(), d_calphax, d_cgammax, Ax0r, Ax);
             calcluy(d_psi, d_work_array_complex.raw(), d_calphay, d_cgammay, Ay0r, Ay);
             calcluz(d_psi, d_work_array_complex.raw(), d_calphaz, d_cgammaz, Az0r, Az);
@@ -542,15 +671,15 @@ int main(int argc, char **argv)
         }
 
         // Compute chemical potential terms
-        calcmuen(muen, d_psi, d_work_array, d_pot_ptr, d_work_array, d_potdd, d_work_array_complex.raw(), forward_plan,
-                 backward_plan, integ, g, gd, h2);
-        if (muoutput != NULL) 
-        {
-            std::fprintf(
-                filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap,
-                muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2], muen[4]);
-            fflush(filemu);
-        }
+        // calcmuen(muen, d_psi, d_work_array_complex, d_pot_ptr, d_work_array_complex_as_double,
+        //          d_potdd, forward_plan, backward_plan, integ, g, gd, h2);
+        // if (muoutput != NULL) 
+        // {
+        //     std::fprintf(
+        //         filemu, "%-9li %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n", snap,
+        //         muen[0] + muen[1] + muen[2] + muen[3], muen[3], muen[1], muen[0], muen[2], muen[4]);
+        //     fflush(filemu);
+        // }
         if (Niterout != NULL) 
         {
             // Move d_psi to host, host is pinned memory
@@ -695,28 +824,23 @@ int main(int argc, char **argv)
         std::fprintf(filerms, "--------------------------------------------------------------------------------------------------------\n");
         fclose(filerms);
     }
-    if (muoutput != NULL) 
-    {
-        std::fprintf(
-            filemu,
-            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        std::fprintf(filemu, "Total time on GPU: %f seconds\n", gpu_time_seconds);
-        std::fprintf(
-            filemu,
-            "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-        fclose(filemu);
-    }
+    // if (muoutput != NULL) 
+    // {
+    //     std::fprintf(
+    //         filemu,
+    //         "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    //     std::fprintf(filemu, "Total time on GPU: %f seconds\n", gpu_time_seconds);
+    //     std::fprintf(
+    //         filemu,
+    //         "-------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+    //     fclose(filemu);
+    // }
 
     // Cleanup pinned memory
     cudaFreeHost(h_rms_pinned);
     cudaFreeHost(psi);
 
-    // Cleanup FFT plans and work areas
-    //cudaFree(d_psi2_fft);
-    if (forward_work)
-        cudaFree(forward_work);
-    if (backward_work)
-        cudaFree(backward_work);
+    // Cleanup FFT plans (work area is embedded in d_work_array_complex, no separate free needed)
     cufftDestroy(forward_plan);
     cufftDestroy(backward_plan);
     
@@ -725,6 +849,125 @@ int main(int argc, char **argv)
         cudaFree(d_pot_ptr);
     
     return 0;
+}
+
+/**
+ * @brief Determine optimal sizes of Nx, Ny and Nz to ensure FFT work area fits.
+ * 
+ * This function adjusts Nx, Ny, Nz if necessary to ensure the FFT work area
+ * fits in the available space in d_work_array_complex.
+ * 
+ * For linear layout: Buffer is (Nx+2) × Ny × Nz complex elements.
+ * FFT data area uses (Nx/2+1) × Ny × Nz complex elements.
+ * Available work area is (Nx/2+1) × Ny × Nz complex elements.
+ * 
+ * @param newNx Output: Adjusted Nx (may be same as input if no adjustment needed)
+ * @param newNy Output: Adjusted Ny (may be same as input if no adjustment needed)
+ * @param newNz Output: Adjusted Nz (may be same as input if no adjustment needed)
+ */
+void initsize(long *newNx, long *newNy, long *newNz) {
+    long tmpNx, tmpNy, tmpNz;
+    cufftHandle plan1d, plan3d;
+    size_t workSize1d, workSize3d;
+    long arraySize1d, arraySize3d;
+    size_t typeSize;
+    int device_id;
+
+    // Get current device
+    CUDA_CHECK(cudaGetDevice(&device_id));
+    CUDA_CHECK(cudaSetDevice(device_id));
+
+    typeSize = sizeof(cuDoubleComplex);  // We're using complex for the buffer
+
+    // Calculate available work area size for linear layout
+    // Buffer: (Nx + 2) × Ny × Nz complex elements
+    // FFT data area: (Nx/2 + 1) × Ny × Nz complex elements
+    // Available work area: (Nx/2 + 1) × Ny × Nz complex elements
+    arraySize3d = (Nx / 2 + 1) * Ny * Nz * typeSize;
+    
+    tmpNx = Nx; tmpNy = Ny; tmpNz = Nz;
+    
+    // Create a test 3D FFT plan to get the work size
+    CUFFT_CHECK(cufftCreate(&plan3d));
+    CUFFT_CHECK(cufftSetAutoAllocation(plan3d, 0));
+    CUFFT_CHECK(cufftMakePlan3d(plan3d, tmpNx, tmpNy, tmpNz, CUFFT_D2Z, &workSize3d));
+    CUFFT_CHECK(cufftDestroy(plan3d));
+
+    // If work size doesn't fit, adjust dimensions iteratively
+    // Algorithm: Increment dimensions one by one, then recalculate and check again
+    // This continues until the 3D FFT work size fits in the available buffer
+    // Note: We preserve even dimensions (increment by 2) for better FFT performance
+    // If dimension is odd, increment by 1 to make it even
+    while (workSize3d > arraySize3d) {
+        // Step 1: Adjust Nx - ensure 1D FFT work size for Nx is reasonable
+        // (This is a heuristic to prevent pathological cases)
+        arraySize1d = tmpNx * sizeof(double);
+        CUFFT_CHECK(cufftCreate(&plan1d));
+        CUFFT_CHECK(cufftMakePlan1d(plan1d, tmpNx, CUFFT_D2Z, 1, &workSize1d));
+        CUFFT_CHECK(cufftDestroy(plan1d));
+        while (workSize1d > arraySize1d) {
+            // Preserve even dimensions: if even, increment by 2; if odd, increment by 1 to make it even
+            if (tmpNx % 2 == 0) {
+                tmpNx += 2;  // Keep it even
+            } else {
+                tmpNx += 1;  // Make it even
+            }
+            arraySize1d = tmpNx * sizeof(double);
+            CUFFT_CHECK(cufftCreate(&plan1d));
+            CUFFT_CHECK(cufftMakePlan1d(plan1d, tmpNx, CUFFT_D2Z, 1, &workSize1d));
+            CUFFT_CHECK(cufftDestroy(plan1d));
+        }
+
+        // Step 2: Adjust Ny - ensure 1D FFT work size for Ny is reasonable
+        arraySize1d = tmpNy * sizeof(double);
+        CUFFT_CHECK(cufftCreate(&plan1d));
+        CUFFT_CHECK(cufftMakePlan1d(plan1d, tmpNy, CUFFT_D2Z, 1, &workSize1d));
+        CUFFT_CHECK(cufftDestroy(plan1d));
+        while (workSize1d > arraySize1d) {
+            // Preserve even dimensions: if even, increment by 2; if odd, increment by 1 to make it even
+            if (tmpNy % 2 == 0) {
+                tmpNy += 2;  // Keep it even
+            } else {
+                tmpNy += 1;  // Make it even
+            }
+            arraySize1d = tmpNy * sizeof(double);
+            CUFFT_CHECK(cufftCreate(&plan1d));
+            CUFFT_CHECK(cufftMakePlan1d(plan1d, tmpNy, CUFFT_D2Z, 1, &workSize1d));
+            CUFFT_CHECK(cufftDestroy(plan1d));
+        }
+
+        // Step 3: Adjust Nz - ensure 1D FFT work size for Nz is reasonable
+        arraySize1d = tmpNz * sizeof(double);
+        CUFFT_CHECK(cufftCreate(&plan1d));
+        CUFFT_CHECK(cufftMakePlan1d(plan1d, tmpNz, CUFFT_D2Z, 1, &workSize1d));
+        CUFFT_CHECK(cufftDestroy(plan1d));
+        while (workSize1d > arraySize1d) {
+            // Preserve even dimensions: if even, increment by 2; if odd, increment by 1 to make it even
+            if (tmpNz % 2 == 0) {
+                tmpNz += 2;  // Keep it even
+            } else {
+                tmpNz += 1;  // Make it even
+            }
+            arraySize1d = tmpNz * sizeof(double);
+            CUFFT_CHECK(cufftCreate(&plan1d));
+            CUFFT_CHECK(cufftMakePlan1d(plan1d, tmpNz, CUFFT_D2Z, 1, &workSize1d));
+            CUFFT_CHECK(cufftDestroy(plan1d));
+        }
+
+        // Step 4: Recalculate available work area with new (possibly incremented) dimensions
+        // Available work area = (Nx/2 + 1) × Ny × Nz complex elements
+        arraySize3d = (tmpNx / 2 + 1) * tmpNy * tmpNz * typeSize;
+        
+        // Step 5: Recalculate 3D FFT work size with new dimensions
+        CUFFT_CHECK(cufftCreate(&plan3d));
+        CUFFT_CHECK(cufftSetAutoAllocation(plan3d, 0));
+        CUFFT_CHECK(cufftMakePlan3d(plan3d, tmpNx, tmpNy, tmpNz, CUFFT_D2Z, &workSize3d));
+        CUFFT_CHECK(cufftDestroy(plan3d));
+        
+        // Loop continues if workSize3d > arraySize3d, otherwise exits
+    }
+
+    *newNx = tmpNx; *newNy = tmpNy; *newNz = tmpNz;
 }
 
 /**
@@ -1051,7 +1294,7 @@ void calcrms(
                                                                  dx);
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (x)");
 
-    double x2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
+    double x2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
 
     // Compute y^2 * psi^2 (reuse d_work_array_complex)
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
@@ -1059,7 +1302,7 @@ void calcrms(
                                                                  dy);
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (y)");
 
-    double y2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
+    double y2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
 
     // Compute z^2 * psi^2 (reuse d_work_array_complex)
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
@@ -1067,7 +1310,7 @@ void calcrms(
                                                                  dz);
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (z)");
 
-    double z2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
+    double z2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
 
     // Calculate RMS values and store in pinned memory
     h_rms_pinned[0] = sqrt(x2_integral); // rms_x
@@ -1129,10 +1372,12 @@ __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__res
                     weight = fma(z, z, 0.0);
                 }
 
-                // When result is a complex array cast to double, each element is 2 doubles
-                // Store in the real part (index 2*linear_idx) and zero the imaginary part (index 2*linear_idx+1)
-                result[2 * linear_idx] = fma(weight, psi_squared, 0.0);
-                result[2 * linear_idx + 1] = 0.0;
+                // When result is a complex array cast to double with padding, account for padded stride
+                // d_work_array_complex is (Nx+2, Ny, Nz), so stride in x is (Nx+2)
+                // Index in double array: 2 * (iz * Ny * (Nx+2) + iy * (Nx+2) + ix)
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                result[2 * result_idx] = fma(weight, psi_squared, 0.0);
+                result[2 * result_idx + 1] = 0.0;
             }
         }
     }
@@ -1144,7 +1389,7 @@ __global__ void compute_single_weighted_psi_squared(const cuDoubleComplex *__res
  * @param d_psi2: Device: 3D psi2 array
  */
 __global__ void compute_d_psi2(const cuDoubleComplex *__restrict__ d_psi,
-                               double *__restrict__ d_psi2) 
+                               double *__restrict__ d_psi2, long psi2_Nx) 
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1161,8 +1406,9 @@ __global__ void compute_d_psi2(const cuDoubleComplex *__restrict__ d_psi,
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                int psi2_idx = iz * d_Ny * psi2_Nx + iy * psi2_Nx + ix;
                 cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
-                d_psi2[linear_idx] = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+                d_psi2[psi2_idx] = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
             }
         }
     }
@@ -1174,7 +1420,7 @@ __global__ void compute_d_psi2(const cuDoubleComplex *__restrict__ d_psi,
  * @param d_psi2: Device: 3D psi2 array (complex array cast to double)
  */
 __global__ void compute_d_psi2_complex(const cuDoubleComplex *__restrict__ d_psi,
-                                       double *__restrict__ d_psi2) 
+                                       double *__restrict__ d_psi2, long psi2_Nx) 
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1191,13 +1437,15 @@ __global__ void compute_d_psi2_complex(const cuDoubleComplex *__restrict__ d_psi
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // When d_psi2 is a complex array cast to double with padding, account for padded stride
+                int psi2_idx = iz * d_Ny * psi2_Nx + iy * psi2_Nx + ix;
                 cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
                 double psi_squared = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
                 
                 // When d_psi2 is a complex array cast to double, each element is 2 doubles
-                // Store in the real part (index 2*linear_idx) and zero the imaginary part (index 2*linear_idx+1)
-                d_psi2[2 * linear_idx] = psi_squared;
-                d_psi2[2 * linear_idx + 1] = 0.0;
+                // Store in the real part (index 2*psi2_idx) and zero the imaginary part (index 2*psi2_idx+1)
+                d_psi2[2 * psi2_idx] = psi_squared;
+                d_psi2[2 * psi2_idx + 1] = 0.0;
             }
         }
     }
@@ -1208,12 +1456,12 @@ __global__ void compute_d_psi2_complex(const cuDoubleComplex *__restrict__ d_psi
  * @param d_psi: Device: 3D psi array
  * @param d_psi2: Device: 3D psi2 array
  */
-void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2) 
+void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2, long psi2_Nx) 
 {
     static int smCount = getGPUSMCount();
     dim3 threadsPerBlock(8, 8, 8);  // threads per block
     dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
-    compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
+    compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, psi2_Nx);
     CUDA_CHECK_KERNEL("compute_d_psi2");
     return;
 }
@@ -1223,12 +1471,12 @@ void calc_d_psi2(const cuDoubleComplex *d_psi, double *d_psi2)
  * @param d_psi: Device: 3D psi array
  * @param d_psi2: Device: 3D psi2 array (complex array cast to double)
  */
-void calc_d_psi2_complex(const cuDoubleComplex *d_psi, double *d_psi2) 
+void calc_d_psi2_complex(const cuDoubleComplex *d_psi, double *d_psi2, long psi2_Nx) 
 {
     static int smCount = getGPUSMCount();
     dim3 threadsPerBlock(8, 8, 8);  // threads per block
     dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
-    compute_d_psi2_complex<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
+    compute_d_psi2_complex<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, psi2_Nx);
     CUDA_CHECK_KERNEL("compute_d_psi2_complex");
     return;
 }
@@ -1396,8 +1644,8 @@ void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<cuDoubleComplex> 
     // Cast complex array to double* for kernel and integration
     double *d_work_array_double = reinterpret_cast<double*>(d_work_array_complex.raw());
     
-    calc_d_psi2_complex(d_psi.raw(), d_work_array_double);
-    double raw_norm = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz);
+    calc_d_psi2_complex(d_psi.raw(), d_work_array_double, Nx + 2);
+    double raw_norm = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
     norm = 1.0 / sqrt(raw_norm);
 
     Nad *= raw_norm;
@@ -1482,7 +1730,7 @@ __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
  * @brief Kernel to compute the boundaries of the FFT psi2 array
  * @param psidd2: Device: 3D psi2 array multiplied by the dipolar potential
  */
-__global__ void calcpsidd2_boundaries(double *psidd2) 
+__global__ void calcpsidd2_boundaries(double *psidd2, long psidd2_Nx) 
 {
     long cnti, cntj, cntk;
 
@@ -1492,7 +1740,7 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
     int tdy = blockIdx.y * blockDim.y + threadIdx.y;
     int tdx = blockIdx.x * blockDim.x + threadIdx.x;
     // Memory layout: fastest changing = x, slowest = z
-    // Index calculation: idx = k * (d_Nx * d_Ny) + j * d_Nx + i
+    // Index calculation: idx = k * (psidd2_Nx * d_Ny) + j * psidd2_Nx + i
 
     // First loop: Copy from first x-slice to last x-slice
     // (j=0 to j=d_Ny-1, k=0 to k=d_Nz-1)
@@ -1500,9 +1748,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
     {
         for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) 
         {
-            long first_idx = cntk * (d_Nx * d_Ny) + cntj * d_Nx + 0; // i=0 (first x-slice)
+            // Use padded dimension for indexing
+            long first_idx = cntk * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + 0; // i=0 (first x-slice)
             long last_idx =
-                cntk * (d_Nx * d_Ny) + cntj * d_Nx + (d_Nx - 1); // i=d_Nx-1 (last x-slice)
+                cntk * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + (d_Nx - 1); // i=d_Nx-1 (last x-slice)
 
             psidd2[last_idx] = psidd2[first_idx];
         }
@@ -1514,9 +1763,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
     {
         for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) 
         {
-            long first_idx = cntk * (d_Nx * d_Ny) + 0 * d_Nx + cnti; // j=0 (first y-slice)
+            // Use padded dimension for indexing
+            long first_idx = cntk * (psidd2_Nx * d_Ny) + 0 * psidd2_Nx + cnti; // j=0 (first y-slice)
             long last_idx =
-                cntk * (d_Nx * d_Ny) + (d_Ny - 1) * d_Nx + cnti; // j=d_Ny-1 (last y-slice)
+                cntk * (psidd2_Nx * d_Ny) + (d_Ny - 1) * psidd2_Nx + cnti; // j=d_Ny-1 (last y-slice)
 
             psidd2[last_idx] = psidd2[first_idx];
         }
@@ -1528,9 +1778,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
     {
         for (cntj = tdx; cntj < d_Ny; cntj += grid_stride_x) 
         {
-            long first_idx = 0 * (d_Nx * d_Ny) + cntj * d_Nx + cnti; // k=0 (first z-slice)
+            // Use padded dimension for indexing
+            long first_idx = 0 * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + cnti; // k=0 (first z-slice)
             long last_idx =
-                (d_Nz - 1) * (d_Nx * d_Ny) + cntj * d_Nx + cnti; // k=d_Nz-1 (last z-slice)
+                (d_Nz - 1) * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + cnti; // k=d_Nz-1 (last z-slice)
 
             psidd2[last_idx] = psidd2[first_idx];
         }
@@ -1539,18 +1790,22 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
 
 /**
  * @brief Function to compute the FFT of the squared wave function multiplied by the dipolar
- * potential
+ * potential (in-place FFT)
  * @param forward_plan: Forward FFT plan
  * @param backward_plan: Backward FFT plan
  * @param d_psi: Device: 3D psi array
- * @param d_psi2_real: Device: 3D psi2 array
- * @param d_psi2_fft: Device: 3D psi2 array in FFT format
+ * @param d_psi2_real: Device: 3D psi2 array (also used for in-place FFT)
+ * @param d_psi2_fft: Device: Complex view of d_psi2_real for in-place FFT
  * @param potdd: Device: 3D dipolar potential array
  */
 void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, cuDoubleComplex *d_psi,
                       double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd) 
 {
-    calc_d_psi2(d_psi, d_psi2_real);
+    // d_psi2_real is d_work_array_complex_as_double, padded (Nx+2, Ny, Nz)
+    calc_d_psi2(d_psi, d_psi2_real, Nx + 2);
+    // In-place-like FFT: using same buffer with different pointer types
+    // cuFFT requires different pointer values, so we cast to ensure they're treated as different
+    // The plan (cufftMakePlanMany) knows about the overlapping memory layout
     CUFFT_CHECK(cufftExecD2Z(forward_plan, (cufftDoubleReal *)d_psi2_real, d_psi2_fft));
 
     static int smCount = getGPUSMCount();
@@ -1559,12 +1814,14 @@ void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, cuDoubleCom
     compute_psid2_potdd<<<numBlocks, threadsPerBlock>>>(d_psi2_fft, potdd);
     CUDA_CHECK_KERNEL("compute_psid2_potdd");
 
+    // In-place FFT: same memory location for input (complex) and output (real)
     CUFFT_CHECK(cufftExecZ2D(backward_plan, d_psi2_fft, (cufftDoubleReal *)d_psi2_real));
     
     // Boundary kernel uses 2D grid
+    // d_psi2_real is padded (Nx+2, Ny, Nz)
     dim3 blockSize2D(32, 8);
     dim3 numBlocks2D = getOptimalGrid2D(smCount, Ny, Nz, blockSize2D, 4);
-    calcpsidd2_boundaries<<<numBlocks2D, blockSize2D>>>(d_psi2_real);
+    calcpsidd2_boundaries<<<numBlocks2D, blockSize2D>>>(d_psi2_real, Nx + 2);
     CUDA_CHECK_KERNEL("calcpsidd2_boundaries");
     return;
 }
@@ -1676,8 +1933,8 @@ void gencoef(MultiArray<cuDoubleComplex> &calphax, MultiArray<cuDoubleComplex> &
  * @param gd: Host to Device: gd coefficient for dipolar interaction term
  * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
  */
-void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2,
-            double *d_pot, double g, double gd, double h2) 
+void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, double *d_psi2, double *d_pot, double g,
+            double gd, double h2) 
 {
     // Precompute ratio_gd on host (constant for all threads)
     double ratio_gd = gd / ((double)(Nx * Ny * Nz));
@@ -1689,15 +1946,15 @@ void calcnu(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_psi2,
     if (initialize_pot == 1) 
     {
         // Use precomputed potential from GPU memory
-        calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), d_pot, g,
+        calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2, d_pot, g,
                                                       ratio_gd, h2);
         CUDA_CHECK_KERNEL("calcnu_kernel");
     } 
     else 
     {
         // Compute potential on-the-fly (saves GPU memory for large grids)
-        calcnu_kernel_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), g,
-                                                               ratio_gd, h2);
+        calcnu_kernel_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2, g, ratio_gd,
+                                                               h2);
         CUDA_CHECK_KERNEL("calcnu_kernel_onthefly");
     }
     CUDA_SYNC_CHECK("calcnu");  // Only active in debug mode
@@ -1750,7 +2007,10 @@ __global__ void calcnu_kernel(cuDoubleComplex *__restrict__ d_psi, double *__res
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
                 double pot_val = __ldg(&d_pot[linear_idx]);
                 cuDoubleComplex psi_val = d_psi[linear_idx];
-                double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
+                // d_psi2 is d_work_array_complex_as_double (padded), after backward FFT contains real values
+                // Read from padded location: iz * Ny * (Nx+2) + iy * (Nx+2) + ix
+                int psi2_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                double psi2dd = __ldg(&d_psi2[psi2_idx]) * ratio_gd;
 
                 // Using cuCabs() for |psi|
                 double psi_abs = cuCabs(psi_val);              // |psi|
@@ -1809,7 +2069,10 @@ __global__ void calcnu_kernel_onthefly(cuDoubleComplex *__restrict__ d_psi, doub
                 double pot_val = compute_pot_onthefly(ix, iy, iz);
                 
                 cuDoubleComplex psi_val = d_psi[linear_idx];
-                double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
+                // d_psi2 is d_work_array_complex_as_double (padded), after backward FFT contains real values
+                // Read from padded location: iz * Ny * (Nx+2) + iy * (Nx+2) + ix
+                int psi2_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                double psi2dd = __ldg(&d_psi2[psi2_idx]) * ratio_gd;
 
                 // Using cuCabs() for |psi|
                 double psi_abs = cuCabs(psi_val);              // |psi|
@@ -1914,7 +2177,7 @@ __global__ void calclux_kernel(cuDoubleComplex *__restrict__ psi,
             long idx_im1 = idx_i - 1;
             cuDoubleComplex psi_im1 = __ldg(&psi[idx_im1]);
 
-            // Optimized: d_minusAx is purely imaginary (0, d_minusAx.y)
+            // d_minusAx is purely imaginary (0, d_minusAx.y)
             // (0, i) * (a, b) = (-i*b, i*a)
             double minusAx_y = d_minusAx.y;
             double term_ip1_x = -minusAx_y * psi_ip1.y;
@@ -2040,7 +2303,7 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
         long idx_jm1 = idx_j - d_Nx;
         cuDoubleComplex psi_jm1 = __ldg(&psi[idx_jm1]);
 
-        // Optimized: d_minusAy is purely imaginary (0, d_minusAy.y)
+        // d_minusAy is purely imaginary (0, d_minusAy.y)
         // (0, i) * (a, b) = (-i*b, i*a)
         double minusAy_y = d_minusAy.y;
         double term_jp1_x = -minusAy_y * psi_jp1.y;
@@ -2087,7 +2350,7 @@ __global__ void calcluy_kernel(cuDoubleComplex *__restrict__ psi,
         cuDoubleComplex psi_curr = psi[idx_curr];
         cuDoubleComplex cbeta_curr = cbeta[idx_curr];
         
-        // Optimized manual inline: alpha * psi_curr + cbeta_curr
+        // alpha * psi_curr + cbeta_curr
         // result = (a_r + i*a_i) * (p_r + i*p_i) + (c_r + i*c_i)
         // result.x = a_r*p_r - a_i*p_i + c_r
         // result.y = a_r*p_i + a_i*p_r + c_i
@@ -2171,7 +2434,7 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
         long idx_km1 = idx_k - stride;
         cuDoubleComplex psi_km1 = __ldg(&psi[idx_km1]);
 
-        // Optimized: d_minusAz is purely imaginary (0, d_minusAz.y)
+        // d_minusAz is purely imaginary (0, d_minusAz.y)
         // (0, i) * (a, b) = (-i*b, i*a)
         double minusAz_y = d_minusAz.y;
         double term_kp1_x = -minusAz_y * psi_kp1.y;
@@ -2218,7 +2481,7 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
         cuDoubleComplex psi_curr = psi[idx_curr];
         cuDoubleComplex cbeta_curr = cbeta[idx_curr];
         
-        // Optimized manual inline: alpha * psi_curr + cbeta_curr
+        //  alpha * psi_curr + cbeta_curr
         // result = (a_r + i*a_i) * (p_r + i*p_i) + (c_r + i*c_i)
         // result.x = a_r*p_r - a_i*p_i + c_r
         // result.y = a_r*p_i + a_i*p_r + c_i
@@ -2237,9 +2500,8 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
  * @param muen: Host: 3D muen array that stores the chemical potential of the system and its
  * contributions
  * @param d_psi: Device: 3D psi array
- * @param d_psi2: Device: 3D psi2 array
  * @param d_pot: Device: 3D trap potential array
- * @param d_psi2dd: Device: 3D psi2dd array
+ * @param d_psi2dd: Device: 3D psi2dd array (view of complex buffer cast to double)
  * @param d_potdd: Device: 3D dipolar potential array
  * @param d_psi2_fft: Device: 3D psi2_fft array
  * @param forward_plan: FFT forward plan
@@ -2250,10 +2512,10 @@ __global__ void calcluz_kernel(cuDoubleComplex *__restrict__ psi,
  * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
  */
 void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
-              CudaArray3D<double> &d_psi2, double *d_pot,
-              CudaArray3D<double> &d_psi2dd, CudaArray3D<double> &d_potdd,
-              cufftDoubleComplex *d_psi2_fft, cufftHandle forward_plan, cufftHandle backward_plan,
-              Simpson3DTiledIntegrator &integ, const double g, const double gd, const double h2) 
+              CudaArray3D<cuDoubleComplex> &d_work_array_complex, double *d_pot,
+              double *d_work_array_complex_as_double, CudaArray3D<double> &d_potdd,
+              cufftHandle forward_plan, cufftHandle backward_plan, Simpson3DTiledIntegrator &integ,
+              const double g, const double gd, const double h2) 
 {
 
     // Precompute constants
@@ -2266,41 +2528,46 @@ void calcmuen(MultiArray<double> &muen, CudaArray3D<cuDoubleComplex> &d_psi,
     dim3 threadsPerBlock(8, 8, 8);  // threads per block
     dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 4);
 
+    // Cast complex array to double* for kernel calls
+    double *d_work_array_double = reinterpret_cast<double*>(d_work_array_complex.raw());
+
     // Step 1: Contact energy - Calculate ψ² and 0.5 * g * ψ⁴
-    calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), half_g);
-    CUDA_CHECK_KERNEL("calcmuen_fused_contact");
-    muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
+    calcmuen_fused_contact_complex<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_work_array_double, half_g);
+    CUDA_CHECK_KERNEL("calcmuen_fused_contact_complex");
+    muen[0] = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
 
     // Step 2: Potential energy - Calculate ψ² and 0.5 * ψ² * V
     if (initialize_pot == 1) 
     {
-        calcmuen_fused_potential<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(),
-                                                                 d_pot);
-        CUDA_CHECK_KERNEL("calcmuen_fused_potential");
+        calcmuen_fused_potential_complex<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_work_array_double,
+                                                                          d_pot);
+        CUDA_CHECK_KERNEL("calcmuen_fused_potential_complex");
     } 
     else 
     {
-        calcmuen_fused_potential_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw());
-        CUDA_CHECK_KERNEL("calcmuen_fused_potential_onthefly");
+        calcmuen_fused_potential_onthefly_complex<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_work_array_double);
+        CUDA_CHECK_KERNEL("calcmuen_fused_potential_onthefly_complex");
     }
-    muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
+    muen[1] = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
 
     // Step 3: Dipolar energy - requires FFT computation first
-    calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_psi2dd.raw(), d_psi2_fft,
-                     d_potdd.raw());
-    calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(),
-                                                           d_psi2dd.raw(), half_gd);
+    // Use d_work_array_complex_as_double for in-place FFT
+    calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_work_array_complex_as_double,
+               d_work_array_complex.raw(), d_potdd.raw());
+    // Use d_work_array_complex_as_double (complex work array viewed as double) directly for result
+    calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_work_array_complex_as_double, d_work_array_complex_as_double,
+                                                           half_gd);
     CUDA_CHECK_KERNEL("calcmuen_fused_dipolar");
-    muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz) * inv_NxNyNz;
+    muen[2] = integ.integrateDevice(dx, dy, dz, d_work_array_complex_as_double, Nx, Ny, Nz, Nx + 2) * inv_NxNyNz;
 
     // Step 4: Kinetic energy - calculate gradients and kinetic energy density directly
-    calcmuen_kin(d_psi, d_psi2, par);
-    muen[3] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
+    calcmuen_kin_complex(d_psi, d_work_array_complex, par);
+    muen[3] = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
 
     // Step 5: H2 energy - calculate quantum fluctuation energy density
-    calcmuen_fused_h2<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_psi2.raw(), half_h2);
-    CUDA_CHECK_KERNEL("calcmuen_fused_h2");
-    muen[4] = integ.integrateDevice(dx, dy, dz, d_psi2.raw(), Nx, Ny, Nz);
+    calcmuen_fused_h2_complex<<<numBlocks, threadsPerBlock>>>(d_psi.raw(), d_work_array_double, half_h2);
+    CUDA_CHECK_KERNEL("calcmuen_fused_h2_complex");
+    muen[4] = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
 
     return;
 }
@@ -2332,6 +2599,43 @@ __global__ void calcmuen_fused_contact(const cuDoubleComplex *__restrict__ d_psi
                 double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
                 double psi4_val = psi2_val * psi2_val;
                 d_result[linear_idx] = psi4_val * half_g;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Kernel to calculate contact energy term (complex array cast to double)
+ * @param d_psi: Device: 3D psi array
+ * @param d_result: Device: 3D result array (complex array cast to double)
+ * @param half_g: Precomputed 0.5 * g coefficient for contact interaction term
+ */
+__global__ void calcmuen_fused_contact_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                               double *__restrict__ d_result, double half_g) 
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;
+                double psi4_val = psi2_val * psi2_val;
+                // When d_result is a complex array cast to double with padding, account for padded stride
+                // d_work_array_complex is (Nx+2, Ny, Nz), so stride in x is (Nx+2)
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                d_result[2 * result_idx] = psi4_val * half_g;
+                d_result[2 * result_idx + 1] = 0.0;
             }
         }
     }
@@ -2372,6 +2676,44 @@ __global__ void calcmuen_fused_potential(const cuDoubleComplex *__restrict__ d_p
 }
 
 /**
+ * @brief Kernel to calculate trap potential energy term (complex array cast to double)
+ * @param d_psi: Device: 3D psi array
+ * @param d_result: Device: 3D result array (complex array cast to double)
+ * @param d_pot: Device: 3D trap potential array
+ */
+__global__ void calcmuen_fused_potential_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                                 double *__restrict__ d_result,
+                                                 const double *__restrict__ d_pot) 
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|² directly
+                double result_val = 0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
+                // When d_result is a complex array cast to double with padding, account for padded stride
+                // d_work_array_complex is (Nx+2, Ny, Nz), so stride in x is (Nx+2)
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                d_result[2 * result_idx] = result_val;
+                d_result[2 * result_idx + 1] = 0.0;
+            }
+        }
+    }
+}
+
+/**
  * @brief Kernel to calculate trap potential energy term with on-the-fly potential computation
  * @param d_psi: Device: 3D psi array (complex)
  * @param d_result: Device: 3D result array
@@ -2405,6 +2747,44 @@ __global__ void calcmuen_fused_potential_onthefly(const cuDoubleComplex *__restr
 }
 
 /**
+ * @brief Kernel to calculate trap potential energy term with on-the-fly potential computation (complex array cast to double)
+ * @param d_psi: Device: 3D psi array (complex)
+ * @param d_result: Device: 3D result array (complex array cast to double)
+ */
+__global__ void calcmuen_fused_potential_onthefly_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                                           double *__restrict__ d_result) 
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]);
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|² directly
+                // Compute potential on-the-fly
+                double pot_val = compute_pot_onthefly(ix, iy, iz);
+                double result_val = 0.5 * psi2_val * pot_val;
+                // When d_result is a complex array cast to double with padding, account for padded stride
+                // d_work_array_complex is (Nx+2, Ny, Nz), so stride in x is (Nx+2)
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                d_result[2 * result_idx] = result_val;
+                d_result[2 * result_idx + 1] = 0.0;
+            }
+        }
+    }
+}
+
+/**
  * @brief Kernel to calculate dipolar energy term
  * @param d_psi: Device: 3D psi array
  * @param d_result: Device: 3D result array
@@ -2430,10 +2810,14 @@ __global__ void calcmuen_fused_dipolar(const cuDoubleComplex *__restrict__ d_psi
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // d_psidd2 is d_work_array_complex_as_double (padded), after backward FFT contains real values
+                // Read from padded location: iz * Ny * (Nx+2) + iy * (Nx+2) + ix
+                int psidd2_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
                 cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
                 double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|² directly
-                double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
-                d_result[linear_idx] = psi2_val * psidd2_val * half_gd;
+                double psidd2_val = __ldg(&d_psidd2[psidd2_idx]); // Read-only cache for dipolar psi squared (padded)
+                // d_result is also d_work_array_complex_as_double (padded), write to padded location
+                d_result[psidd2_idx] = psi2_val * psidd2_val * half_gd;
             }
         }
     }
@@ -2474,6 +2858,66 @@ __global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi,
 }
 
 /**
+ * @brief Kernel to calculate quantum fluctuation energy term (complex array cast to double)
+ * @param d_psi: Device: 3D psi array
+ * @param d_result: Device: 3D result array (complex array cast to double)
+ * @param half_h2: Precomputed 0.5 * h2 coefficient for quantum fluctuation term
+ */
+__global__ void calcmuen_fused_h2_complex(const cuDoubleComplex *__restrict__ d_psi,
+                                         double *__restrict__ d_result, const double half_h2) 
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                cuDoubleComplex psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
+                double psi2_val = psi_val.x * psi_val.x + psi_val.y * psi_val.y;  // |ψ|²
+                double psi_abs = sqrt(psi2_val);  // |ψ| - only one sqrt needed
+                double psi5_val = psi2_val * psi2_val * psi_abs;  // |ψ|⁵ = |ψ|² × |ψ|² × |ψ|
+                double result_val = psi5_val * half_h2;
+                // When d_result is a complex array cast to double with padding, account for padded stride
+                // d_work_array_complex is (Nx+2, Ny, Nz), so stride in x is (Nx+2)
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                d_result[2 * result_idx] = result_val;
+                d_result[2 * result_idx + 1] = 0.0;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Function to calculate kinetic energy term (complex array cast to double)
+ * @param d_psi: Device: 3D psi array
+ * @param d_work_array_complex: Device: 3D work array (complex array cast to double)
+ * @param par: Host to Device: par coefficient either 1 or 2, defined in Input file
+ */
+void calcmuen_kin_complex(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<cuDoubleComplex> &d_work_array_complex, int par) 
+{
+    // Use temporary double array for diff_complex, then copy to complex array
+    static CudaArray3D<double> d_temp(Nx, Ny, Nz);
+    diff_complex(dx, dy, dz, d_psi.raw(), d_temp.raw(), Nx, Ny, Nz, par);
+    
+    // Copy from double array to complex array cast to double
+    static int smCount = getGPUSMCount();
+    dim3 threadsPerBlock(8, 8, 8);
+    dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
+    double *d_work_array_double = reinterpret_cast<double*>(d_work_array_complex.raw());
+    copy_double_to_complex_array<<<numBlocks, threadsPerBlock>>>(d_temp.raw(), d_work_array_double, Nx, Ny, Nz);
+    CUDA_CHECK_KERNEL("copy_double_to_complex_array");
+}
+
+/**
  * @brief Function to calculate kinetic energy term
  * @param d_psi: Device: 3D psi array
  * @param d_work_array: Device: 3D work array
@@ -2482,6 +2926,38 @@ __global__ void calcmuen_fused_h2(const cuDoubleComplex *__restrict__ d_psi,
 void calcmuen_kin(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<double> &d_work_array, int par) 
 {
     diff_complex(dx, dy, dz, d_psi.raw(), d_work_array.raw(), Nx, Ny, Nz, par);
+}
+
+/**
+ * @brief Kernel to copy double array to complex array cast to double
+ * @param d_src: Source double array
+ * @param d_dst: Destination complex array cast to double
+ */
+__global__ void copy_double_to_complex_array(const double *__restrict__ d_src, double *__restrict__ d_dst, long Nx, long Ny, long Nz)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int idy = blockIdx.y * blockDim.y + threadIdx.y;
+    int idz = blockIdx.z * blockDim.z + threadIdx.z;
+    
+    int stride_x = gridDim.x * blockDim.x;
+    int stride_y = gridDim.y * blockDim.y;
+    int stride_z = gridDim.z * blockDim.z;
+
+    for (int iz = idz; iz < d_Nz; iz += stride_z) 
+    {
+        for (int iy = idy; iy < d_Ny; iy += stride_y) 
+        {
+            for (int ix = idx; ix < d_Nx; ix += stride_x) 
+            {
+                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // d_dst is d_work_array_complex_as_double (padded), each complex element is 2 doubles
+                // Write to padded location: 2 * (iz * Ny * (Nx+2) + iy * (Nx+2) + ix)
+                int dst_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
+                d_dst[2 * dst_idx] = d_src[linear_idx];
+                d_dst[2 * dst_idx + 1] = 0.0;
+            }
+        }
+    }
 }
 
 /**
@@ -2506,7 +2982,11 @@ void rms_output(FILE *filerms)
 
     std::fprintf(filerms, "DDI: add = %.6le * a0, GD = %.6le, GD * par = %.6le, edd = %.6le\n", add, gd / par, gd, edd);
     
-    std::fprintf(filerms, "\t\tDipolar cutoff Scut = %.6le,\n\n", cutoff);
+    std::fprintf(filerms, "\t\tDipolar cutoff Scut = %.6le", cutoff);
+    if (dimensions_adjusted && cutoff != original_cutoff) {
+        std::fprintf(filerms, " (adjusted, original: %.6le)", original_cutoff);
+    }
+    std::fprintf(filerms, ",\n\n");
     
     if (QF == 1) 
     {
@@ -2520,18 +3000,39 @@ void rms_output(FILE *filerms)
     std::fprintf(filerms, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma,
                  vnu, vlambda);
     
-    std::fprintf(filerms, "\nSpace discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
+    std::fprintf(filerms, "\nSpace discretization: NX = %li, NY = %li, NZ = %li", Nx, Ny, Nz);
+    if (dimensions_adjusted) {
+        std::fprintf(filerms, " (adjusted for FFT work area)\n");
+        std::fprintf(filerms, "\t\tOriginal values: NX = %li, NY = %li, NZ = %li\n", original_Nx, original_Ny, original_Nz);
+    } else {
+        std::fprintf(filerms, "\n");
+    }
     
     std::fprintf(filerms,
                 "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
-                "%.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
-
+                "%.2le, mz = %.2le", dx, dy, dz, mx, my, mz);
+    if (dimensions_adjusted && (dx != original_dx || dy != original_dy || dz != original_dz)) {
+        std::fprintf(filerms, " (adjusted)\n");
+        std::fprintf(filerms, "\t\tOriginal values: DX = %.16le, DY = %.16le, DZ = %.16le\n", original_dx, original_dy, original_dz);
+    } else {
+        std::fprintf(filerms, "\n");
+    }
 
     std::fprintf(filerms, "\t\tUnit of length: aho = %.6le m\n", aho);
 
     std::fprintf(filerms, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
     
-    std::fprintf(filerms, "\t\tDT = %.6le, mt = %.2le\n\n", dt, mt);
+    std::fprintf(filerms, "\t\tDT = %.6le", dt);
+    if (dimensions_adjusted && dt != original_dt) {
+        std::fprintf(filerms, " (adjusted, original: %.6le)", original_dt);
+    }
+    std::fprintf(filerms, ", mt = %.2le\n", mt);
+    
+    if (dimensions_adjusted && cutoff != original_cutoff) {
+        std::fprintf(filerms, "\t\tCUTOFF = %.6le (adjusted, original: %.6le)\n\n", cutoff, original_cutoff);
+    } else {
+        std::fprintf(filerms, "\n");
+    }
 
     std::fprintf(filerms, "Input file: %s\n", input);
 
@@ -2569,17 +3070,39 @@ void mu_output(FILE *filemu) {
     std::fprintf(filemu, "Trap parameters:\nGAMMA = %.6le, NU = %.6le, LAMBDA = %.6le\n", vgamma,
                  vnu, vlambda);
     
-    std::fprintf(filemu, "\nSpace discretization: NX = %li, NY = %li, NZ = %li\n", Nx, Ny, Nz);
+    std::fprintf(filemu, "\nSpace discretization: NX = %li, NY = %li, NZ = %li", Nx, Ny, Nz);
+    if (dimensions_adjusted) {
+        std::fprintf(filemu, " (adjusted for FFT work area)\n");
+        std::fprintf(filemu, "\t\tOriginal values: NX = %li, NY = %li, NZ = %li\n", original_Nx, original_Ny, original_Nz);
+    } else {
+        std::fprintf(filemu, "\n");
+    }
     
     std::fprintf(filemu,
                 "\t\tDX = %.16le, DY = %.16le, DZ = %.16le, mx = %.2le, my = "
-                "%.2le, mz = %.2le\n", dx, dy, dz, mx, my, mz);
+                "%.2le, mz = %.2le", dx, dy, dz, mx, my, mz);
+    if (dimensions_adjusted && (dx != original_dx || dy != original_dy || dz != original_dz)) {
+        std::fprintf(filemu, " (adjusted)\n");
+        std::fprintf(filemu, "\t\tOriginal values: DX = %.16le, DY = %.16le, DZ = %.16le\n", original_dx, original_dy, original_dz);
+    } else {
+        std::fprintf(filemu, "\n");
+    }
     
     std::fprintf(filemu, "\t\tUnit of length: aho = %.6le m\n", aho);
     
     std::fprintf(filemu, "\nTime discretization: NITER = %li (NSNAP = %li)\n", Niter, Nsnap);
 
-    std::fprintf(filemu, "\t\tDT = %.6le, mt = %.2le\n\n", dt, mt);
+    std::fprintf(filemu, "\t\tDT = %.6le", dt);
+    if (dimensions_adjusted && dt != original_dt) {
+        std::fprintf(filemu, " (adjusted, original: %.6le)", original_dt);
+    }
+    std::fprintf(filemu, ", mt = %.2le\n", mt);
+    
+    if (dimensions_adjusted && cutoff != original_cutoff) {
+        std::fprintf(filemu, "\t\tCUTOFF = %.6le (adjusted, original: %.6le)\n\n", cutoff, original_cutoff);
+    } else {
+        std::fprintf(filemu, "\n");
+    }
     
     std::fprintf(filemu, "Input file: %s\n", input);
 

@@ -19,22 +19,23 @@
  * @param z_start Starting Z index of current tile in full volume
  */
 __global__ void simpson3d_tiled_reduce(double *f, double *partial_sums, long Nx, long Ny, long Nz,
-                                       long tile_size_z, long z_start);
+                                       long tile_size_z, long z_start, long f_Nx);
 
 /**
  * @brief Wrapper function to launch the Simpson 3D kernel
  *
- * @param d_f Device pointer to input data
+ * @param d_f Device pointer to input data (may be padded)
  * @param d_partial_sum Device pointer to partial sum storage
- * @param Nx Grid size in X direction
+ * @param Nx Logical grid size in X direction (for weighting)
  * @param Ny Grid size in Y direction
  * @param Nz Total grid size in Z direction
  * @param tile_size_z Maximum tile size in Z direction
  * @param z_start Starting Z index of current tile
  * @param current_tile_z Actual size of current tile (may be less than tile_size_z for last tile)
+ * @param f_Nx Actual X dimension of array f (Nx for unpadded, Nx+2 for padded)
  */
 void launchSimpson3DKernel(double *d_f, double *d_partial_sum, long Nx, long Ny, long Nz,
-                           long tile_size_z, long z_start, long current_tile_z);
+                           long tile_size_z, long z_start, long current_tile_z, long f_Nx);
 
 /**
  * @brief CUDA kernel for tiled Simpson 3D integration with reduction for complex array cast to double
@@ -50,7 +51,7 @@ void launchSimpson3DKernel(double *d_f, double *d_partial_sum, long Nx, long Ny,
  * @param tile_size_z Size of current tile in Z direction
  * @param z_start Starting Z index of current tile in full volume
  */
-__global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, long Nx, long Ny, long Nz,
+__global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, long Nx, long Ny, long Nz, long f_Nx,
                                                 long tile_size_z, long z_start);
 
 /**
@@ -65,7 +66,7 @@ __global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, 
  * @param z_start Starting Z index of current tile
  * @param current_tile_z Actual size of current tile (may be less than tile_size_z for last tile)
  */
-void launchSimpson3DKernelComplex(double *d_f, double *d_partial_sum, long Nx, long Ny, long Nz,
+void launchSimpson3DKernelComplex(double *d_f, double *d_partial_sum, long Nx, long Ny, long Nz, long f_Nx,
                                    long tile_size_z, long z_start, long current_tile_z);
 
 /**

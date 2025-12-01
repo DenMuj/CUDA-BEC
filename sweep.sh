@@ -4,16 +4,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-OUTPUT_FILE="imag3d_out_times.txt"
+OUTPUT_FILE="real3d_out_times.txt"
 > "$OUTPUT_FILE"
 
 for N in $(seq 128 16 416); do
   # Prefer 'range-N/N{N}/imag3d-out.txt' if it exists, otherwise 'N{N}/imag3d-out.txt'
   OUT_FILE=""
-  if [[ -f "range-N/N${N}/imag3d-rms.txt" ]]; then
-    OUT_FILE="range-N/N${N}/imag3d-rms.txt"
-  elif [[ -f "N${N}/imag3d-rms.txt" ]]; then
-    OUT_FILE="N${N}/imag3d-rms.txt"
+  if [[ -f "real3d-N/N${N}/real3d-rms.txt" ]]; then
+    OUT_FILE="real3d-N/N${N}/real3d-rms.txt"
+  elif [[ -f "N${N}/real3d-rms.txt" ]]; then
+    OUT_FILE="N${N}/real3d-rms.txt"
   fi
 
   CALC="NA"

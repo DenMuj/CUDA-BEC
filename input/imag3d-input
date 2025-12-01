@@ -141,7 +141,7 @@
 #  Output file with the chemical potential of the system. If not defined, will not be written.
 #  Required: no
 #  Type: string
-#   OUTPUTMU = imag3d-out
+   MUOUTPUT = imag3d-out
 
 #  Output file with RMS values. The values are written in each snapshot.
 #  If not defined, will not be written.

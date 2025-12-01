@@ -83,17 +83,17 @@ void calcrms(const double *d_psi, double *d_work_array, Simpson3DTiledIntegrator
                         double *h_rms_pinned);
 
 __global__ void compute_single_weighted_psi_squared(const double *__restrict__ psi, double *result,
-                                                    int direction, const double discretiz);
+                                                    int direction, const double discretiz, long result_Nx);
 
-void calc_d_psi2(const double *d_psi, double *d_psi2);
-__global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restrict__ d_psi2);
+void calc_d_psi2(const double *d_psi, double *d_psi2, long psi2_Nx);
+__global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restrict__ d_psi2, long psi2_Nx);
 
 void gencoef(MultiArray<double> &calphax, MultiArray<double> &cgammax, MultiArray<double> &calphay,
              MultiArray<double> &cgammay, MultiArray<double> &calphaz, MultiArray<double> &cgammaz,
              double &Ax0, double &Ay0, double &Az0, double &Ax0r, double &Ay0r, double &Az0r,
              double &Ax, double &Ay, double &Az);
 void diff(double hx, double hy, double hz, double *f, double *__restrict__ f_res, long nx, long ny,
-          long nz, int par);
+          long nz, int par, long f_res_nx);
 extern __global__ void diff_kernel(double hx, double hy, double hz, double *__restrict__ f,
                                    double *__restrict__ f_res, long nx, long ny, long nz, int par);
 
@@ -106,9 +106,9 @@ __device__ __forceinline__ double compute_pot_onthefly(int ix, int iy, int iz);
 void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, double h2);
 __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d_psi2,
                               const double *__restrict__ pot, const double g, const double ratio_gd,
-                              const double h2);
+                              const double h2, long psi2_Nx);
 __global__ void calcnu_kernel_onthefly(double *__restrict__ d_psi, double *__restrict__ d_psi2,
-                                       const double g, const double ratio_gd, const double h2);
+                                       const double g, const double ratio_gd, const double h2, long psi2_Nx);
 
 void calclux(double *d_psi, double *d_cbeta, double *d_calphax, double *d_cgammax, double d_Ax0r,
              double d_Ax);
@@ -140,10 +140,10 @@ void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, const doubl
 __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
                                     const double *__restrict__ potdd);
 
-__global__ void calcpsidd2_boundaries(double *psidd2);
+__global__ void calcpsidd2_boundaries(double *psidd2, long psidd2_Nx);
 
 void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd,
-              double *d_potdd, cufftDoubleComplex *d_psi2_fft, cufftHandle forward_plan,
+              double *d_potdd, cufftHandle forward_plan,
               cufftHandle backward_plan, Simpson3DTiledIntegrator &integ, const double g,
               const double gd, const double h2);
 

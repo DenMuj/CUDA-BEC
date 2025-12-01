@@ -39,13 +39,14 @@ class Simpson3DTiledIntegrator {
      * @param hx Step size in X direction
      * @param hy Step size in Y direction
      * @param hz Step size in Z direction
-     * @param d_f Pointer to function values (DEVICE memory)
-     * @param Nx Number of points in X direction
+     * @param d_f Pointer to function values (DEVICE memory, may be padded)
+     * @param Nx Logical number of points in X direction (for weighting)
      * @param Ny Number of points in Y direction
      * @param Nz Number of points in Z direction
+     * @param f_Nx Actual X dimension of d_f (Nx for unpadded, Nx+2 for padded, defaults to Nx)
      * @return Integrated value
      */
-    double integrateDevice(double hx, double hy, double hz, double *d_f, long Nx, long Ny, long Nz);
+    double integrateDevice(double hx, double hy, double hz, double *d_f, long Nx, long Ny, long Nz, long f_Nx = 0);
 
     /**
      * @brief Perform 3D integration using Simpson's rule (complex array cast to double)
@@ -56,9 +57,10 @@ class Simpson3DTiledIntegrator {
      * @param Nx Number of points in X direction
      * @param Ny Number of points in Y direction
      * @param Nz Number of points in Z direction
+     * @param f_Nx Actual X dimension of complex array before casting (Nx for unpadded, Nx+2 for padded, defaults to Nx)
      * @return Integrated value
      */
-    double integrateDeviceComplex(double hx, double hy, double hz, double *d_f, long Nx, long Ny, long Nz);
+    double integrateDeviceComplex(double hx, double hy, double hz, double *d_f, long Nx, long Ny, long Nz, long f_Nx = 0);
 
     /**
      * @brief Set the tile size for Z-direction processing

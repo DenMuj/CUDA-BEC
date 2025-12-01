@@ -59,60 +59,61 @@
      return dim3(gridX, gridY, gridZ);
  }
  
- /**
-  * @brief Kernel function for Simpson 3D tiled reduction
-  * @param f Pointer to function values (DEVICE memory)
-  * @param partial_sums Pointer to partial sums (DEVICE memory)
-  * @param Nx Number of points in X direction
-  * @param Ny Number of points in Y direction
-  * @param Nz Number of points in Z direction
-  * @param tile_size_z Number of z-slices per tile
-  * @param z_start Starting z-index for the current tile
-  */
- __global__ void simpson3d_tiled_reduce(double *f, double *partial_sums, long Nx, long Ny, long Nz,
-                                        long tile_size_z, long z_start) {
-     extern __shared__ double shared[];
-     double *sum_data = shared;
- 
-     // Calculate thread ID within block
-     long tid = threadIdx.x + threadIdx.y * blockDim.x + threadIdx.z * blockDim.x * blockDim.y;
- 
-     // Calculate global 3D strides for grid-stride loop
-     long stride_x = blockDim.x * gridDim.x;
-     long stride_y = blockDim.y * gridDim.y;
-     long stride_z = blockDim.z * gridDim.z;
- 
-     // Initial indices
-     long idx_start = blockIdx.x * blockDim.x + threadIdx.x;
-     long idy_start = blockIdx.y * blockDim.y + threadIdx.y;
-     long idz_start = blockIdx.z * blockDim.z + threadIdx.z;
- 
-     double local_sum = 0.0;
- 
-     // Grid-stride loop: each thread processes multiple points
-     for (long idz_local = idz_start; idz_local < tile_size_z; idz_local += stride_z) {
-         long idz_global = z_start + idz_local;
-         if (idz_global >= Nz) continue;
- 
-         double weight_z = (idz_global == 0 || idz_global == Nz - 1) ? 1.0
-                           : (idz_global % 2 == 1)                   ? 4.0
-                                                                     : 2.0;
- 
-         for (long idy = idy_start; idy < Ny; idy += stride_y) {
-             double weight_y = (idy == 0 || idy == Ny - 1) ? 1.0 : (idy % 2 == 1) ? 4.0 : 2.0;
-             double weight_yz = weight_y * weight_z;
- 
-             for (long idx = idx_start; idx < Nx; idx += stride_x) {
-                 double weight_x = (idx == 0 || idx == Nx - 1) ? 1.0 : (idx % 2 == 1) ? 4.0 : 2.0;
- 
-                 // Use local index for accessing the tile data in memory
-                 long linear_idx = idz_local * Nx * Ny + idy * Nx + idx;
- 
-                 // Accumulate weighted value
-                 local_sum = fma(f[linear_idx], weight_x * weight_yz, local_sum);
-             }
-         }
-     }
+/**
+ * @brief Kernel function for Simpson 3D tiled reduction
+ * @param f Pointer to function values (DEVICE memory, may be padded)
+ * @param partial_sums Pointer to partial sums (DEVICE memory)
+ * @param Nx Logical number of points in X direction (for weighting)
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param tile_size_z Number of z-slices per tile
+ * @param z_start Starting z-index for the current tile
+ * @param f_Nx Actual X dimension of array f (Nx for unpadded, Nx+2 for padded)
+ */
+__global__ void simpson3d_tiled_reduce(double *f, double *partial_sums, long Nx, long Ny, long Nz,
+                                       long tile_size_z, long z_start, long f_Nx) {
+    extern __shared__ double shared[];
+    double *sum_data = shared;
+
+    // Calculate thread ID within block
+    long tid = threadIdx.x + threadIdx.y * blockDim.x + threadIdx.z * blockDim.x * blockDim.y;
+
+    // Calculate global 3D strides for grid-stride loop
+    long stride_x = blockDim.x * gridDim.x;
+    long stride_y = blockDim.y * gridDim.y;
+    long stride_z = blockDim.z * gridDim.z;
+
+    // Initial indices
+    long idx_start = blockIdx.x * blockDim.x + threadIdx.x;
+    long idy_start = blockIdx.y * blockDim.y + threadIdx.y;
+    long idz_start = blockIdx.z * blockDim.z + threadIdx.z;
+
+    double local_sum = 0.0;
+
+    // Grid-stride loop: each thread processes multiple points
+    for (long idz_local = idz_start; idz_local < tile_size_z; idz_local += stride_z) {
+        long idz_global = z_start + idz_local;
+        if (idz_global >= Nz) continue;
+
+        double weight_z = (idz_global == 0 || idz_global == Nz - 1) ? 1.0
+                          : (idz_global % 2 == 1)                   ? 4.0
+                                                                    : 2.0;
+
+        for (long idy = idy_start; idy < Ny; idy += stride_y) {
+            double weight_y = (idy == 0 || idy == Ny - 1) ? 1.0 : (idy % 2 == 1) ? 4.0 : 2.0;
+            double weight_yz = weight_y * weight_z;
+
+            for (long idx = idx_start; idx < Nx; idx += stride_x) {
+                double weight_x = (idx == 0 || idx == Nx - 1) ? 1.0 : (idx % 2 == 1) ? 4.0 : 2.0;
+
+                // Use actual array dimension for indexing (f_Nx accounts for padding)
+                long linear_idx = idz_local * f_Nx * Ny + idy * f_Nx + idx;
+
+                // Accumulate weighted value
+                local_sum = fma(f[linear_idx], weight_x * weight_yz, local_sum);
+            }
+        }
+    }
  
     // ============ WARP SHUFFLE REDUCTION ============
     // First, reduce within each warp using shuffle intrinsics
@@ -161,7 +162,7 @@
  * @param tile_size_z Number of z-slices per tile
  * @param z_start Starting z-index for the current tile
  */
-__global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, long Nx, long Ny, long Nz,
+__global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, long Nx, long Ny, long Nz, long f_Nx,
                                                long tile_size_z, long z_start) {
     extern __shared__ double shared[];
     double *sum_data = shared;
@@ -200,7 +201,8 @@ __global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, 
                 // Use local index for accessing the tile data in memory
                 // When complex array is cast to double, each element is 2 doubles (real, imag)
                 // Access the real part at index 2*linear_idx
-                long linear_idx = idz_local * Nx * Ny + idy * Nx + idx;
+                // With padding, stride per z-plane is f_Nx * Ny (f_Nx may be Nx+2 for padded arrays)
+                long linear_idx = idz_local * f_Nx * Ny + idy * f_Nx + idx;
                 long double_idx = 2 * linear_idx;
 
                 // Accumulate weighted value (read from real part)
@@ -259,7 +261,7 @@ __global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, 
   * @param current_tile_z Number of z-slices in the current tile
   */
  void launchSimpson3DKernel(double *d_f, double *d_partial_sum, long Nx, long Ny, long Nz,
-                            long tile_size_z, long z_start, long current_tile_z) {
+                            long tile_size_z, long z_start, long current_tile_z, long f_Nx) {
      static int smCount = getGPUSMCount();
      dim3 blockSize(32, 4, 2); // 256 threads per block
  
@@ -273,7 +275,7 @@ __global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, 
  
      // Launch kernel
      simpson3d_tiled_reduce<<<gridSize, blockSize, shared_mem_size>>>(d_f, d_partial_sum, Nx, Ny, Nz,
-                                                                      current_tile_z, z_start);
+                                                                     current_tile_z, z_start, f_Nx);
      CUDA_CHECK_KERNEL("simpson3d_tiled_reduce");
  }
 
@@ -288,7 +290,7 @@ __global__ void simpson3d_tiled_reduce_complex(double *f, double *partial_sums, 
  * @param z_start Starting z-index for the current tile
  * @param current_tile_z Number of z-slices in the current tile
  */
-void launchSimpson3DKernelComplex(double *d_f, double *d_partial_sum, long Nx, long Ny, long Nz,
+void launchSimpson3DKernelComplex(double *d_f, double *d_partial_sum, long Nx, long Ny, long Nz, long f_Nx,
                                  long tile_size_z, long z_start, long current_tile_z) {
     static int smCount = getGPUSMCount();
     dim3 blockSize(32, 4, 2); // 256 threads per block
@@ -303,7 +305,8 @@ void launchSimpson3DKernelComplex(double *d_f, double *d_partial_sum, long Nx, l
 
     // Launch kernel
     // When complex array is cast to double, pointer offset needs to account for 2 doubles per element
-    simpson3d_tiled_reduce_complex<<<gridSize, blockSize, shared_mem_size>>>(d_f + 2 * z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz,
+    // With padding, stride per z-plane is 2 * f_Nx * Ny (f_Nx may be Nx+2 for padded arrays)
+    simpson3d_tiled_reduce_complex<<<gridSize, blockSize, shared_mem_size>>>(d_f + 2 * z_start * f_Nx * Ny, d_partial_sum, Nx, Ny, Nz, f_Nx,
                                                                              current_tile_z, z_start);
     CUDA_CHECK_KERNEL("simpson3d_tiled_reduce_complex");
 }

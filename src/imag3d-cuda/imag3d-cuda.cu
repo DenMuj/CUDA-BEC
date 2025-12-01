@@ -222,7 +222,9 @@ int main(int argc, char **argv)
     CudaArray3D<double> d_psi(Nx, Ny, Nz);
 
     // Allocate memory for work array on device
-    CudaArray3D<double> d_work_array(Nx, Ny, Nz);
+    CudaArray3D<double> d_work_array(Nx+2, Ny, Nz);
+
+    cufftDoubleComplex* d_complex = (cufftDoubleComplex*)d_work_array.raw();
 
     // Allocate memory for trap potential (d_pot) and dipole potential (d_potdd)
     // d_pot is only allocated if initialize_pot == 1 (precomputed mode)
@@ -234,25 +236,43 @@ int main(int argc, char **argv)
     }
     CudaArray3D<double> d_potdd(Nx, Ny, Nz);
 
-    // FFT arrays
-    cufftDoubleComplex *d_psi2_fft;
-    CUDA_CHECK(cudaMalloc(&d_psi2_fft, Nz * Ny * (Nx2 + 1) * sizeof(cufftDoubleComplex)));
+    // FFT arrays - now using in-place FFT with d_work_array (d_complex)
 
     // Create plan for FFT of 3D array with explicit work area management
+    // Using cufftMakePlanMany for in-place-like R2C FFT support
     cufftHandle forward_plan, backward_plan;
     size_t forward_worksize, backward_worksize;
     void *forward_work = nullptr;
     void *backward_work = nullptr;
 
-    // Create forward plan
+    // For in-place R2C FFT, we need explicit strides
+    // Memory layout: row-major, index = iz*(Ny*Nx) + iy*Nx + ix (Nx fastest, Nz slowest)
+    // FFT dimensions: (Nz, Ny, Nx) - processed as Nz batches of (Ny, Nx) 2D FFTs
+    int fft_size[3] = {(int)Nz, (int)Ny, (int)Nx};  // Dimensions: [slowest, middle, fastest]
+    
+    // Input strides for real data (row-major: iz*(Ny*Nx) + iy*Nx + ix)
+    int inembed[3] = {(int)Nz, (int)Ny, (int)(Nx+2)};  // Input embedding
+    int istride = 1;  // Stride within a row (contiguous)
+    int idist = 1;   // Distance between z-planes (batches)
+    
+    // Output strides for complex data (row-major: iz*(Ny*(Nx/2+1)) + iy*(Nx/2+1) + ix)
+    int onembed[3] = {(int)Nz, (int)Ny, (int)(Nx/2 + 1)};  // Output embedding
+    int ostride = 1;  // Stride within a row (contiguous)
+    int odist = 1;  // Distance between z-planes (batches)
+
+    // Create forward plan (D2Z) with explicit strides for in-place-like operation
     CUFFT_CHECK(cufftCreate(&forward_plan));
-    CUFFT_CHECK(cufftMakePlan3d(forward_plan, Nz, Ny, Nx, CUFFT_D2Z, &forward_worksize));
+    CUFFT_CHECK(cufftMakePlanMany(forward_plan, 3, fft_size,
+                                   inembed, istride, idist,  // Input layout
+                                   onembed, ostride, odist,  // Output layout
+                                   CUFFT_D2Z, 1, &forward_worksize));
 
-    // Defer work area allocation until both plan sizes are known; will share one buffer
-
-    // Create backward plan
+    // Create backward plan (Z2D) - reverse the input/output
     CUFFT_CHECK(cufftCreate(&backward_plan));
-    CUFFT_CHECK(cufftMakePlan3d(backward_plan, Nz, Ny, Nx, CUFFT_Z2D, &backward_worksize));
+    CUFFT_CHECK(cufftMakePlanMany(backward_plan, 3, fft_size,
+                                   onembed, ostride, odist,  // Input layout (complex)
+                                   inembed, istride, idist,  // Output layout (real)
+                                   CUFFT_Z2D, 1, &backward_worksize));
 
     // Allocate a single shared work area for both forward and backward plans
     {
@@ -364,8 +384,8 @@ int main(int argc, char **argv)
     }
 
     // Compute chemical potential terms
-    //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot_ptr, d_work_array.data(),
-      //           d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+    // calcmuen(muen.raw(), d_psi.raw(), d_work_array.raw(), d_pot_ptr, d_work_array.raw(),
+    //             d_potdd.raw(), forward_plan, backward_plan, integ, g, gd, h2);
     // if (muoutput != NULL) 
     // {
     //     std::fprintf(filemu, "%-9d %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le %-19.16le\n",
@@ -511,7 +531,7 @@ int main(int argc, char **argv)
         for (long j = 0; j < nsteps; j++) 
         {
             calcpsidd2(forward_plan, backward_plan, d_psi.raw(), d_work_array.raw(),
-                             d_psi2_fft, d_potdd.raw());
+                             d_complex, d_potdd.raw());
             calcnu(d_psi.raw(), d_work_array.raw(), d_pot_ptr, g, gd, h2);
             calclux(d_psi.raw(), d_work_array.raw(), d_calphax.raw(), d_cgammax.raw(), Ax0r, Ax);
             calcluy(d_psi.raw(), d_work_array.raw(), d_calphay.raw(), d_cgammay.raw(), Ay0r, Ay);
@@ -532,8 +552,8 @@ int main(int argc, char **argv)
             fflush(filerms);
         }
         // Compute chemical potential terms
-        //calcmuen(muen.raw(), d_psi.data(), d_work_array.data(), d_pot_ptr, d_work_array.data(),
-                 //d_potdd.data(), d_psi2_fft, forward_plan, backward_plan, integ, g, gd, h2);
+        // calcmuen(muen.raw(), d_psi.raw(), d_work_array.raw(), d_pot_ptr, d_work_array.raw(),
+        //          d_potdd.raw(), forward_plan, backward_plan, integ, g, gd, h2);
         // if (muoutput != NULL) 
         // {
         //     std::fprintf(filemu,
@@ -724,7 +744,6 @@ int main(int argc, char **argv)
     cudaFreeHost(psi);
 
     // Cleanup FFT plans and work areas
-    cudaFree(d_psi2_fft);
     if (forward_work)
         cudaFree(forward_work);
     if (backward_work)
@@ -1054,30 +1073,33 @@ void calcrms(
     // Compute x^2 * psi^2 
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
                                                                  0, // 0 for x direction
-                                                                 dx);
+                                                                 dx,
+                                                                 Nx + 2); // d_work_array is padded
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (x)");
 
     
-    //  Integrate x^2 * psi^2
-    double x2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
+    //  Integrate x^2 * psi^2 (d_work_array is padded, so pass Nx+2)
+    double x2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz, Nx + 2);
 
     // Compute y^2 * psi^2 (reuse d_work_array)
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
                                                                  1, // 1 for y direction
-                                                                 dy);
+                                                                 dy,
+                                                                 Nx + 2); // d_work_array is padded
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (y)");
 
-    //  Integrate y^2 * psi^2
-    double y2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
+    //  Integrate y^2 * psi^2 (d_work_array is padded, so pass Nx+2)
+    double y2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz, Nx + 2);
 
     // Compute z^2 * psi^2 (reuse d_work_array)
     compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
                                                                  2, // 2 for z direction
-                                                                 dz);
+                                                                 dz,
+                                                                 Nx + 2); // d_work_array is padded
     CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (z)");
 
-    //  Integrate z^2 * psi^2
-    double z2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz);
+    //  Integrate z^2 * psi^2 (d_work_array is padded, so pass Nx+2)
+    double z2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz, Nx + 2);
 
     // Calculate RMS values and store in pinned memory
     h_rms_pinned[0] = sqrt(x2_integral); // rms_x
@@ -1088,13 +1110,15 @@ void calcrms(
 /**
  * @brief Kernel to compute single weighted psi squared
  * @param psi: Device: 3D psi array
- * @param result: Result array
+ * @param result: Result array (may be padded)
  * @param direction: Direction (0=x, 1=y, 2=z)
  * @param scale: Grid spacing for the chosen direction (dx, dy, dz)
+ * @param result_Nx: X dimension of result array (Nx for unpadded, Nx+2 for padded)
  */
 __global__ void compute_single_weighted_psi_squared(const double *__restrict__ psi, double *result,
                                                     int direction, // 0=x, 1=y, 2=z
-                                                    const double scale) 
+                                                    const double scale,
+                                                    long result_Nx) 
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1110,8 +1134,12 @@ __global__ void compute_single_weighted_psi_squared(const double *__restrict__ p
         {
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
-                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
-                double psi_val = __ldg(&psi[linear_idx]); // Read-only cache for psi
+                // Index for reading from psi (unpadded, uses d_Nx)
+                int psi_linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // Index for writing to result (may be padded, uses result_Nx)
+                int result_linear_idx = iz * d_Ny * result_Nx + iy * result_Nx + ix;
+                
+                double psi_val = __ldg(&psi[psi_linear_idx]); // Read-only cache for psi
                 double psi_squared = psi_val * psi_val;
 
                 double weight = 0.0;
@@ -1131,7 +1159,7 @@ __global__ void compute_single_weighted_psi_squared(const double *__restrict__ p
                     weight = z * z;
                 }
 
-                result[linear_idx] = weight * psi_squared;
+                result[result_linear_idx] = weight * psi_squared;
             }
         }
     }
@@ -1140,14 +1168,15 @@ __global__ void compute_single_weighted_psi_squared(const double *__restrict__ p
 /**
  * @brief Function to compute squared wave function on device
  * @param d_psi: Device: 3D psi array
- * @param d_psi2: Device: 3D psi2 array
+ * @param d_psi2: Device: 3D psi2 array (may be padded)
+ * @param psi2_Nx: X dimension of d_psi2 array (Nx for unpadded, Nx+2 for padded)
  */
-void calc_d_psi2(const double *d_psi, double *d_psi2) 
+void calc_d_psi2(const double *d_psi, double *d_psi2, long psi2_Nx) 
 {
     static int smCount = getGPUSMCount();
     dim3 threadsPerBlock(8, 8, 8);  // threads per block
     dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
-    compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
+    compute_d_psi2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, psi2_Nx);
     CUDA_CHECK_KERNEL("compute_d_psi2");
     return;
 }
@@ -1155,9 +1184,10 @@ void calc_d_psi2(const double *d_psi, double *d_psi2)
 /**
  * @brief Kernel to compute squared wave function
  * @param d_psi: Device: 3D psi array
- * @param d_psi2: Device: 3D psi2 array
+ * @param d_psi2: Device: 3D psi2 array (may be padded)
+ * @param psi2_Nx: X dimension of d_psi2 array (Nx for unpadded, Nx+2 for padded)
  */
-__global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restrict__ d_psi2) 
+__global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restrict__ d_psi2, long psi2_Nx) 
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1173,9 +1203,13 @@ __global__ void compute_d_psi2(const double *__restrict__ d_psi, double *__restr
         {
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
-                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
-                double psi_val = d_psi[linear_idx];
-                d_psi2[linear_idx] = psi_val * psi_val;
+                // Index for reading from d_psi (unpadded, uses d_Nx)
+                int psi_linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // Index for writing to d_psi2 (may be padded, uses psi2_Nx)
+                int psi2_linear_idx = iz * d_Ny * psi2_Nx + iy * psi2_Nx + ix;
+                
+                double psi_val = d_psi[psi_linear_idx];
+                d_psi2[psi2_linear_idx] = psi_val * psi_val;
             }
         }
     }
@@ -1337,8 +1371,9 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
  */
 void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegrator &integ) 
 {
-    calc_d_psi2(d_psi, d_psi2);
-    double raw_norm = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
+    // d_psi2 is d_work_array which is padded (Nx+2, Ny, Nz)
+    calc_d_psi2(d_psi, d_psi2, Nx + 2);
+    double raw_norm = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz, Nx + 2);
     norm = 1.0 / sqrt(raw_norm);
 
     // Apply normalization
@@ -1380,7 +1415,7 @@ __global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm)
 
 /**
  * @brief Kernel to compute the squared wave function multiplied by the dipolar potential
- * @param d_psi2_fft: Device: 3D psi2 array in FFT format
+ * @param d_psi2_fft: Device: 3D psi2 array in FFT format (in-place FFT buffer)
  * @param potdd: Device: 3D dipolar potential array
  */
 __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
@@ -1415,9 +1450,10 @@ __global__ void compute_psid2_potdd(cufftDoubleComplex *d_psi2_fft,
 
 /**
  * @brief Kernel to compute the boundaries of the FFT psi2 array
- * @param psidd2: Device: 3D psi2 array multiplied by the dipolar potential
+ * @param psidd2: Device: 3D psi2 array multiplied by the dipolar potential (padded as Nx+2, Ny, Nz)
+ * @param psidd2_Nx: X dimension of psidd2 array (Nx+2 for padded)
  */
-__global__ void calcpsidd2_boundaries(double *psidd2) 
+__global__ void calcpsidd2_boundaries(double *psidd2, long psidd2_Nx) 
 {
     long cnti, cntj, cntk;
 
@@ -1431,9 +1467,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
     {
         for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) 
         {
-            long first_idx = cntk * (d_Nx * d_Ny) + cntj * d_Nx + 0; // i=0 (first x-slice)
+            // Use padded dimension for indexing
+            long first_idx = cntk * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + 0; // i=0 (first x-slice)
             long last_idx =
-                cntk * (d_Nx * d_Ny) + cntj * d_Nx + (d_Nx - 1); // i=d_Nx-1 (last x-slice)
+                cntk * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + (d_Nx - 1); // i=d_Nx-1 (last x-slice)
 
             psidd2[last_idx] = psidd2[first_idx];
         }
@@ -1443,9 +1480,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
     {
         for (cntk = tdx; cntk < d_Nz; cntk += grid_stride_x) 
         {
-            long first_idx = cntk * (d_Nx * d_Ny) + 0 * d_Nx + cnti; // j=0 (first y-slice)
+            // Use padded dimension for indexing
+            long first_idx = cntk * (psidd2_Nx * d_Ny) + 0 * psidd2_Nx + cnti; // j=0 (first y-slice)
             long last_idx =
-                cntk * (d_Nx * d_Ny) + (d_Ny - 1) * d_Nx + cnti; // j=d_Ny-1 (last y-slice)
+                cntk * (psidd2_Nx * d_Ny) + (d_Ny - 1) * psidd2_Nx + cnti; // j=d_Ny-1 (last y-slice)
 
             psidd2[last_idx] = psidd2[first_idx];
         }
@@ -1455,9 +1493,10 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
     {
         for (cntj = tdx; cntj < d_Ny; cntj += grid_stride_x) 
         {
-            long first_idx = 0 * (d_Nx * d_Ny) + cntj * d_Nx + cnti; // k=0 (first z-slice)
+            // Use padded dimension for indexing
+            long first_idx = 0 * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + cnti; // k=0 (first z-slice)
             long last_idx =
-                (d_Nz - 1) * (d_Nx * d_Ny) + cntj * d_Nx + cnti; // k=d_Nz-1 (last z-slice)
+                (d_Nz - 1) * (psidd2_Nx * d_Ny) + cntj * psidd2_Nx + cnti; // k=d_Nz-1 (last z-slice)
 
             psidd2[last_idx] = psidd2[first_idx];
         }
@@ -1466,18 +1505,22 @@ __global__ void calcpsidd2_boundaries(double *psidd2)
 
 /**
  * @brief Function to compute the FFT of the squared wave function multiplied by the dipolar
- * potential
+ * potential (in-place FFT)
  * @param forward_plan: Forward FFT plan
  * @param backward_plan: Backward FFT plan
  * @param d_psi: Device: 3D psi array
- * @param d_psi2_real: Device: 3D psi2 array
- * @param d_psi2_fft: Device: 3D psi2 array in FFT format
+ * @param d_psi2_real: Device: 3D psi2 array (also used for in-place FFT)
+ * @param d_psi2_fft: Device: Complex view of d_psi2_real for in-place FFT
  * @param potdd: Device: 3D dipolar potential array
  */
 void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, const double *d_psi,
                       double *d_psi2_real, cufftDoubleComplex *d_psi2_fft, const double *potdd) 
 {
-    calc_d_psi2(d_psi, d_psi2_real);
+    // d_psi2_real is d_work_array or d_psi2dd, both are padded (Nx+2, Ny, Nz)
+    calc_d_psi2(d_psi, d_psi2_real, Nx + 2);
+    // In-place-like FFT: using same buffer with different pointer types
+    // cuFFT requires different pointer values, so we cast to ensure they're treated as different
+    // The plan (cufftMakePlanMany) knows about the overlapping memory layout
     CUFFT_CHECK(cufftExecD2Z(forward_plan, (cufftDoubleReal *)d_psi2_real, d_psi2_fft));
 
     static int smCount = getGPUSMCount();
@@ -1486,12 +1529,14 @@ void calcpsidd2(cufftHandle forward_plan, cufftHandle backward_plan, const doubl
     compute_psid2_potdd<<<numBlocks, threadsPerBlock>>>(d_psi2_fft, potdd);
     CUDA_CHECK_KERNEL("compute_psid2_potdd");
 
+    // In-place FFT: same memory location for input (complex) and output (real)
     CUFFT_CHECK(cufftExecZ2D(backward_plan, d_psi2_fft, (cufftDoubleReal *)d_psi2_real));
     
     // Boundary kernel uses 2D grid
+    // d_psi2_real is padded (Nx+2, Ny, Nz)
     dim3 blockSize2D(64, 8);
     dim3 numBlocks2D = getOptimalGrid2D(smCount, Ny, Nz, blockSize2D, 4);
-    calcpsidd2_boundaries<<<numBlocks2D, blockSize2D>>>(d_psi2_real);
+    calcpsidd2_boundaries<<<numBlocks2D, blockSize2D>>>(d_psi2_real, Nx + 2);
     CUDA_CHECK_KERNEL("calcpsidd2_boundaries");
     return;
 }
@@ -1579,16 +1624,19 @@ void calcnu(double *d_psi, double *d_psi2, double *d_pot, double g, double gd, d
     dim3 threadsPerBlock(8, 8, 8);  // threads per block
     dim3 numBlocks = getOptimalGrid3D(smCount, Nx, Ny, Nz, threadsPerBlock, 2);
     
+    // d_psi2 is d_work_array which is padded (Nx+2, Ny, Nz)
+    long psi2_Nx = Nx + 2;
+    
     if (initialize_pot == 1) 
     {
         // Use precomputed potential from GPU memory
-        calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_pot, g, ratio_gd, h2);
+        calcnu_kernel<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_pot, g, ratio_gd, h2, psi2_Nx);
         CUDA_CHECK_KERNEL("calcnu_kernel");
     } 
     else 
     {
         // Compute potential on-the-fly
-        calcnu_kernel_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, g, ratio_gd, h2);
+        calcnu_kernel_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, g, ratio_gd, h2, psi2_Nx);
         CUDA_CHECK_KERNEL("calcnu_kernel_onthefly");
     }
     CUDA_SYNC_CHECK("calcnu");  // Only active in debug mode
@@ -1614,15 +1662,16 @@ __device__ __forceinline__ double compute_pot_onthefly(int ix, int iy, int iz)
  * @brief Kernel to compute the time propagation with respect to H1 (part of the Hamiltonian without
  *    spatial derivatives).
  * @param d_psi: Device: 3D psi array
- * @param d_psi2: Device: 3D psi2 array
+ * @param d_psi2: Device: 3D psi2 array (may be padded)
  * @param d_pot: Device: 3D trap potential array
  * @param g: Host: g coefficient for contact interaction term
  * @param ratio_gd: Precomputed ratio gd/(Nx*Ny*Nz) for dipolar interaction term
  * @param h2: Host: h2 coefficient for quantum fluctuation term
+ * @param psi2_Nx: X dimension of d_psi2 array (Nx for unpadded, Nx+2 for padded)
  */
 __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d_psi2,
                               const double *__restrict__ d_pot, const double g,
-                              const double ratio_gd, const double h2) 
+                              const double ratio_gd, const double h2, long psi2_Nx) 
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1638,19 +1687,25 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d
         {
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
-                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
-                double psi_val = d_psi[linear_idx];
+                // Index for reading from d_psi (unpadded, uses d_Nx)
+                int psi_linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // Index for reading from d_psi2 (may be padded, uses psi2_Nx)
+                int psi2_linear_idx = iz * d_Ny * psi2_Nx + iy * psi2_Nx + ix;
+                // Index for reading from d_pot (unpadded, uses d_Nx)
+                int pot_linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                
+                double psi_val = d_psi[psi_linear_idx];
                 double psi_val2 = fma(psi_val, psi_val, 0.0);        // psi^2
                 //double psi_val3 = fma(psi_val2, fabs(psi_val), 0.0); // psi^3
-                double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
-                double pot_val = __ldg(&d_pot[linear_idx]);
+                double psi2dd = __ldg(&d_psi2[psi2_linear_idx]) * ratio_gd;
+                double pot_val = __ldg(&d_pot[pot_linear_idx]);
                 double temp1 = fma(psi_val2, g, psi2dd);
                 //double temp2 = fma(psi_val3, h2, pot_val);
                 //double sum = temp1 + temp2;
                 double sum = temp1 + pot_val;
                 double tmp = fma(d_dt, sum, 0.0);
                 // double tmp = d_dt * (psi_val3*h2);
-                d_psi[linear_idx] *= exp(-tmp);
+                d_psi[psi_linear_idx] *= exp(-tmp);
             }
         }
     }
@@ -1660,13 +1715,14 @@ __global__ void calcnu_kernel(double *__restrict__ d_psi, double *__restrict__ d
  * @brief Kernel to compute H1 time propagation with on-the-fly potential calculation.
  *        Saves GPU memory by computing trap potential from grid indices instead of reading from array.
  * @param d_psi: Device: 3D psi array
- * @param d_psi2: Device: 3D psi2 array (contains psi2dd after calcpsidd2)
+ * @param d_psi2: Device: 3D psi2 array (contains psi2dd after calcpsidd2, may be padded)
  * @param g: Contact interaction coefficient
  * @param ratio_gd: Precomputed ratio gd/(Nx*Ny*Nz) for dipolar interaction term
  * @param h2: Quantum fluctuation coefficient
+ * @param psi2_Nx: X dimension of d_psi2 array (Nx for unpadded, Nx+2 for padded)
  */
 __global__ void calcnu_kernel_onthefly(double *__restrict__ d_psi, double *__restrict__ d_psi2,
-                                       const double g, const double ratio_gd, const double h2) 
+                                       const double g, const double ratio_gd, const double h2, long psi2_Nx) 
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int idy = blockIdx.y * blockDim.y + threadIdx.y;
@@ -1682,10 +1738,14 @@ __global__ void calcnu_kernel_onthefly(double *__restrict__ d_psi, double *__res
         {
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
-                int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
-                double psi_val = d_psi[linear_idx];
+                // Index for reading from d_psi (unpadded, uses d_Nx)
+                int psi_linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // Index for reading from d_psi2 (may be padded, uses psi2_Nx)
+                int psi2_linear_idx = iz * d_Ny * psi2_Nx + iy * psi2_Nx + ix;
+                
+                double psi_val = d_psi[psi_linear_idx];
                 double psi_val2 = fma(psi_val, psi_val, 0.0);        // psi^2
-                double psi2dd = __ldg(&d_psi2[linear_idx]) * ratio_gd;
+                double psi2dd = __ldg(&d_psi2[psi2_linear_idx]) * ratio_gd;
                 
                 // Compute potential on-the-fly instead of reading from global memory
                 double pot_val = compute_pot_onthefly(ix, iy, iz);
@@ -1695,7 +1755,7 @@ __global__ void calcnu_kernel_onthefly(double *__restrict__ d_psi, double *__res
                 //double sum = temp1 + temp2;
                 double sum = temp1 + pot_val;
                 double tmp = fma(d_dt, sum, 0.0);
-                d_psi[linear_idx] *= exp(-tmp);
+                d_psi[psi_linear_idx] *= exp(-tmp);
             }
         }
     }
@@ -2008,9 +2068,8 @@ __global__ void calcluz_kernel(double *__restrict__ psi, double *__restrict__ cb
  * @param d_psi: Device: 3D psi array
  * @param d_psi2: Device: 3D psi2 array
  * @param d_pot: Device: 3D trap potential array
- * @param d_psi2dd: Device: 3D psi2dd array
+ * @param d_psi2dd: Device: 3D psi2dd array (used for in-place FFT, must be size (Nx+2)*Ny*Nz)
  * @param d_potdd: Device: 3D dipolar potential array
- * @param d_psi2_fft: Device: 3D psi2_fft array
  * @param forward_plan: FFT forward plan
  * @param backward_plan: FFT backward plan
  * @param integ: Simpson3DTiledIntegrator
@@ -2019,7 +2078,7 @@ __global__ void calcluz_kernel(double *__restrict__ psi, double *__restrict__ cb
  * @param h2: Host to Device: h2 coefficient for quantum fluctuation term
  */
 void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double *d_psi2dd,
-              double *d_potdd, cufftDoubleComplex *d_psi2_fft, cufftHandle forward_plan,
+              double *d_potdd, cufftHandle forward_plan,
               cufftHandle backward_plan, Simpson3DTiledIntegrator &integ, const double g,
               const double gd, const double h2) 
 {
@@ -2036,7 +2095,7 @@ void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double
     // Step 1: Contact energy - Calculate 0.5 * g * ψ⁴
     calcmuen_fused_contact<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, half_g);
     CUDA_CHECK_KERNEL("calcmuen_fused_contact");
-    muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
+    muen[0] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz, Nx + 2);
 
     // Step 2: Potential energy - Calculate 0.5 * ψ² * V
     if (initialize_pot == 1) 
@@ -2049,22 +2108,23 @@ void calcmuen(double *muen, double *d_psi, double *d_psi2, double *d_pot, double
         calcmuen_fused_potential_onthefly<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2);
         CUDA_CHECK_KERNEL("calcmuen_fused_potential_onthefly");
     }
-    muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
+    muen[1] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz, Nx + 2);
 
     // Step 3: Dipolar energy - requires FFT computation first
-    calcpsidd2(forward_plan, backward_plan, d_psi, d_psi2dd, d_psi2_fft, d_potdd);
+    // Use complex view of d_psi2dd for in-place FFT
+    calcpsidd2(forward_plan, backward_plan, d_psi, d_psi2dd, (cufftDoubleComplex*)d_psi2dd, d_potdd);
     calcmuen_fused_dipolar<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, d_psi2dd, half_gd);
     CUDA_CHECK_KERNEL("calcmuen_fused_dipolar");
-    muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz) * inv_NxNyNz;
+    muen[2] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz, Nx + 2) * inv_NxNyNz;
 
     // Step 4: Kinetic energy - calculate gradients and kinetic energy density directly
     calcmuen_kin(d_psi, d_psi2, par);
-    muen[3] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
+    muen[3] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz, Nx + 2);
 
     // Step 5: H2 energy - calculate quantum fluctuation energy density
     calcmuen_fused_h2<<<numBlocks, threadsPerBlock>>>(d_psi, d_psi2, half_h2);
     CUDA_CHECK_KERNEL("calcmuen_fused_h2");
-    muen[4] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz);
+    muen[4] = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz, Nx + 2);
 
     return;
 }
@@ -2092,10 +2152,12 @@ __global__ void calcmuen_fused_contact(const double *__restrict__ d_psi,
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // d_result is d_work_array (padded), use padded indexing
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
                 double psi_val = d_psi[linear_idx];
                 double psi2_val = psi_val * psi_val;
                 double psi4_val = psi2_val * psi2_val;
-                d_result[linear_idx] = psi4_val * half_g;
+                d_result[result_idx] = psi4_val * half_g;
             }
         }
     }
@@ -2126,9 +2188,11 @@ __global__ void calcmuen_fused_potential(const double *__restrict__ d_psi,
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // d_result is d_work_array (padded), use padded indexing
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
                 double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
                 double psi2_val = psi_val * psi_val;
-                d_result[linear_idx] =
+                d_result[result_idx] =
                     0.5 * psi2_val * __ldg(&d_pot[linear_idx]); // Read-only cache for potential
             }
         }
@@ -2158,11 +2222,13 @@ __global__ void calcmuen_fused_potential_onthefly(const double *__restrict__ d_p
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // d_result is d_work_array (padded), use padded indexing
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
                 double psi_val = __ldg(&d_psi[linear_idx]);
                 double psi2_val = psi_val * psi_val;
                 // Compute potential on-the-fly
                 double pot_val = compute_pot_onthefly(ix, iy, iz);
-                d_result[linear_idx] = 0.5 * psi2_val * pot_val;
+                d_result[result_idx] = 0.5 * psi2_val * pot_val;
             }
         }
     }
@@ -2194,10 +2260,12 @@ __global__ void calcmuen_fused_dipolar(const double *__restrict__ d_psi,
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // d_result and d_psidd2 are both d_work_array/d_psi2dd (padded), use padded indexing
+                int padded_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
                 double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
                 double psi2_val = psi_val * psi_val;
-                double psidd2_val = __ldg(&d_psidd2[linear_idx]); // Read-only cache for dipolar psi squared
-                d_result[linear_idx] = psi2_val * psidd2_val * half_gd;
+                double psidd2_val = __ldg(&d_psidd2[padded_idx]); // Read-only cache for dipolar psi squared (padded)
+                d_result[padded_idx] = psi2_val * psidd2_val * half_gd;
             }
         }
     }
@@ -2227,9 +2295,11 @@ __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__re
             for (int ix = idx; ix < d_Nx; ix += stride_x) 
             {
                 int linear_idx = iz * d_Ny * d_Nx + iy * d_Nx + ix;
+                // d_result is d_work_array (padded), use padded indexing
+                int result_idx = iz * d_Ny * (d_Nx + 2) + iy * (d_Nx + 2) + ix;
                 double psi_val = __ldg(&d_psi[linear_idx]); // Read-only cache for psi
                 double psi5_val = psi_val * psi_val * psi_val * psi_val * psi_val;
-                d_result[linear_idx] = psi5_val * half_h2;
+                d_result[result_idx] = psi5_val * half_h2;
             }
         }
     }
@@ -2243,7 +2313,8 @@ __global__ void calcmuen_fused_h2(const double *__restrict__ d_psi, double *__re
  */
 void calcmuen_kin(double *d_psi, double *d_work_array, int par) 
 {
-    diff(dx, dy, dz, d_psi, d_work_array, Nx, Ny, Nz, par);
+    // d_work_array is padded (Nx+2, Ny, Nz)
+    diff(dx, dy, dz, d_psi, d_work_array, Nx, Ny, Nz, par, Nx + 2);
 }
 
 /**

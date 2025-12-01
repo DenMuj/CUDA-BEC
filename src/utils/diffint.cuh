@@ -20,7 +20,7 @@
 __global__ void diff_kernel(double hx, double hy, double hz,
     double* __restrict__ psi,
     double* __restrict__ f_res,
-    long nx, long ny, long nz, double kin_energy_factor);
+    long nx, long ny, long nz, double kin_energy_factor, long f_res_nx);
 
 /**
  * @brief Richardson extrapolation formula for calculation of space derivatives.
@@ -29,8 +29,13 @@ __global__ void diff_kernel(double hx, double hy, double hz,
  * @param hz Space step
  * @param f Function values
  * @param f_res Array with the first derivatives of the function
+ * @param nx X dimension of input array f
+ * @param ny Y dimension
+ * @param nz Z dimension
+ * @param par Parameter
+ * @param f_res_nx X dimension of output array f_res (defaults to nx if not padded)
  */
-void diff(double h, double *f, double* __restrict__ f_res, long nx, long ny, long nz, int par);
+void diff(double hx, double hy, double hz, double* f, double* __restrict__ f_res, long nx, long ny, long nz, int par, long f_res_nx);
 
 /**
  * @brief Kernel function for the Richardson extrapolation formula for calculation of space derivatives for complex functions.
