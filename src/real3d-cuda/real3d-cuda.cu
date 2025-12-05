@@ -35,7 +35,7 @@ inline int getGPUSMCount() {
  */
 inline dim3 getOptimalGrid3D(int smCount, long Nx, long Ny, long Nz, dim3 blockSize, int blocksPerSM = 4) {
     // Calculate grid needed to cover the problem with some stride
-    int stride = 2;
+    int stride = 1;
     int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  // with stride
     int gridY = (Ny + blockSize.y * stride - 1) / (blockSize.y * stride);
     int gridZ = (Nz + blockSize.z * stride - 1) / (blockSize.z * stride);
@@ -64,7 +64,7 @@ inline dim3 getOptimalGrid3D(int smCount, long Nx, long Ny, long Nz, dim3 blockS
  */
 inline dim3 getOptimalGrid2D(int smCount, long Nx, long Ny, dim3 blockSize, int blocksPerSM = 4) {
     // Calculate grid needed to cover the problem with some stride
-    int stride = 2;
+    int stride = 1;
     int gridX = (Nx + blockSize.x * stride - 1) / (blockSize.x * stride);  // with stride
     int gridY = (Ny + blockSize.y * stride - 1) / (blockSize.y * stride);
     
@@ -1280,37 +1280,14 @@ void calcrms(
     CudaArray3D<cuDoubleComplex> &d_work_array_complex, Simpson3DTiledIntegrator &integ,
     double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 {
-    // Configure kernel launch parameters using grid-stride approach
-    static int smCount = getGPUSMCount();
-    dim3 blockSize(32, 4, 2);  // threads per block
-    dim3 gridSize = getOptimalGrid3D(smCount, Nx, Ny, Nz, blockSize, 4);
-
-    // Cast complex array to double* for kernel and integration
-    double *d_work_array_double = reinterpret_cast<double*>(d_work_array_complex.raw());
-
-    // Compute x^2 * psi^2
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
-                                                                 0, // 0 for x direction
-                                                                 dx);
-    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (x)");
-
-    double x2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
-
-    // Compute y^2 * psi^2 (reuse d_work_array_complex)
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
-                                                                 1, // 1 for y direction
-                                                                 dy);
-    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (y)");
-
-    double y2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
-
-    // Compute z^2 * psi^2 (reuse d_work_array_complex)
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi.raw(), d_work_array_double,
-                                                                 2, // 2 for z direction
-                                                                 dz);
-    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (z)");
-
-    double z2_integral = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
+    // Fused optimization: compute all 3 RMS integrals in a single pass over the complex psi data
+    // This computes |psi|^2 * x^2, |psi|^2 * y^2, and |psi|^2 * z^2 simultaneously
+    // where |psi|^2 = psi.x^2 + psi.y^2 (real^2 + imag^2)
+    // d_psi is unpadded (uses Nx for indexing)
+    
+    double x2_integral, y2_integral, z2_integral;
+    integ.integrateDeviceComplexRMSFused(dx, dy, dz, d_psi.raw(), Nx, Ny, Nz, dx, dy, dz,
+                                          x2_integral, y2_integral, z2_integral);
 
     // Calculate RMS values and store in pinned memory
     h_rms_pinned[0] = sqrt(x2_integral); // rms_x
@@ -1641,11 +1618,9 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
 void calcnorm(CudaArray3D<cuDoubleComplex> &d_psi, CudaArray3D<cuDoubleComplex> &d_work_array_complex, double &norm,
               Simpson3DTiledIntegrator &integ) 
 {
-    // Cast complex array to double* for kernel and integration
-    double *d_work_array_double = reinterpret_cast<double*>(d_work_array_complex.raw());
-    
-    calc_d_psi2_complex(d_psi.raw(), d_work_array_double, Nx + 2);
-    double raw_norm = integ.integrateDeviceComplex(dx, dy, dz, d_work_array_double, Nx, Ny, Nz, Nx + 2);
+    // Optimized: compute |psi|^2 and integrate in a single kernel pass (no need for d_work_array_complex buffer)
+    // d_psi is unpadded (uses Nx for indexing)
+    double raw_norm = integ.integrateDeviceComplexNorm(dx, dy, dz, d_psi.raw(), Nx, Ny, Nz);
     norm = 1.0 / sqrt(raw_norm);
 
     Nad *= raw_norm;

@@ -1,5 +1,5 @@
 # Compiler settings
-CUDA_HOME ?= /usr/local/cuda
+CUDA_HOME ?= /usr/
 NVCC = $(CUDA_HOME)/bin/nvcc
 CXX = g++
 

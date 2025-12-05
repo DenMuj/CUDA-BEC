@@ -97,7 +97,7 @@ void diff(double hx, double hy, double hz, double *f, double *__restrict__ f_res
 extern __global__ void diff_kernel(double hx, double hy, double hz, double *__restrict__ f,
                                    double *__restrict__ f_res, long nx, long ny, long nz, int par);
 
-void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegrator &integ);
+void calcnorm(double *d_psi, double &norm, Simpson3DTiledIntegrator &integ);
 __global__ void multiply_by_norm(double *__restrict__ d_psi, const double norm);
 
 // Device function to compute trap potential on-the-fly

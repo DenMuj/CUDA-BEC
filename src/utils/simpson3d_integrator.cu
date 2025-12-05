@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cuda_runtime.h>
+#include <cuComplex.h>
 #include <iostream>
 
 /**
@@ -19,10 +20,13 @@
  */
 class Simpson3DTiledIntegratorImpl {
   public:
-    double *d_partial_sum; // Device memory for accumulating results
-    double h_tile_sum;     // Host memory for tile sum
-    long tile_size_z;      // Number of z-slices per tile
-    long cached_Nx;        // Cached grid dimensions
+    double *d_partial_sum;    // Device memory for accumulating results
+    double *d_partial_sum_y2; // Device memory for y^2 partial sum (fused RMS)
+    double *d_partial_sum_z2; // Device memory for z^2 partial sum (fused RMS)
+    double h_tile_sum;        // Host memory for tile sum
+    double h_tile_sums[3];    // Host memory for fused RMS tile sums [x2, y2, z2]
+    long tile_size_z;         // Number of z-slices per tile
+    long cached_Nx;           // Cached grid dimensions
     long cached_Ny;
 
     /**
@@ -34,8 +38,10 @@ class Simpson3DTiledIntegratorImpl {
     Simpson3DTiledIntegratorImpl(long Nx, long Ny, long tile_z)
         : tile_size_z(tile_z), cached_Nx(Nx), cached_Ny(Ny), h_tile_sum(0.0) {
 
-        // Allocate memory for partial sum
+        // Allocate memory for partial sums (d_partial_sum also used for x^2 in fused)
         CUDA_CHECK(cudaMalloc(&d_partial_sum, sizeof(double)));
+        CUDA_CHECK(cudaMalloc(&d_partial_sum_y2, sizeof(double)));
+        CUDA_CHECK(cudaMalloc(&d_partial_sum_z2, sizeof(double)));
     }
 
     /**
@@ -43,6 +49,8 @@ class Simpson3DTiledIntegratorImpl {
      */
     ~Simpson3DTiledIntegratorImpl() {
         cudaFree(d_partial_sum);
+        cudaFree(d_partial_sum_y2);
+        cudaFree(d_partial_sum_z2);
     }
 
     /**
@@ -130,6 +138,252 @@ class Simpson3DTiledIntegratorImpl {
     }
 
     /**
+     * @brief Integrate |psi|^2 using device memory (computes on-the-fly from complex array)
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param d_f_full Pointer to function values (DEVICE memory, complex array, unpadded, uses Nx for indexing)
+     * @param Nx Logical X dimension (for weighting and indexing)
+     * @param Ny Y dimension
+     * @param Nz Z dimension
+     */
+    double integrateDeviceComplexNorm(double hx, double hy, double hz, const cuDoubleComplex *d_f_full, long Nx, long Ny, long Nz) {
+        double total_sum = 0.0;
+
+        // Process the volume in tiles along the Z direction
+        for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
+            // Calculate the actual size of this tile (last tile might be smaller)
+            long current_tile_z = std::min(tile_size_z, Nz - z_start);
+
+            // Reset the partial sum for this tile
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
+
+            // Launch kernel for this tile with on-the-fly |psi|^2 computation
+            // Pointer offset accounts for unpadded array (uses Nx for indexing)
+            // With unpadded array, stride per z-plane is Nx * Ny (complex elements)
+            launchSimpson3DKernelComplexNorm(d_f_full + z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz,
+                                              tile_size_z, z_start, current_tile_z);
+
+            // Debug mode: sync and check for kernel execution errors
+            CUDA_SYNC_CHECK("integrateDeviceComplexNorm kernel");
+
+            // Copy result back to host (implicitly syncs)
+            CUDA_CHECK(cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
+
+            // Accumulate the result
+            total_sum += h_tile_sum;
+        }
+
+        // Apply Simpson's rule scaling factor
+        return total_sum * hx * hy * hz / 27.0;
+    }
+
+    /**
+     * @brief Integrate the squared function using device memory (squares on-the-fly)
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param d_f_full Pointer to function values (DEVICE memory, unpadded, uses Nx for indexing)
+     * @param Nx Logical X dimension (for weighting and indexing)
+     * @param Ny Y dimension
+     * @param Nz Z dimension
+     */
+    double integrateDeviceNorm(double hx, double hy, double hz, const double *d_f_full, long Nx, long Ny, long Nz) {
+        double total_sum = 0.0;
+
+        // Process the volume in tiles along the Z direction
+        for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
+            // Calculate the actual size of this tile (last tile might be smaller)
+            long current_tile_z = std::min(tile_size_z, Nz - z_start);
+
+            // Reset the partial sum for this tile
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
+
+            // Launch kernel for this tile with on-the-fly squaring
+            // Pointer offset accounts for unpadded array (uses Nx for indexing)
+            launchSimpson3DKernelNorm(d_f_full + z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz,
+                                      tile_size_z, z_start, current_tile_z);
+
+            // Debug mode: sync and check for kernel execution errors
+            CUDA_SYNC_CHECK("integrateDeviceNorm kernel");
+
+            // Copy result back to host (implicitly syncs)
+            CUDA_CHECK(cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
+
+            // Accumulate the result
+            total_sum += h_tile_sum;
+        }
+
+        // Apply Simpson's rule scaling factor
+        return total_sum * hx * hy * hz / 27.0;
+    }
+
+    /**
+     * @brief Integrate psi^2 * coordinate^2 using device memory (computes on-the-fly)
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param d_f_full Pointer to function values (DEVICE memory, unpadded, uses Nx for indexing)
+     * @param Nx Logical X dimension (for weighting and indexing)
+     * @param Ny Y dimension
+     * @param Nz Z dimension
+     * @param direction Direction for coordinate calculation (0=x, 1=y, 2=z)
+     * @param scale Grid spacing for the chosen direction (dx, dy, or dz)
+     */
+    double integrateDeviceRMS(double hx, double hy, double hz, const double *d_f_full, long Nx, long Ny, long Nz,
+                             int direction, double scale) {
+        double total_sum = 0.0;
+
+        // Process the volume in tiles along the Z direction
+        for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
+            // Calculate the actual size of this tile (last tile might be smaller)
+            long current_tile_z = std::min(tile_size_z, Nz - z_start);
+
+            // Reset the partial sum for this tile
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
+
+            // Launch kernel for this tile with on-the-fly RMS calculation
+            // Pointer offset accounts for unpadded array (uses Nx for indexing)
+            launchSimpson3DKernelRMS(d_f_full + z_start * Nx * Ny, d_partial_sum, Nx, Ny, Nz,
+                                     tile_size_z, z_start, current_tile_z, direction, scale);
+
+            // Debug mode: sync and check for kernel execution errors
+            CUDA_SYNC_CHECK("integrateDeviceRMS kernel");
+
+            // Copy result back to host (implicitly syncs)
+            CUDA_CHECK(cudaMemcpy(&h_tile_sum, d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
+
+            // Accumulate the result
+            total_sum += h_tile_sum;
+        }
+
+        // Apply Simpson's rule scaling factor
+        return total_sum * hx * hy * hz / 27.0;
+    }
+
+    /**
+     * @brief Integrate all 3 RMS components in a single pass (3x more efficient)
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param d_f_full Pointer to function values (DEVICE memory, unpadded, uses Nx for indexing)
+     * @param Nx Logical X dimension (for weighting and indexing)
+     * @param Ny Y dimension
+     * @param Nz Z dimension
+     * @param scale_x Grid spacing in X direction (dx)
+     * @param scale_y Grid spacing in Y direction (dy)
+     * @param scale_z Grid spacing in Z direction (dz)
+     * @param[out] result_x2 Integrated value of psi^2 * x^2
+     * @param[out] result_y2 Integrated value of psi^2 * y^2
+     * @param[out] result_z2 Integrated value of psi^2 * z^2
+     */
+    void integrateDeviceRMSFused(double hx, double hy, double hz, const double *d_f_full, long Nx, long Ny, long Nz,
+                                 double scale_x, double scale_y, double scale_z,
+                                 double &result_x2, double &result_y2, double &result_z2) {
+        double total_sum_x2 = 0.0;
+        double total_sum_y2 = 0.0;
+        double total_sum_z2 = 0.0;
+
+        // Process the volume in tiles along the Z direction
+        for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
+            // Calculate the actual size of this tile (last tile might be smaller)
+            long current_tile_z = std::min(tile_size_z, Nz - z_start);
+
+            // Reset all partial sums for this tile
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
+            CUDA_CHECK(cudaMemset(d_partial_sum_y2, 0, sizeof(double)));
+            CUDA_CHECK(cudaMemset(d_partial_sum_z2, 0, sizeof(double)));
+
+            // Launch fused kernel for this tile - computes all 3 RMS components in one pass
+            // Pointer offset accounts for unpadded array (uses Nx for indexing)
+            launchSimpson3DKernelRMSFused(d_f_full + z_start * Nx * Ny, 
+                                          d_partial_sum, d_partial_sum_y2, d_partial_sum_z2,
+                                          Nx, Ny, Nz, tile_size_z, z_start, current_tile_z,
+                                          scale_x, scale_y, scale_z);
+
+            // Debug mode: sync and check for kernel execution errors
+            CUDA_SYNC_CHECK("integrateDeviceRMSFused kernel");
+
+            // Copy all 3 results back to host (implicitly syncs)
+            CUDA_CHECK(cudaMemcpy(&h_tile_sums[0], d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(&h_tile_sums[1], d_partial_sum_y2, sizeof(double), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(&h_tile_sums[2], d_partial_sum_z2, sizeof(double), cudaMemcpyDeviceToHost));
+
+            // Accumulate the results
+            total_sum_x2 += h_tile_sums[0];
+            total_sum_y2 += h_tile_sums[1];
+            total_sum_z2 += h_tile_sums[2];
+        }
+
+        // Apply Simpson's rule scaling factor
+        double scale = hx * hy * hz / 27.0;
+        result_x2 = total_sum_x2 * scale;
+        result_y2 = total_sum_y2 * scale;
+        result_z2 = total_sum_z2 * scale;
+    }
+
+    /**
+     * @brief Integrate all 3 RMS components in a single pass from complex array (3x more efficient)
+     * @param hx Step size in X direction
+     * @param hy Step size in Y direction
+     * @param hz Step size in Z direction
+     * @param d_f_full Pointer to function values (DEVICE memory, complex array, unpadded, uses Nx for indexing)
+     * @param Nx Logical X dimension (for weighting and indexing)
+     * @param Ny Y dimension
+     * @param Nz Z dimension
+     * @param scale_x Grid spacing in X direction (dx)
+     * @param scale_y Grid spacing in Y direction (dy)
+     * @param scale_z Grid spacing in Z direction (dz)
+     * @param[out] result_x2 Integrated value of |psi|^2 * x^2
+     * @param[out] result_y2 Integrated value of |psi|^2 * y^2
+     * @param[out] result_z2 Integrated value of |psi|^2 * z^2
+     */
+    void integrateDeviceComplexRMSFused(double hx, double hy, double hz, const cuDoubleComplex *d_f_full, long Nx, long Ny, long Nz,
+                                        double scale_x, double scale_y, double scale_z,
+                                        double &result_x2, double &result_y2, double &result_z2) {
+        double total_sum_x2 = 0.0;
+        double total_sum_y2 = 0.0;
+        double total_sum_z2 = 0.0;
+
+        // Process the volume in tiles along the Z direction
+        for (long z_start = 0; z_start < Nz; z_start += tile_size_z) {
+            // Calculate the actual size of this tile (last tile might be smaller)
+            long current_tile_z = std::min(tile_size_z, Nz - z_start);
+
+            // Reset all partial sums for this tile
+            CUDA_CHECK(cudaMemset(d_partial_sum, 0, sizeof(double)));
+            CUDA_CHECK(cudaMemset(d_partial_sum_y2, 0, sizeof(double)));
+            CUDA_CHECK(cudaMemset(d_partial_sum_z2, 0, sizeof(double)));
+
+            // Launch fused complex kernel for this tile - computes all 3 RMS components in one pass
+            // Pointer offset accounts for unpadded array (uses Nx for indexing)
+            launchSimpson3DKernelComplexRMSFused(d_f_full + z_start * Nx * Ny, 
+                                                 d_partial_sum, d_partial_sum_y2, d_partial_sum_z2,
+                                                 Nx, Ny, Nz, tile_size_z, z_start, current_tile_z,
+                                                 scale_x, scale_y, scale_z);
+
+            // Debug mode: sync and check for kernel execution errors
+            CUDA_SYNC_CHECK("integrateDeviceComplexRMSFused kernel");
+
+            // Copy all 3 results back to host (implicitly syncs)
+            CUDA_CHECK(cudaMemcpy(&h_tile_sums[0], d_partial_sum, sizeof(double), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(&h_tile_sums[1], d_partial_sum_y2, sizeof(double), cudaMemcpyDeviceToHost));
+            CUDA_CHECK(cudaMemcpy(&h_tile_sums[2], d_partial_sum_z2, sizeof(double), cudaMemcpyDeviceToHost));
+
+            // Accumulate the results
+            total_sum_x2 += h_tile_sums[0];
+            total_sum_y2 += h_tile_sums[1];
+            total_sum_z2 += h_tile_sums[2];
+        }
+
+        // Apply Simpson's rule scaling factor
+        double scale = hx * hy * hz / 27.0;
+        result_x2 = total_sum_x2 * scale;
+        result_y2 = total_sum_y2 * scale;
+        result_z2 = total_sum_z2 * scale;
+    }
+
+    /**
      * @brief Set the tile size
      * @param new_tile_size New tile size
      */
@@ -192,6 +446,104 @@ double Simpson3DTiledIntegrator::integrateDeviceComplex(double hx, double hy, do
     // Default to Nx if f_Nx not specified (backward compatibility)
     if (f_Nx == 0) f_Nx = Nx;
     return pImpl->integrateDeviceComplex(hx, hy, hz, d_f, Nx, Ny, Nz, f_Nx);
+}
+
+/**
+ * @brief Integrate |psi|^2 using device memory (computes on-the-fly from complex array)
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param d_f Pointer to function values (DEVICE memory, complex array, unpadded, uses Nx for indexing)
+ * @param Nx Number of points in X direction (also used for indexing)
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @return Integrated value of |psi|^2
+ */
+double Simpson3DTiledIntegrator::integrateDeviceComplexNorm(double hx, double hy, double hz, const cuDoubleComplex *d_f,
+                                                             long Nx, long Ny, long Nz) {
+    return pImpl->integrateDeviceComplexNorm(hx, hy, hz, d_f, Nx, Ny, Nz);
+}
+
+/**
+ * @brief Integrate the squared function using device memory (squares input on-the-fly)
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param d_f Pointer to function values (DEVICE memory, unpadded, uses Nx for indexing)
+ * @param Nx Number of points in X direction (also used for indexing)
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @return Integrated value of f^2
+ */
+double Simpson3DTiledIntegrator::integrateDeviceNorm(double hx, double hy, double hz, const double *d_f,
+                                                      long Nx, long Ny, long Nz) {
+    return pImpl->integrateDeviceNorm(hx, hy, hz, d_f, Nx, Ny, Nz);
+}
+
+/**
+ * @brief Integrate psi^2 * coordinate^2 using device memory (computes on-the-fly)
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param d_f Pointer to function values (DEVICE memory, unpadded, uses Nx for indexing)
+ * @param Nx Number of points in X direction (also used for indexing)
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param direction Direction for coordinate calculation (0=x, 1=y, 2=z)
+ * @param scale Grid spacing for the chosen direction (dx, dy, or dz)
+ * @return Integrated value of psi^2 * coordinate^2
+ */
+double Simpson3DTiledIntegrator::integrateDeviceRMS(double hx, double hy, double hz, const double *d_f,
+                                                    long Nx, long Ny, long Nz, int direction, double scale) {
+    return pImpl->integrateDeviceRMS(hx, hy, hz, d_f, Nx, Ny, Nz, direction, scale);
+}
+
+/**
+ * @brief Integrate all 3 RMS components in a single pass (3x more efficient)
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param d_f Pointer to function values (DEVICE memory, unpadded, uses Nx for indexing)
+ * @param Nx Number of points in X direction (also used for indexing)
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param scale_x Grid spacing in X direction (dx)
+ * @param scale_y Grid spacing in Y direction (dy)
+ * @param scale_z Grid spacing in Z direction (dz)
+ * @param[out] result_x2 Integrated value of psi^2 * x^2
+ * @param[out] result_y2 Integrated value of psi^2 * y^2
+ * @param[out] result_z2 Integrated value of psi^2 * z^2
+ */
+void Simpson3DTiledIntegrator::integrateDeviceRMSFused(double hx, double hy, double hz, const double *d_f,
+                                                       long Nx, long Ny, long Nz,
+                                                       double scale_x, double scale_y, double scale_z,
+                                                       double &result_x2, double &result_y2, double &result_z2) {
+    pImpl->integrateDeviceRMSFused(hx, hy, hz, d_f, Nx, Ny, Nz, scale_x, scale_y, scale_z,
+                                    result_x2, result_y2, result_z2);
+}
+
+/**
+ * @brief Integrate all 3 RMS components in a single pass from complex array (3x more efficient)
+ * @param hx Step size in X direction
+ * @param hy Step size in Y direction
+ * @param hz Step size in Z direction
+ * @param d_f Pointer to function values (DEVICE memory, complex array, unpadded, uses Nx for indexing)
+ * @param Nx Number of points in X direction (also used for indexing)
+ * @param Ny Number of points in Y direction
+ * @param Nz Number of points in Z direction
+ * @param scale_x Grid spacing in X direction (dx)
+ * @param scale_y Grid spacing in Y direction (dy)
+ * @param scale_z Grid spacing in Z direction (dz)
+ * @param[out] result_x2 Integrated value of |psi|^2 * x^2
+ * @param[out] result_y2 Integrated value of |psi|^2 * y^2
+ * @param[out] result_z2 Integrated value of |psi|^2 * z^2
+ */
+void Simpson3DTiledIntegrator::integrateDeviceComplexRMSFused(double hx, double hy, double hz, const cuDoubleComplex *d_f,
+                                                              long Nx, long Ny, long Nz,
+                                                              double scale_x, double scale_y, double scale_z,
+                                                              double &result_x2, double &result_y2, double &result_z2) {
+    pImpl->integrateDeviceComplexRMSFused(hx, hy, hz, d_f, Nx, Ny, Nz, scale_x, scale_y, scale_z,
+                                           result_x2, result_y2, result_z2);
 }
 
 /**

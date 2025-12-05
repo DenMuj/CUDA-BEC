@@ -262,6 +262,7 @@ int main(int argc, char **argv)
 
     // Create forward plan (D2Z) with explicit strides for in-place-like operation
     CUFFT_CHECK(cufftCreate(&forward_plan));
+    CUFFT_CHECK(cufftSetAutoAllocation(forward_plan, 0));  // Disable auto-allocation for manual work area
     CUFFT_CHECK(cufftMakePlanMany(forward_plan, 3, fft_size,
                                    inembed, istride, idist,  // Input layout
                                    onembed, ostride, odist,  // Output layout
@@ -269,6 +270,7 @@ int main(int argc, char **argv)
 
     // Create backward plan (Z2D) - reverse the input/output
     CUFFT_CHECK(cufftCreate(&backward_plan));
+    CUFFT_CHECK(cufftSetAutoAllocation(backward_plan, 0));  // Disable auto-allocation for manual work area
     CUFFT_CHECK(cufftMakePlanMany(backward_plan, 3, fft_size,
                                    onembed, ostride, odist,  // Input layout (complex)
                                    inembed, istride, idist,  // Output layout (real)
@@ -370,7 +372,7 @@ int main(int argc, char **argv)
     // }
 
     // Compute wave function norm
-    calcnorm(d_psi.raw(), d_work_array.raw(), norm, integ);
+    calcnorm(d_psi.raw(), norm, integ);
 
     // Compute RMS values
     calcrms(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
@@ -536,7 +538,7 @@ int main(int argc, char **argv)
             calclux(d_psi.raw(), d_work_array.raw(), d_calphax.raw(), d_cgammax.raw(), Ax0r, Ax);
             calcluy(d_psi.raw(), d_work_array.raw(), d_calphay.raw(), d_cgammay.raw(), Ay0r, Ay);
             calcluz(d_psi.raw(), d_work_array.raw(), d_calphaz.raw(), d_cgammaz.raw(), Az0r, Az);
-            calcnorm(d_psi.raw(), d_work_array.raw(), norm, integ);
+            calcnorm(d_psi.raw(), norm, integ);
         }
 
         calcrms(d_psi.raw(), d_work_array.raw(), integ, h_rms_pinned);
@@ -1065,41 +1067,12 @@ void calcrms(
     double *d_work_array, Simpson3DTiledIntegrator &integ,
     double *h_rms_pinned) // Output RMS values in pinned memory [rms_x, rms_y, rms_z]
 {
-    // Configure kernel launch parameters using grid-stride approach
-    static int smCount = getGPUSMCount();
-    dim3 blockSize(32, 8, 2);  // threads per block
-    dim3 gridSize = getOptimalGrid3D(smCount, Nx, Ny, Nz, blockSize, 4);
-
-    // Compute x^2 * psi^2 
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
-                                                                 0, // 0 for x direction
-                                                                 dx,
-                                                                 Nx + 2); // d_work_array is padded
-    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (x)");
-
+    // Compute all 3 RMS integrals in a single pass over the data
+    // d_psi is unpadded (uses Nx for indexing)
     
-    //  Integrate x^2 * psi^2 (d_work_array is padded, so pass Nx+2)
-    double x2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz, Nx + 2);
-
-    // Compute y^2 * psi^2 (reuse d_work_array)
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
-                                                                 1, // 1 for y direction
-                                                                 dy,
-                                                                 Nx + 2); // d_work_array is padded
-    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (y)");
-
-    //  Integrate y^2 * psi^2 (d_work_array is padded, so pass Nx+2)
-    double y2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz, Nx + 2);
-
-    // Compute z^2 * psi^2 (reuse d_work_array)
-    compute_single_weighted_psi_squared<<<gridSize, blockSize>>>(d_psi, d_work_array,
-                                                                 2, // 2 for z direction
-                                                                 dz,
-                                                                 Nx + 2); // d_work_array is padded
-    CUDA_CHECK_KERNEL("compute_single_weighted_psi_squared (z)");
-
-    //  Integrate z^2 * psi^2 (d_work_array is padded, so pass Nx+2)
-    double z2_integral = integ.integrateDevice(dx, dy, dz, d_work_array, Nx, Ny, Nz, Nx + 2);
+    double x2_integral, y2_integral, z2_integral;
+    integ.integrateDeviceRMSFused(dx, dy, dz, d_psi, Nx, Ny, Nz, dx, dy, dz,
+                                   x2_integral, y2_integral, z2_integral);
 
     // Calculate RMS values and store in pinned memory
     h_rms_pinned[0] = sqrt(x2_integral); // rms_x
@@ -1369,11 +1342,11 @@ void initpotdd(MultiArray<double> &potdd, MultiArray<double> &kx, MultiArray<dou
  * @param norm: Wave function norm
  * @param integ: Simpson3DTiledIntegrator
  */
-void calcnorm(double *d_psi, double *d_psi2, double &norm, Simpson3DTiledIntegrator &integ) 
+void calcnorm(double *d_psi, double &norm, Simpson3DTiledIntegrator &integ) 
 {
-    // d_psi2 is d_work_array which is padded (Nx+2, Ny, Nz)
-    calc_d_psi2(d_psi, d_psi2, Nx + 2);
-    double raw_norm = integ.integrateDevice(dx, dy, dz, d_psi2, Nx, Ny, Nz, Nx + 2);
+    // Square and integrate in a single kernel pass (no need for d_psi2 buffer)
+    // d_psi is unpadded (uses Nx for indexing)
+    double raw_norm = integ.integrateDeviceNorm(dx, dy, dz, d_psi, Nx, Ny, Nz);
     norm = 1.0 / sqrt(raw_norm);
 
     // Apply normalization

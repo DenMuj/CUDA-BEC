@@ -118,7 +118,7 @@ INITIALIZE_POT = 1
 #  Number of iterations.
 #  Required: yes
 #  Type: long
-   NITER = 100
+   NITER = 10000
 
 #  Number of snapshots made during NITER iterations. Every NITER/NSNAP iterations
 #  the program will calculate RMS, chemical potential and (optionally)
@@ -136,7 +136,7 @@ INITIALIZE_POT = 1
 #  Output file with the chemical potential of the system. If not defined, will not be written.
 #  Required: no
 #  Type: string
-MUOUTPUT = real3d-mu
+# MUOUTPUT = real3d-mu
 
 #  Output file with RMS values. The values are written in each snapshot.
 #  If not defined, will not be written.
